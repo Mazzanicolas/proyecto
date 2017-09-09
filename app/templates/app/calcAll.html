@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta charset="UTF-8">
+		<title>Proyecto 2017</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/main.css' %}">
+
+  </head>
+    <body>
+      <div class="container">
+        <h2>Tabla llega</h2>
+          <p>La tabla muestra a los individuos que llegan a los centros</p>
+        <div>
+          <table class = 'table'>
+            <tr>
+              <th>Individuo</th>
+              <th>Centro</th>
+              <th>Dia</th>
+              <th>Hora</th>
+              <th>Tiempo (minutos)</th>
+            </tr>
+            {% if result %}
+              {% for tiempos in result %}
+                <tr>
+                  <th>{{tiempos.id_individuo.id}}</th>
+                  <th> {{tiempos.id_centro.id}}</th>
+                  <th> {% if tiempos.dia == 0 %} {{dias.0}} {% elif tiempos.dia == 1 %}{{dias.1}}{% elif tiempos.dia == 2 %}{{ dias.2 }}{% elif tiempos.dia == 3 %}{{ dias.3 }}{% elif tiempos.dia == 4 %}{{ dias.4 }}{% elif tiempos.dia == 5 %}{{ dias.5 }}{% elif tiempos.dia == 6 %}{{ dias.6 }}{% endif %}</th>
+                  <th> {{tiempos.hora}}</th>
+                  <th> {{tiempos.tiempo_auto}}</th>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <p>No hay ningun sector.</p>
+            {% endif %}
+          </table>
+        </div>
+      </div>
+    </body>
+</html>

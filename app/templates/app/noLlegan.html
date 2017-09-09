@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <meta charset="UTF-8">
+		<title>Proyecto 2017</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'app/css/main.css' %}">
+
+  </head>
+    <body>
+      <div class="container">
+        <h2>Tabla no Llega</h2>
+          <p>La tabla muestra a los individuos que no llegan a los centros fuera de sus horarios de trabajo</p>
+        <div>
+          <table class = 'table'>
+            <tr>
+              <th>Individuo</th>
+              <th>Centro</th>
+              <th>Dia</th>
+              <th>Hora</th>
+              <th>Tiempo (minutos)</th>
+            </tr>
+            {% if result %}
+              {% for tiempos in result %}
+                <tr>
+                  <th>{{tiempos.id_individuo.id}}</th>
+                  <th> {{tiempos.id_centro.id}}</th>
+                  <th> {{tiempos.dia}}</th>
+                  <th> {{dias[tiempos.hora]}}</th>
+                  <th> {{tiempos.tiempo_auto}}</th>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <p>No hay ningun sector.</p>
+            {% endif %}
+          </table>
+        </div>
+      </div>
+    </body>
+</html>

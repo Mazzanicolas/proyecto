@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<meta charset="UTF-8">
+		<title>Proyecto 2017</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
+    <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+  </head>
+  <body>
+    <!--NavBar-->
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+          <!--1-->
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Opciones <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">Separated link</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul>
+            </li>
+          <!--1-->
+          <!--2-->
+          <li><a href="#" data-toggle="modal" data-target="#config">Configuración</a></li>
+          <!--2-->
+          <!--3-->
+          <li><a href="#" data-toggle="modal" data-target="#sim">Simulación</a></li>
+          <!--3-->
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!--NavBar-->
+    <!--Tabla-->
+    <!--2-Config-->
+    <div id="config" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+      <!-- Modal content-->
+        <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Configuración</h4>
+        </div>
+        <div class="modal-body">
+          <!--Tiempo transporte-->
+          <div class="panel-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">Tiempo Maximo de Transporte</span>
+              <input type="text" name = tiempoTransporte class="form-control" placeholder="60 minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+            </div>
+          </div>
+          <!--Tiempo transporte-->
+          <!--Tiempo consulta-->
+          <div class="panel-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">Tiempo de Consulta</span>
+              <input type="text" name = tiempoConsulta class="form-control" placeholder="30 minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+            </div>
+          </div>
+          <!--Tiempo consulta-->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Guardar</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!--2-Config-->
+  <!--3-Config-->
+  <div id="sim" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+    <form action='res/'  method="POST">
+    {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Simulación</h4>
+        </div>
+        <div class="modal-body">
+          <!--Transporte-->
+          <div class="panel panel-default">
+            <div class="panel-body">
+              Transporte
+            </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="default" checked> Utilizar predeterminadas</label></br>
+              <div id="transportesContainer" hidden="true">
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio1" value="auto"> Auto </label>
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio2" value="caminando"> Caminando </label>
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio3" value="omnibus"> Omnibus </label></br>
+              </div>
+            </div>
+          <!--Transporte-->
+          </div>
+          <!--Anclas-->
+          <div class="panel panel-default">
+            <div class="panel-body"> Anclas Temporales </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="trabajo" checked> Trabajo </label>
+              <label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="jardin" checked> Jardin </label></br>
+            </div>
+          </div>
+          <!--Anclas-->
+          <!--Mutualistas-->
+          <div class="panel panel-default">
+          <div class="panel-body"> Mutualistas </div>
+          <div class="panel-footer">
+            <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkB" value="default" checked> Utilizar predeterminadas</label></br>
+              <div id="mutualistasContainer"  hidden="true">
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ignorar"> Por defecto </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASSE"> ASSE </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASOCIACION ESPANOLA"> As. Española </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASA DE GALICIA"> Casa de Galicia </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASMU"> CASMU </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CIRCULO CATOLICO"> Circulo Catolico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="COSEM"> Cosem </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CUDAM"> Cudam </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="GREMCA"> Gremca </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL BRITANICO"> H. Britanico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL EVANGELICO"> H. Evangelico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MEDICA URUGUAYA"> Medica Uruguaya </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MP"> MP </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="SMI"> SMI </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="UNIVERSAL"> Universal </label>
+              </div>
+            </div>
+          </div>
+          <!--Mutualistas-->
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Calcular</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+      </form>
+    </div>
+  </div>
+  <!--3-Config-->
+  </body>
+  <footer class="container-fluid">UCU ©2017</footer>
+  {% load static %}
+  <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
+  <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
+  <script type="text/javascript">
+  //Mostrar mutualustas
+    $(document).ready(function(){
+    $('input[name="checkB"]').change(function(){
+        if(this.checked)
+            $('#mutualistasContainer').hide();
+        else
+            $('#mutualistasContainer').show();
+        });
+    });
+    //Mostrar transportes
+      $(document).ready(function(){
+      $('input[name="checkM"]').change(function(){
+          if(this.checked)
+              $('#transportesContainer').hide();
+          else
+              $('#transportesContainer').show();
+          });
+      });
+  </script>
+</html>
