@@ -64,7 +64,7 @@
           <!--Tiempo consulta-->
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Guardar</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="showAlert()">Guardar</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
           </div>
         </div>
@@ -179,7 +179,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Cargar</button>
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Cargar</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
@@ -207,7 +207,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Descargar</button>
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Descargar</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
@@ -254,7 +254,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Importar</button>
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Importar</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
@@ -282,7 +282,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Descargar</button>
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Descargar</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
@@ -291,7 +291,7 @@
   <!--1.4-Config-->
   <!--1-alert-->
   <div id="implementar" class="alert alert-info alert-dismissable" style="display: none;">
-    <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+    <a href="#" class="close" onclick="showAlert()">×</a>
     <strong> Función no implementada</strong> en la demo.
   </div>
   <!--1-alert-->
@@ -318,5 +318,14 @@
               $('#transportesContainer').show();
           });
       });
+      //Show Hide alert
+      function showAlert() {
+        var x = document.getElementById('implementar');
+        if (x.style.display === 'none') {
+            x.style.display = 'block';
+        } else {
+            x.style.display = 'none';
+        }
+    }
   </script>
 </html>
