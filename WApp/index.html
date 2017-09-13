@@ -18,7 +18,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Opciones <span class="caret"></span></a>
               <ul class="dropdown-menu">
                 <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos</a></li>
-                <li><a href="#">Respaldar Datos</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#respaldar_datos">Respaldar Datos</a></li>
                 <li role="separator" class="divider"></li>
                 <li><a href="#">Importar Matriz</a></li>
                 <li><a href="#">Exportar Matriz</a></li>
@@ -149,6 +149,12 @@
         <h4 class="modal-title">Cargar Datos</h4>
       </div>
       <div class="modal-body">
+        <!--alert-->
+        <div class="alert alert-danger alert-dismissable">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+          <strong>Advertencia: </strong> Se remplazan los datos existentes en la base de datos.
+        </div>
+        <!--alert-->
         <form>
           <fieldset class="form-group">
             <p>Seleccione los datos a cargar</p>
@@ -173,15 +179,41 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Guardar</button>
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Cargar</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
     </div>
   </div>
   <!--1-Config-->
-
-
+  <!--1.2-Config-->
+  <div id="respaldar_datos" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+      <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Respaldar Datos</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <fieldset class="form-group">
+            <p>Seleccione los datos a respaldar</p>
+          </fieldset>
+          <div class="panel-footer">
+            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked> Conjunto de datos de mutualistas </label>
+            <label class="checkbox-inline"><input type="checkbox" id="downlaodBox" value="download_personas" checked> Conjunto de datos de personas </label></br>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="implementar.style.display='block';">Descargar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--1.2-Config-->
   <!--1-alert-->
   <div id="implementar" class="alert alert-info alert-dismissable" style="display: none;">
     <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
