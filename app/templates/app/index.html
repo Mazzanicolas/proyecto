@@ -44,6 +44,8 @@
     <div id="config" class="modal fade" role="dialog">
       <div class="modal-dialog">
       <!-- Modal content-->
+      <form action=''  method="POST">
+      {% csrf_token %}
         <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -54,7 +56,7 @@
           <div class="panel-body">
             <div class="input-group">
               <span class="input-group-addon" id="sizing-addon2">Tiempo Maximo de Transporte</span>
-              <input type="text" name = tiempoTransporte class="form-control" placeholder="60 minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+              <input type="text" name = tiempoTransporte class="form-control" placeholder= "{{tiempoMaximo}} Minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
             </div>
           </div>
           <!--Tiempo transporte-->
@@ -62,16 +64,17 @@
           <div class="panel-body">
             <div class="input-group">
               <span class="input-group-addon" id="sizing-addon2">Tiempo de Consulta</span>
-              <input type="text" name = tiempoConsulta class="form-control" placeholder="30 minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+              <input type="text" name = tiempoConsulta class="form-control" placeholder= "{{tiempoConsulta}} Minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
             </div>
           </div>
           <!--Tiempo consulta-->
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Guardar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
           </div>
         </div>
+      </form>
       </div>
     </div>
   <!--2-Config-->

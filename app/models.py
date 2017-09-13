@@ -11,7 +11,7 @@ class Sector(models.Model):
         through='SectorTiempo',
         symmetrical=False,
     )
-    
+
 class TipoLugar(models.Model):
     id_tipoLugar = models.IntegerField(primary_key = True)
     nombre = models.CharField(max_length = 100)
@@ -37,6 +37,10 @@ class SectorTiempo(models.Model):
     sector1 = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name='origen')
     sector2 = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name='destino')
     time = models.FloatField()
+
+class Settings(models.Model):
+    setting = models.CharField(max_length = 100, primary_key = True)
+    value = models.CharField(max_length = 100)
 
 class Individuo(models.Model):
     tipo_transporte = models.IntegerField(blank=True, null=True)
