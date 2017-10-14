@@ -56,6 +56,7 @@ class Pediatra(models.Model):
 
 
 class Prestador(models.Model):
+    id = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=100)
 
 class Sector(models.Model):
