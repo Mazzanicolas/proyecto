@@ -1,102 +1,79 @@
 from django.db import models
 
 # Create your models here.
-class Sector(models.Model):
-    x_centroide = models.FloatField(blank=True, null=True)
-    y_centroide = models.FloatField(blank=True, null=True)
-    id_shape = models.IntegerField(blank=True, null=True)
-    tipoSector = models.IntegerField(blank=True, null=True)
-    sectors = models.ManyToManyField(
-        'self',
-        through='SectorTiempo',
-        symmetrical=False,
-    )
 
-class TipoLugar(models.Model):
-    id_tipoLugar = models.IntegerField(primary_key = True)
-    nombre = models.CharField(max_length = 100)
-
-    class Meta:
-        unique_together = (('id_tipoLugar', 'nombre'),)
-
-class Lugar(models.Model):
+class AnclaTemporal(models.Model):
     x_coord = models.FloatField()
     y_coord = models.FloatField()
-    id_tipoLugar = models.ForeignKey(TipoLugar,on_delete = models.CASCADE, related_name = 'id_tipo_lugar')
-    id_sector_aut = models.ForeignKey('Sector', models.DO_NOTHING, db_column='id_sector_aut',related_name = "sector_auto")
-    id_sector_cam = models.ForeignKey('Sector', models.DO_NOTHING, db_column='id_sector_cam', related_name = 'sector_caminando')
+    tipo = models.CharField(max_length=100)
+    hora_inicio = models.IntegerField(blank=True, null=True)
+    hora_fin = models.IntegerField(blank=True, null=True)
+    dias = models.CharField(max_length = 20)
+    sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_auto')
+    sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_caminando')
 
-class Prestador(models.Model):
-    nombre = models.CharField(max_length=100, blank=True, null=True)
-    centros = models.ManyToManyField(
-        Lugar,
-        through='LugarPrestador',
-        symmetrical=False,
-    )
-class SectorTiempo(models.Model):
-    sector1 = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name='origen')
-    sector2 = models.ForeignKey(Sector, on_delete=models.CASCADE,related_name='destino')
-    time = models.FloatField()
+class Centro(models.Model):
+    id_centro = models.IntegerField(primary_key = True)
+    x_coord = models.FloatField()
+    y_coord = models.FloatField()
+    sector = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True)
+    direccion = models.CharField(max_length=100, blank=True, null=True)
+    prestador = models.ForeignKey('Prestador', models.CASCADE)
 
 class Settings(models.Model):
-    setting = models.CharField(max_length = 100, primary_key = True)
-    value = models.CharField(max_length = 100)
+    setting = models.CharField(primary_key=True, max_length=100)
+    value = models.CharField(max_length=100, blank=True, null=True)
 
 class Individuo(models.Model):
-    tipo_transporte = models.IntegerField(blank=True, null=True)
-    id_prestador = models.ForeignKey(Prestador, models.DO_NOTHING, db_column='id_prestador', blank=True, null=True)
-    id_hogar = models.ForeignKey(Lugar, models.DO_NOTHING, db_column='id_hogar', blank=True, null=True, related_name='id_hogar')
-    id_trabajo = models.ForeignKey(Lugar, models.DO_NOTHING, db_column='id_trabajo', blank=True, null=True,related_name='id_trabajo')
-    id_jardin = models.ForeignKey(Lugar, models.DO_NOTHING, db_column='id_jardin', blank=True, null=True,related_name='id_jardin')
-    centros = models.ManyToManyField(
-        Lugar,
-        through='IndividuoTiempoCentro',
-        symmetrical=False,
-        related_name = 'centros',
-    )
-    anclas = models.ManyToManyField(
-        Lugar,
-        through='AnclaTemporal',
-        symmetrical=False,
-        related_name = 'anclas',
+    id = models.IntegerField(primary_key=True)
+    tipo_transporte = models.ForeignKey('TipoTransporte', models.DO_NOTHING)
+    prestador = models.ForeignKey('Prestador', models.CASCADE)
+    hogar = models.ForeignKey(AnclaTemporal, models.CASCADE, related_name='hogar')
+    trabajo = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='trabajo')
+    jardin = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='jardin')
 
-    )
 
 class IndividuoTiempoCentro(models.Model):
-    id_individuo = models.ForeignKey(Individuo, models.DO_NOTHING, db_column='id_individuo', related_name = 'id_individuo')
-    id_centro = models.ForeignKey(Lugar, models.DO_NOTHING, db_column='id_centro',related_name ='id_centro')
+    individuo = models.ForeignKey(Individuo, models.CASCADE)
+    centro = models.ForeignKey(Centro, models.CASCADE)
     dia = models.IntegerField()
     hora = models.IntegerField()
     tiempo_caminando = models.IntegerField(blank=True, null=True)
-    tiempo_auto = models.IntegerField(blank=True, null=True)
     tiempo_omnibus = models.IntegerField(blank=True, null=True)
+    tiempo_auto = models.IntegerField(blank=True, null=True)
 
     class Meta:
-        unique_together = (('id_individuo', 'id_centro', 'dia', 'hora'),)
+        unique_together = (('individuo', 'centro', 'dia', 'hora'),)
 
-
-class AnclaTemporal(models.Model):
-    id_individuo = models.ForeignKey(Individuo, models.DO_NOTHING, db_column='id_individuo', related_name = 'id_individuoAncla')
-    id_lugar = models.ForeignKey(Lugar, models.DO_NOTHING, db_column='id_lugar', related_name='id_lugarAncla')
-    dia = models.IntegerField()
-    horaInicio = models.FloatField(blank=True,null=True)
-    horaFin = models.FloatField(blank=True,null=True)
-
-    class Meta:
-        unique_together = (('id_individuo', 'id_lugar', 'dia'),)
-class TipoTransporte(models.Model):
-    id_tipoTransporte = models.IntegerField(primary_key = True)
-    nombre = models.CharField(max_length=100)
-
-    class Meta:
-        unique_together = (('id_tipoTransporte', 'nombre'),)
-
-class LugarPrestador(models.Model):
-    id_prestador = models.ForeignKey(Prestador, models.DO_NOTHING, db_column='id_prestador')
-    id_lugar = models.ForeignKey(Lugar, models.DO_NOTHING, db_column='id_lugar')
+class Pediatra(models.Model):
+    centro = models.ForeignKey(Centro, models.CASCADE)
     dia = models.IntegerField()
     hora = models.IntegerField()
-    cant_pediatras = models.IntegerField(blank=True, null=True)
+    cantidad_pediatras = models.IntegerField()
 
     class Meta:
-        unique_together = (('id_prestador', 'id_lugar', 'dia', 'hora'),)
+        unique_together = (('centro', 'dia', 'hora'),)
+
+
+class Prestador(models.Model):
+    nombre = models.CharField(max_length=100)
+
+class Sector(models.Model):
+    x_centroide = models.IntegerField()
+    y_centroide = models.IntegerField()
+    tipo_sector = models.IntegerField()
+    id_shape = models.IntegerField()
+
+class SectorTiempo(models.Model):
+    sector_1 = models.ForeignKey(Sector, models.CASCADE,related_name='sector_1')
+    sector_2 = models.ForeignKey(Sector, models.CASCADE,related_name='sector_2')
+    tiempo = models.IntegerField()
+    distancia = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        unique_together = (('sector_1', 'sector_2'),)
+
+
+class TipoTransporte(models.Model):
+    id = models.IntegerField(primary_key=True)
+    nombre = models.CharField(max_length=100)

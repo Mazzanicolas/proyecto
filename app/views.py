@@ -1,9 +1,15 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, Prestador, AnclaTemporal, Lugar, LugarPrestador, SectorTiempo,IndividuoTiempoCentro
+from app.models import Individuo, Settings, Prestador, AnclaTemporal, SectorTiempo,IndividuoTiempoCentro, Centro
 
 def index(request):
     post = request.POST
+    if(not Settings.objects.filter(setting = "tiempoMaximo")):
+        s = Settings(setting = "tiempoMaximo",value = "60")
+        s.save()
+    if(not Settings.objects.filter(setting = "tiempoConsulta")):
+        s = Settings(setting = "tiempoConsulta",value = "30")
+        s.save()
     if(post):
         tiempoMax = post.get("tiempoTransporte")
         tiempoCons = post.get("tiempoConsulta")
@@ -18,7 +24,7 @@ def index(request):
     maxT = Settings.objects.get(setting = "tiempoMaximo").value
     consT = Settings.objects.get(setting = "tiempoConsulta").value
     context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT}
-    return render(request, 'app/index.html',context)
+    return render(request, 'app/index2.html',context)
 def res(request):
     isJardin = request.POST.get("anclaJar")
     isTrabajo = request.POST.get("anclaTra")
@@ -38,69 +44,68 @@ def res(request):
     for dia in range(7):
         for individuo in individuos:
             if(request.POST.get("checkM") == "default"):
-                transporte = individuo.tipo_transporte
+                transporte = individuo.tipo_transporte.id
             else:
                 transporte = request.POST.get("transporteRadio")
             if (pr == 'default'):
-                prest = prestadores.filter(nombre = individuo.id_prestador.nombre)
+                prest = [individuo.id_prestador]
             elif (pr == 'ignorar'):
                 prest = prestadores
             else:
                 prest = prestadores.filter(nombre = pr)
             anclas = AnclaTemporal.objects.filter(id_individuo = individuo.id)
             if (isTrabajo):
-                trabajo = anclas.filter(id_lugar__id_tipoLugar__nombre = 'Trabajo')
+                trabajo = anclas.filter(tipo = 'Trabajo')
             else:
                 trabajo = None
             if (isJardin):
-                jardin = anclas.filter(id_lugar__id_tipoLugar__nombre = 'Jardin')
+                jardin = anclas.filter(tipo = 'Jardin')
             else:
                 jardin = None
             hogar =  individuo.id_hogar
             secHogar = getSector(hogar, transporte)
-            print(tiempoMaximo)
             if(trabajo and isTrabajo):
-                secTrabajo = getSector(trabajo.first().id_lugar, transporte)
+                secTrabajo = getSector(trabajo.first(), transporte)
                 for prestador in prest:
-                    centros = LugarPrestador.objects.filter(id_prestador__id = prestador.id, dia = dia)
+                    centros = Centro.objects.filter(id_prestador__id = prestador.id, dia = dia)
                     for centro in centros:
-                        secCentro = getSector(centro.id_lugar, transporte)
-                        if(centro.hora < trabajo.first().horaInicio):
+                        secCentro = getSector(centro, transporte)
+                        if(centro.hora < trabajo.first().hora_inicio):
                             if(jardin and isJardin):
-                                secJardin = getSector(jardin.first().id_lugar,transporte)
+                                secJardin = getSector(jardin.first(),transporte)
                                 tiempoViaje = calcularTiempos([secCentro.id, secJardin.id, secTrabajo])
                             else:
                                 tiempoViaje = calcularTiempos([secCentro.id, secHogar.id, secTrabajo])
-                            if(trabajo.first().horaInicio >=  centro.hora +tiempoViaje + tiempoConsulta/60 and tiempoViaje < tiempoMaximo/60):
+                            if(trabajo.first().hora_inicio >=  centro.hora +tiempoViaje + tiempoConsulta/60 and tiempoViaje < tiempoMaximo/60):
                                 q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                 q.save()
-                        if(centro.hora > trabajo.first().horaFin):
+                        if(centro.hora > trabajo.first().hora_fin):
                             tiempoViaje = 999999
                             if(jardin and isJardin):
                                 secJardin = getSector(jardin.first().id_lugar,transporte)
                                 tiempoViaje = calcularTiempos([secTrabajo.id, secJardin.id, secCentro.id])
                             else:
                                 tiempoViaje = calcularTiempos([secTrabajo.id, secHogar.id, secCentro.id])
-                            if(centro.hora >=  trabajo.first().horaFin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
+                            if(centro.hora >=  trabajo.first().hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
                                 q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                 q.save()
             else:
                 for prestador in prest:
-                    centros = LugarPrestador.objects.filter(id_prestador__id = prestador.id, dia = dia)
+                    centros = Centro.objects.filter(id_prestador__id = prestador.id, dia = dia)
                     for centro in centros:
-                        secCentro = getSector(centro.id_lugar, transporte)
+                        secCentro = getSector(centro, transporte)
                         if(isJardin and jardin):
                             tiempoViaje = 9999999
-                            if(centro.hora < jardin.first().horaInicio):
-                                secJardin = getSector(jardin.first().id_lugar,transporte)
+                            if(centro.hora < jardin.first().hora_inicio):
+                                secJardin = getSector(jardin.first(),transporte)
                                 tiempoViaje = calcularTiempos([secCentro.id, secJardin.id])
-                                if(jardin.first().horaInicio >=  centro.hora + tiempoViaje + tiempoConsulta/60 and tiempoViaje < tiempoMaximo/60):
+                                if(jardin.first().hora_inicio >=  centro.hora + tiempoViaje + tiempoConsulta/60 and tiempoViaje < tiempoMaximo/60):
                                     q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
-                            if(centro.hora > jardin.first().horaFin):
-                                secJardin = getSector(jardin.first().id_lugar,transporte)
+                            if(centro.hora > jardin.first().hora_fin):
+                                secJardin = getSector(jardin.first(),transporte)
                                 tiempoViaje = calcularTiempos([secJardin.id, secCentro.id])
-                                if(centro.hora >=  jardin.first().horaFin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
+                                if(centro.hora >=  jardin.first().hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
                                     q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
                         else:
@@ -132,23 +137,23 @@ def calcAll(request):
                     centros = LugarPrestador.objects.filter(id_prestador__id = prestador.id, dia = dia)
                     for centro in centros:
                         secCentro = centro.id_lugar.id_sector_aut
-                        if(centro.hora < trabajo.first().horaInicio):
+                        if(centro.hora < trabajo.first().hora_inicio):
                             if(jardin):
                                 secJardin = jardin.first().id_lugar.id_sector_aut
                                 tiempoViaje = calcularTiempos([secCentro.id, secJardin.id, secTrabajo])
                             else:
                                 tiempoViaje = calcularTiempos([secCentro.id, secHogar.id, secTrabajo])
-                            if(trabajo.first().horaInicio >=  centro.hora +tiempoViaje + 30/60):
+                            if(trabajo.first().hora_inicio >=  centro.hora +tiempoViaje + 30/60):
                                 q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                 q.save()
-                        if(centro.hora > trabajo.first().horaFin):
+                        if(centro.hora > trabajo.first().hora_fin):
                             tiempoViaje = 0
                             if(jardin):
                                 secJardin = jardin.first().id_lugar.id_sector_aut
                                 tiempoViaje = calcularTiempos([secTrabajo.id, secJardin.id, secCentro.id])
                             else:
                                 tiempoViaje = calcularTiempos([secTrabajo.id, secHogar.id, secCentro.id])
-                            if(centro.hora >=  trabajo.first().horaFin + tiempoViaje):
+                            if(centro.hora >=  trabajo.first().hora_fin + tiempoViaje):
                                 q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                 q.save()
             else:
@@ -175,14 +180,14 @@ def noLlegan(request):
                     #print(centros.count())
                     for centro in centros:
                         secCentro = centro.id_lugar.id_sector_aut
-                        if(centro.hora < trabajo.first().horaInicio):
+                        if(centro.hora < trabajo.first().hora_inicio):
                             if(jardin):
                                 secJardin = jardin.first().id_lugar.id_sector_aut
                                 tiempoHogarCentro = SectorTiempo.objects.get(sector1__id = secHogar.id, sector2__id = secCentro.id).time
                                 tiempoCentroJardin = SectorTiempo.objects.get(sector1__id = secCentro.id, sector2__id = secJardin.id).time
                                 tiempoJardinTrabajo = SectorTiempo.objects.get(sector1__id = secJardin.id, sector2__id = secTrabajo.id).time
                                 tiempoViaje = (tiempoCentroJardin/60 + tiempoJardinTrabajo/60 + tiempoHogarCentro/60)/60
-                                if(trabajo.first().horaInicio < centro.hora + tiempoViaje + 30/60):
+                                if(trabajo.first().hora_inicio < centro.hora + tiempoViaje + 30/60):
                                     q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
                             else:
@@ -190,23 +195,23 @@ def noLlegan(request):
                                 tiempoHogarTrabajo = SectorTiempo.objects.get(sector1__id = secHogar.id, sector2__id = secTrabajo.id).time
                                 tiempoViaje = centro.hora + (tiempoCentroHogar/60 + tiempoHogarTrabajo/60)/60
                                 #print(tiempoViaje)
-                                if(trabajo.first().horaInicio <  centro.hora + tiempoViaje + 30/60):
+                                if(trabajo.first().hora_inicio <  centro.hora + tiempoViaje + 30/60):
                                     q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
-                        if(centro.hora > trabajo.first().horaFin):
+                        if(centro.hora > trabajo.first().hora_fin):
                             if(jardin):
                                 secJardin = jardin.first().id_lugar.id_sector_aut
                                 tiempoTJ= SectorTiempo.objects.get(sector1__id = secTrabajo.id, sector2__id = secJardin.id).time
                                 tiempoJC = SectorTiempo.objects.get(sector1__id = secJardin.id, sector2__id = secCentro.id).time
                                 tiempoViaje = (tiempoTJ/60 + tiempoJC/60)/60
-                                if(centro.hora <  trabajo.first().horaFin + tiempoViaje):
+                                if(centro.hora <  trabajo.first().hora_fin + tiempoViaje):
                                     q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
                             else:
                                 tiempoTH= SectorTiempo.objects.get(sector1__id = secTrabajo.id, sector2__id = secHogar.id).time
                                 tiempoHC = SectorTiempo.objects.get(sector1__id = secHogar.id, sector2__id = secCentro.id).time
                                 tiempoViaje = (tiempoTH/60 + tiempoHC/60)/60
-                                if(centro.hora < trabajo.first().horaFin + tiempoViaje):
+                                if(centro.hora < trabajo.first().hora_fin + tiempoViaje):
                                     q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro.id_lugar, dia = dia, hora = centro.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
             else:
@@ -229,9 +234,9 @@ def calcularTiempos(anclas):
 def getSector(lugar, transporte):
     #print(transporte)
     if(transporte == 'auto' or transporte == 1):
-        return lugar.id_sector_aut
+        return lugar.id_sector_auto
     elif (transporte == 'caminando' or transporte == 0):
-        return lugar.id_sector_cam
+        return lugar.id_sector_caminando
     else:
         return lugar.id_sector_aut
 def saveTimes(request):

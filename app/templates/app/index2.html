@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+  <head>
+		<meta charset="UTF-8">
+		<title>Proyecto 2017</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
+    <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+    </head>
+  <body>
+    <!--NavBar-->
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+          <!--1-->
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Opciones <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#respaldar_datos">Respaldar Datos</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="#" data-toggle="modal" data-target="#importar_matriz">Importar Matriz</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#exportar_matriz">Exportar Matriz</a></li>
+              </ul>
+            </li>
+          <!--1-->
+          <!--2-->
+          <li><a href="#" data-toggle="modal" data-target="#config">Configuración</a></li>
+          <!--2-->
+          <!--3-->
+          <li><a href="#" data-toggle="modal" data-target="#sim">Ejecutar</a></li>
+          <!--3-->
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!--NavBar-->
+    <!--2-Config-->
+    <div id="config" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+      <!-- Modal content-->
+      <form action=''  method="POST">
+      {% csrf_token %}
+        <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Configuración</h4>
+        </div>
+        <div class="modal-body">
+          <!--Tiempo transporte-->
+          <div class="panel-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">Tiempo Maximo de Transporte</span>
+              <input type="text" name = tiempoTransporte class="form-control" placeholder="{{tiempoMaximo}} minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+            </div>
+          </div>
+          <!--Tiempo transporte-->
+          <!--Tiempo consulta-->
+          <div class="panel-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">Tiempo de Consulta</span>
+              <input type="text" name = tiempoConsulta class="form-control" placeholder="{{tiempoConsulta}} minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+            </div>
+          </div>
+          <!--Tiempo consulta-->
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" >Guardar</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          </div>
+        </div>
+      </form>
+      </div>
+    </div>
+  <!--2-Config-->
+  <!--3-Config-->
+  <div id="sim" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+    <form action='res/'  method="POST">
+    {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Ejecutar</h4>
+        </div>
+        <div class="modal-body">
+          <!--Transporte-->
+          <div class="panel panel-default">
+            <div class="panel-body">
+              Transporte
+            </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="default" checked> Utilizar predeterminadas</label></br>
+              <div id="transportesContainer" hidden="true">
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio1" value="auto"> Auto </label>
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio2" value="caminando"> Caminando </label>
+                <label class="radio-inline disabled"><input type="radio" name="transporteRadio" id="inlineRadio3" value="omnibus" disabled> Omnibus </label></br>
+              </div>
+            </div>
+          <!--Transporte-->
+          </div>
+          <!--Anclas-->
+          <div class="panel panel-default">
+            <div class="panel-body"> Anclas Temporales </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="trabajo" checked> Trabajo </label>
+              <label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="jardin" checked> Jardin </label></br>
+            </div>
+          </div>
+          <!--Anclas-->
+          <!--Mutualistas-->
+          <div class="panel panel-default">
+          <div class="panel-body"> Mutualistas </div>
+          <div class="panel-footer">
+            <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkB" value="default" checked> Utilizar predeterminadas</label></br>
+              <div id="mutualistasContainer"  hidden="true">
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ignorar"> Por defecto </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASSE"> ASSE </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASOCIACION ESPANOLA"> As. Española </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASA DE GALICIA"> Casa de Galicia </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASMU"> CASMU </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CIRCULO CATOLICO"> Circulo Catolico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="COSEM"> Cosem </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CUDAM"> Cudam </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="GREMCA"> Gremca </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL BRITANICO"> H. Britanico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL EVANGELICO"> H. Evangelico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MEDICA URUGUAYA"> Medica Uruguaya </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MP"> MP </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="SMI"> SMI </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="UNIVERSAL"> Universal </label>
+              </div>
+            </div>
+          </div>
+          <!--Mutualistas-->
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Calcular</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </form>
+    </div>
+  </div>
+  <!--3-Config-->
+  <!--1-Config-->
+  <div id="cargar_datos" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+      <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Cargar Datos</h4>
+      </div>
+      <div class="modal-body">
+        <!--alert-->
+        <div class="alert alert-danger alert-dismissable">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+          <strong>Advertencia: </strong> Se remplazan los datos existentes en la base de datos.
+        </div>
+        <!--alert-->
+        <form>
+          <fieldset class="form-group">
+            <p>Seleccione los datos a cargar</p>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                Conjunto de datos para mutualistas
+              </label>
+            </div>
+            <div class="form-check">
+            <label class="form-check-label">
+                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
+                Conjunto de datos para personas
+              </label>
+            </div>
+          </fieldset>
+          <div class="form-group">
+            <label for="exampleInputFile">Seleccione un archivo</label>
+            <input type="file" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
+            <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Cargar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--1-Config-->
+  <!--1.2-Config-->
+  <div id="respaldar_datos" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+      <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Respaldar Datos</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <fieldset class="form-group">
+            <p>Seleccione los datos a respaldar</p>
+          </fieldset>
+          <div class="panel-footer">
+            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked> Conjunto de datos de mutualistas </label>
+            <label class="checkbox-inline"><input type="checkbox" id="downlaodBox" value="download_personas" checked> Conjunto de datos de personas </label></br>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Descargar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--1.2-Config-->
+  <!--1.3-Config-->
+  <div id="importar_matriz" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+      <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Importar Matriz</h4>
+      </div>
+      <div class="modal-body">
+        <!--alert-->
+        <div class="alert alert-danger alert-dismissable">
+          <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
+          <strong>Advertencia: </strong> Se remplazan los datos existentes en la base de datos.
+        </div>
+        <!--alert-->
+        <form>
+          <fieldset class="form-group">
+            <p>Seleccione la matriz a cargar</p>
+            <div class="form-check">
+              <label class="form-check-label">
+                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                Matriz transporte privado
+              </label>
+            </div>
+            <div class="form-check">
+            <label class="form-check-label">
+                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
+                Matriz caminando
+              </label>
+            </div>
+          </fieldset>
+          <div class="form-group">
+            <label for="exampleInputFile">Seleccione un archivo</label>
+            <input type="file" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
+            <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Importar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--1.3-Config-->
+  <!--1.4-Config-->
+  <div id="exportar_matriz" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+      <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Exportar Matriz</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <fieldset class="form-group">
+            <p>Seleccione los datos a exportar</p>
+          </fieldset>
+          <div class="panel-footer">
+            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked>Matriz transporte privado</label>
+            <label class="checkbox-inline"><input type="checkbox" id="downlaodBox" value="download_personas" checked> Matriz caminando </label></br>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Descargar</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--1.4-Config-->
+  <!--1-alert-->
+  <div id="implementar" class="alert alert-info alert-dismissable" style="display: none;">
+    <a href="#" class="close" onclick="showAlert()">×</a>
+    <strong> Función no implementada</strong> en la demo.
+  </div>
+  <!--1-alert-->
+  </body>
+  <footer class="container-fluid">UCU ©2017</footer>
+  {% load static %}
+  <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
+  <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
+  <script type="text/javascript">
+  //Mostrar mutualustas
+    $(document).ready(function(){
+    $('input[name="checkB"]').change(function(){
+        if(this.checked)
+            $('#mutualistasContainer').hide();
+        else
+            $('#mutualistasContainer').show();
+        });
+    });
+    //Mostrar transportes
+      $(document).ready(function(){
+      $('input[name="checkM"]').change(function(){
+          if(this.checked)
+              $('#transportesContainer').hide();
+          else
+              $('#transportesContainer').show();
+          });
+      });
+      //Show Hide alert
+      function showAlert() {
+        var x = document.getElementById('implementar');
+        if (x.style.display === 'none') {
+            x.style.display = 'block';
+        } else {
+            x.style.display = 'none';
+        }
+    }
+  </script>
+</html>
