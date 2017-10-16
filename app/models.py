@@ -63,7 +63,7 @@ class Sector(models.Model):
     x_centroide = models.IntegerField()
     y_centroide = models.IntegerField()
     tipo_sector = models.IntegerField()
-    id_shape = models.IntegerField()
+    shape = models.IntegerField()
 
 class SectorTiempo(models.Model):
     sector_1 = models.ForeignKey(Sector, models.CASCADE,related_name='sector_1')

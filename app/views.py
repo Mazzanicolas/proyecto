@@ -5,6 +5,8 @@ import shapely
 import shapefile
 from omnibus import get_horarios, load_nodos, busqueda
 
+shapeAuto = None
+shapeCaminando = None
 global horarios
 global nodos
 horarios = None
@@ -137,5 +139,27 @@ def getSector(lugar, transporte):
         else:
             return lugar
     return None
+def cargarSectores():
+    sf = shapefile.Reader('okkk.shp')
+    global shapesAuto = sf.shapes()
+    sf = shapefile.Reader('okkk.shp')
+    global shapesCaminando = sf.shapes()
+    for i in len(shapesAuto):
+        centroide = centroid(shapesAuto[i])
+        sector = Sector(centroide.x,centroide.y,"Auto",i)
+        sector.save()
+    for i in len(shapeCaminando):
+        centroide = centroid(shapesCaminando[i])
+        sector = Sector(centroid.x,centroid.y,"Caminando",i+(len(shapesAuto)))
+
+def centroid(shape):
+        poligono = Polygon(shape.points)
+        if poligono.is_valid:
+            return poligono.representative_point()
+        else:
+            return poligono.centroid
+
+
+
 def saveTimes(request):
     return render(request, 'app/index.html')
