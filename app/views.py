@@ -120,14 +120,12 @@ def calcularTiempos(anclas,transporte,nodos,horarios,hora):
         for i in range(0,len(anclas)-1):
             tiempoViaje += (SectorTiempo.objects.get(sector1 = anclas[i], sector2 = anclas[i+1]).time)/60
     else:
-        if horarios is None:
-            horarios = get_horarios('omnibus/horarios.csv')
-        if nodos is None:
-            nodos = load_nodos('omnibus/nodos.csv')
+        horarios = get_horarios('omnibus/horarios.csv') if horarios is None else horarios
+        nodos = load_nodos('omnibus/nodos.csv') if nodos is None else nodos
         for i in range(0,len(anclas)-1):
             coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
             coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
-            tiempoViaje += metodoGerman(ancals[i],anclas[i+1],nodos,horarios,hora)
+            tiempoViaje += busqueda(ancals[i],anclas[i+1],nodos,horarios,hora)
     return tiempoViaje/60
 def getSector(lugar, transporte):
     #print(transporte)
