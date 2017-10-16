@@ -3,7 +3,13 @@ from django.shortcuts import render
 from app.models import Individuo, Settings, Prestador, AnclaTemporal, SectorTiempo,IndividuoTiempoCentro, Centro
 import shapely
 import shapefile
-from app.GERMANPY import GERMANMETHOD
+from omnibus import get_horarios, load_nodos, busqueda
+
+global horarios
+global nodos
+horarios = None
+nodos = None
+
 def index(request):
     post = request.POST
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
@@ -108,14 +114,20 @@ def getTransporte(request,individuo):
     else:
         transporte = request.POST.get("transporteRadio")
     return transporte
-def calcularTiempos(anclas,transporte):
+def calcularTiempos(anclas,transporte,nodos,horarios,hora):
     tiempoViaje = 0
     if(not (transporte = "bus" or transporte = 2) ):
         for i in range(0,len(anclas)-1):
-        tiempoViaje += (SectorTiempo.objects.get(sector1 = anclas[i], sector2 = anclas[i+1]).time)/60
+            tiempoViaje += (SectorTiempo.objects.get(sector1 = anclas[i], sector2 = anclas[i+1]).time)/60
     else:
+        if horarios is None:
+            horarios = get_horarios('omnibus/horarios.csv')
+        if nodos is None:
+            nodos = load_nodos('omnibus/nodos.csv')
         for i in range(0,len(anclas)-1):
-        tiempoViaje += metodoGerman(ancals[i],anclas[i+1])
+            coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
+            coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
+            tiempoViaje += metodoGerman(ancals[i],anclas[i+1],nodos,horarios,hora)
     return tiempoViaje/60
 def getSector(lugar, transporte):
     #print(transporte)
