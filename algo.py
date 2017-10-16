@@ -1,32 +1,3 @@
-from django.http import HttpResponse
-from django.shortcuts import render
-from app.models import Individuo, Settings, Prestador, AnclaTemporal, SectorTiempo,IndividuoTiempoCentro, Centro
-import shapely
-import shapefile
-from app.GERMANPY import GERMANMETHOD
-def index(request):
-    post = request.POST
-    if(not Settings.objects.filter(setting = "tiempoMaximo")):
-        s = Settings(setting = "tiempoMaximo",value = "60")
-        s.save()
-    if(not Settings.objects.filter(setting = "tiempoConsulta")):
-        s = Settings(setting = "tiempoConsulta",value = "30")
-        s.save()
-    if(post):
-        tiempoMax = post.get("tiempoTransporte")
-        tiempoCons = post.get("tiempoConsulta")
-        if(tiempoMax):
-            maxT = Settings.objects.get(setting = "tiempoMaximo")
-            maxT.value = tiempoMax
-            maxT.save()
-        if(tiempoCons):
-            consT = Settings.objects.get(setting = "tiempoConsulta")
-            consT.value = tiempoCons
-            consT.save()
-    maxT = Settings.objects.get(setting = "tiempoMaximo").value
-    consT = Settings.objects.get(setting = "tiempoConsulta").value
-    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT}
-    return render(request, 'app/index2.html',context)
 def res(request):
   isJardin = request.POST.get("anclaJar")
     isTrabajo = request.POST.get("anclaTra")
@@ -50,7 +21,7 @@ def res(request):
         secTrabajo = getSector(trabajo)
         secJardin = getSector(jardin)
         for prestador in prest:
-            centros = Centro.objects.filter(prestador = prestador)
+            centros = Centro.objects.filter(id_prestador__id = prestador.id, dia = hora.dia)
             for centro in centros:
                 secCenro = getSector(centro)
                 horas = Pediatra.object.get(centro = centro)
@@ -62,7 +33,7 @@ def res(request):
                                 else:
                                     tiempoViaje = calcularTiempos([secCentro,secHogar, secTrabajo])
                                 if(trabajo.hora_inicio >=  centro.hora +tiempoViaje + tiempoConsulta/60 and tiempoViaje < tiempoMaximo/60):
-                                    q = IndividuoTiempoCentro(id = individuo , id_centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
+                                    q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
                             else:
                                 if(jardin and isJardin):
@@ -70,24 +41,24 @@ def res(request):
                                 else:
                                     tiempoViaje = calcularTiempos([secTrabajo, secHogar, secCentro])
                                 if(centro.hora >=  trabajo.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                    q = IndividuoTiempoCentro(id = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
+                                    q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
                         else:
                             if(isJardin and jardin):
                                 if(centro.hora < hora_inicio):
                                     tiempoViaje = calcularTiempos([secCentro, secJardin])
                                     if(jardin.hora_inicio >=  centro.hora + tiempoViaje + tiempoConsulta/60 and tiempoViaje < tiempoMaximo/60):
-                                        q = IndividuoTiempoCentro(id = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
+                                        q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
                                         q.save()
                                 if(centro.hora > jardin.hora_fin):
                                     tiempoViaje = calcularTiempos([secJardin, secCentro])
                                     if(centro.hora >=  jardin.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                        q = IndividuoTiempoCentro(id = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
+                                        q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
                                         q.save()
                             else:
                                 tiempoViaje = calcularTiempos([secHogar, secCentro])
                                 if(tiempoViaje < tiempoMaximo/60):
-                                    q = IndividuoTiempoCentro(id = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
+                                    q = IndividuoTiempoCentro(id_individuo = individuo , id_centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60)
                                     q.save()
     dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
     context = {'result': IndividuoTiempoCentro.objects.all(), 'dias':dias}
@@ -127,5 +98,3 @@ def getSector(lugar, transporte):
         else:
             return lugar
     return None
-def saveTimes(request):
-    return render(request, 'app/index.html')
