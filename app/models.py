@@ -16,7 +16,8 @@ class Centro(models.Model):
     id_centro = models.IntegerField(primary_key = True)
     x_coord = models.FloatField()
     y_coord = models.FloatField()
-    sector = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True)
+    sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_auto')
+    sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_caminando')
     direccion = models.CharField(max_length=100, blank=True, null=True)
     prestador = models.ForeignKey('Prestador', models.CASCADE)
 
@@ -62,7 +63,7 @@ class Prestador(models.Model):
 class Sector(models.Model):
     x_centroide = models.IntegerField()
     y_centroide = models.IntegerField()
-    tipo_sector = models.IntegerField()
+    tipo_sector = models.CharField(max_length = 20)
     shape = models.IntegerField()
 
 class SectorTiempo(models.Model):
