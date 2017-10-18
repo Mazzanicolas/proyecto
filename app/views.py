@@ -1,4 +1,4 @@
-from django.http import HttpRes`ponse
+from django.http import HttpResponse
 from django.shortcuts import render
 from app.models import Individuo, Settings, Prestador, AnclaTemporal,TipoTransporte,Sector, SectorTiempo,IndividuoTiempoCentro, Centro,Pediatra
 from shapely.geometry import Polygon, Point
@@ -115,6 +115,7 @@ def res(request):
             print("Mah Nigga")
             for centro in centros:
                 secCenro = getSector(centro,transporte)
+                print(centro.id_centro)
                 horas = Pediatra.objects.get(centro__id_centro = centro.id_centro)
                 print("xDDD")
                 for hora in horas:
@@ -268,7 +269,6 @@ def cargarCentroPediatras():
         lineas = lineas[1:]
         inti = 0
         horas = ["6.0","7.0","8.0","9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0","19.0","20.0","21.0"]
-        contador_dias = 11
         id = 0
         for caso in lineas:
         ## Centro
@@ -280,19 +280,18 @@ def cargarCentroPediatras():
             ## Pediatra
             #Centro, Dia, Hora, Cantidad de pediatras
             #dias = ["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"]
+                contador_dias = 11
                 for i in range(5):
-                    for j in horas:`
+                    for j in horas:
                         if(contador_dias >106): ##Arreglar
                             break
                         if ((caso[contador_dias]) == ''):
                             caso[contador_dias]=0
-                            pediatra = Pediatra (id,inti, i, parsear_hora(j), int(caso[contador_dias]))
-                            id+=1
+                            pediatra = Pediatra (centro_id = inti,dia = i, hora = parsear_hora(j), cantidad_pediatras = int(caso[contador_dias]))
                             pediatra.save()
                             contador_dias +=1
                         else:
-                            pediatra = Pediatra(id,inti, i, parsear_hora(j), int(caso[contador_dias]))
-                            id+=1
+                            pediatra = Pediatra (centro_id = inti,dia = i, hora = parsear_hora(j), cantidad_pediatras = int(caso[contador_dias]))
                             contador_dias +=1
                             pediatra.save()
                 inti +=1
