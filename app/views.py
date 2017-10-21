@@ -4,6 +4,7 @@ from app.models import Individuo, Settings, Prestador, AnclaTemporal,TipoTranspo
 from shapely.geometry import Polygon, Point
 import shapefile
 from app.omnibus import get_horarios, load_nodos, busqueda
+import csv
 
 shapeAuto = None
 shapeCaminando = None
@@ -230,9 +231,11 @@ def parsear_hora(hora):
     return int(h.zfill(2) + m.zfill(2))
 
 def cargarIndividuoAnclas():
-    with open('app/Ejemplo datos 5oct.csv') as f:
-        lineas = [x.split(',') for x in f.read().split('\n')]
-        lineas = lineas[1:]
+    with open('app/Ejemplo datos 5oct.csv', newline='') as csvfile:
+        l = csv.reader(csvfile, delimiter=',', quotechar='"')
+        lineas=[]
+        lineas.extend(l)
+        lineas = lineas[1:] 
         idAncla = 0
         for caso in lineas:
             ## Ancla
@@ -264,9 +267,11 @@ def getSectorForPoint(ancal,tipo):
             return Sector.objects.get(shape = i, tipo = tipo)
 
 def cargarCentroPediatras():
-    with open('app/centros.csv') as f:
-        lineas = [x.split(',') for x in f.read().split('\n')]
-        lineas = lineas[1:]
+    with open('app/centros.csv', newline='') as csvfile:
+        l = csv.reader(csvfile, delimiter=',', quotechar='"')
+        lineas=[]
+        lineas.extend(l)
+        lineas = lineas[1:] 
         inti = 0
         horas = ["6.0","7.0","8.0","9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0","19.0","20.0","21.0"]
         id = 0
