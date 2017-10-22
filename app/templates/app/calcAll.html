@@ -85,8 +85,8 @@
             {% if result %}
               {% for tiempos in result %}
                 <tr>
-                  <th>{{tiempos.id_individuo.id}}</th>
-                  <th> {{tiempos.id_centro.id}}</th>
+                  <th> {{tiempos.individuo.id}}</th>
+                  <th> {{tiempos.centro.id_centro}}</th>
                   <th> {% if tiempos.dia == 0 %} {{dias.0}} {% elif tiempos.dia == 1 %}{{dias.1}}{% elif tiempos.dia == 2 %}{{ dias.2 }}{% elif tiempos.dia == 3 %}{{ dias.3 }}{% elif tiempos.dia == 4 %}{{ dias.4 }}{% elif tiempos.dia == 5 %}{{ dias.5 }}{% elif tiempos.dia == 6 %}{{ dias.6 }}{% endif %}</th>
                   <th> {{tiempos.hora}}</th>
                   <th> {{tiempos.tiempo_auto}}</th>
