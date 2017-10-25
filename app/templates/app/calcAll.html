@@ -54,7 +54,7 @@
     }
     </style>
   </head>
-    <body>
+    <body id="content">
       <!--NavBar-->
       <nav class="navbar navbar-default">
         <div class="container-fluid">
@@ -62,7 +62,7 @@
             <ul class="nav navbar-nav">
             <!--3-->
               <li><a href="#" data-toggle="modal" onclick="openNav('sidenavR')">Filtros</a></li>
-              <li><a href="#" data-toggle="modal" onclick="">Descargar</a></li>
+              <li><a href="#" data-toggle="modal" onclick="printPage()">Descargar</a></li>
             <!--3-->
             </ul>
           </div>
@@ -76,11 +76,12 @@
         <div>
           <table class = 'table'>
             <tr>
-              <th>Individuo</th>
-              <th>Centro</th>
+              <th>ID Individuo</th><!--ID individuo-->
+              <th>ID Centro</th><!--ID centro-->
               <th>Dia</th>
               <th>Hora</th>
-              <th>Tiempo (minutos)</th>
+              <th>Tiempo (min)</th><!--Tiempo minutos-->
+              <th>Nr. Pediatras</th> <!--Cantidad de pediatras-->
             </tr>
             {% if result %}
               {% for tiempos in result %}
@@ -90,6 +91,7 @@
                   <th> {% if tiempos.dia == 0 %} {{dias.0}} {% elif tiempos.dia == 1 %}{{dias.1}}{% elif tiempos.dia == 2 %}{{ dias.2 }}{% elif tiempos.dia == 3 %}{{ dias.3 }}{% elif tiempos.dia == 4 %}{{ dias.4 }}{% elif tiempos.dia == 5 %}{{ dias.5 }}{% elif tiempos.dia == 6 %}{{ dias.6 }}{% endif %}</th>
                   <th> {{tiempos.hora}}</th>
                   <th> {{tiempos.tiempo_auto}}</th>
+                  <th> {{tiempos.cantidad_pediatras}}</th>
                 </tr>
               {% endfor %}
             {% else %}
@@ -181,11 +183,17 @@
           </div>
         </div>
       <!--NavBar-->
+      <div id="editor"></div>
     </body>
     {% load static %}
     <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
     <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'app/js/jspdf.min.js' %}"></script>
+    <script src="{% static 'app/js/jquery.min.js' %}"></script>
     <script type="text/javascript">
+    function printPage() {
+      window.print();
+    }
 			function openNav(s) {
 			    document.getElementById(s).style.width = "250px";
 			}

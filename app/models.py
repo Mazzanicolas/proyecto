@@ -36,12 +36,13 @@ class Individuo(models.Model):
 
 class IndividuoTiempoCentro(models.Model):
     individuo = models.ForeignKey(Individuo, models.CASCADE)
-    centro = models.ForeignKey(Centro, models.CASCADE)
-    dia = models.IntegerField()
-    hora = models.IntegerField()
+    centro    = models.ForeignKey(Centro, models.CASCADE)
+    dia       = models.IntegerField()
+    hora      = models.IntegerField()
     tiempo_caminando = models.IntegerField(blank=True, null=True)
-    tiempo_omnibus = models.IntegerField(blank=True, null=True)
-    tiempo_auto = models.IntegerField(blank=True, null=True)
+    tiempo_omnibus   = models.IntegerField(blank=True, null=True)
+    tiempo_auto      = models.IntegerField(blank=True, null=True)
+    cantidad_pediatras = models.IntegerField()
 
     class Meta:
         unique_together = (('individuo', 'centro', 'dia', 'hora'),)
