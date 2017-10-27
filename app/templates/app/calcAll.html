@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'app/css/main.css' %}">
     <style type="text/css">
+
     /*Divs CSS*/
     html, body {
             height: 100%;
@@ -54,6 +55,7 @@
     }
     </style>
   </head>
+  <!--Filter test-->
     <body id="content">
       <!--NavBar-->
       <nav class="navbar navbar-default">
@@ -69,12 +71,30 @@
         </div>
       </nav>
       <!--NavBar-->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li><div class="panel panel-default"><div class="panel-body"><b>Individuo</b>
+                    <input type="text" id="myInput" onkeyup="filter()" placeholder="Buscar por Individuo.." class="form-control"></div>
+              </div></li>
+              <li><div class="panel panel-default"><div class="panel-body"><b>Centro</b>
+                    <input type="text" id="myInput1" onkeyup="filter()" placeholder="Buscar por Centro.." class="form-control"></div>
+              </div></li>
+              <li><div class="panel panel-default"><div class="panel-body"><b>Dia</b>
+                    <input type="text" id="myInput2" onkeyup="filter()" placeholder="Buscar por Dia.." class="form-control"></div>
+              </div></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <!--NAvBar2-->
 
       <div class="container">
         <h2>Tabla llega</h2>
           <p>La tabla muestra a los individuos que llegan a los centros</p>
         <div>
-          <table class = 'table'>
+          <table class = 'table' id="myTable">
             <tr>
               <th>ID Individuo</th><!--ID individuo-->
               <th>ID Centro</th><!--ID centro-->
@@ -86,12 +106,12 @@
             {% if result %}
               {% for tiempos in result %}
                 <tr>
-                  <th> {{tiempos.individuo.id}}</th>
-                  <th> {{tiempos.centro.id_centro}}</th>
-                  <th> {% if tiempos.dia == 0 %} {{dias.0}} {% elif tiempos.dia == 1 %}{{dias.1}}{% elif tiempos.dia == 2 %}{{ dias.2 }}{% elif tiempos.dia == 3 %}{{ dias.3 }}{% elif tiempos.dia == 4 %}{{ dias.4 }}{% elif tiempos.dia == 5 %}{{ dias.5 }}{% elif tiempos.dia == 6 %}{{ dias.6 }}{% endif %}</th>
-                  <th> {{tiempos.hora}}</th>
-                  <th> {{tiempos.tiempo_auto}}</th>
-                  <th> {{tiempos.cantidad_pediatras}}</th>
+                  <td> {{tiempos.individuo.id}}</td>
+                  <td> {{tiempos.centro.id_centro}}</td>
+                  <td> {% if tiempos.dia == 0 %} {{dias.0}} {% elif tiempos.dia == 1 %}{{dias.1}}{% elif tiempos.dia == 2 %}{{ dias.2 }}{% elif tiempos.dia == 3 %}{{ dias.3 }}{% elif tiempos.dia == 4 %}{{ dias.4 }}{% elif tiempos.dia == 5 %}{{ dias.5 }}{% elif tiempos.dia == 6 %}{{ dias.6 }}{% endif %}</td>
+                  <td> {{tiempos.hora}}</td>
+                  <td> {{tiempos.tiempo_auto}}</td>
+                  <td> {{tiempos.cantidad_pediatras}}</td>
                 </tr>
               {% endfor %}
             {% else %}
@@ -102,9 +122,18 @@
       </div>
       <!--NavBar,onclick="openNav('sidenavR')"-->
         <div id="sidenavR" class="sidenav">
+<!--          <div class="panel panel-default">
+            <div class="panel-body"><b>ID Individuo</b><input class="form-control" type="text" id="myInput" onkeyup="filtrarr()" placeholder="Buscar por id.."></div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-body"><b>ID Centro</b><input class="form-control" type="text" id="myInput2" onkeyup="filtrar2()" placeholder="Buscar por id.."></div>
+          </div>
+          <div class="panel panel-default">
+            <div class="panel-body"><b>Dia</b><input class="form-control" type="text" id="myInput3" onkeyup="buscarPorDiaA()" placeholder="Buscar por id.."></div>
+          </div> -->
           <div class="panel panel-default">
             <div class="panel-body"><input type="checkbox" id="cbf" name="checkBf" value="default" checked> Prestadores a mostrar</div>
-            <div class="panel-footer">
+              <div class="panel-footer">
                 <div id="mutualistasContainerFiltros"  hidden="true">
               <label class="checkbox-inline"><input type="checkbox" name="prestadoresChkFiltros" id="inlineChk" value="ASSE" checked> ASSE </label>
               <label class="checkbox-inline"><input type="checkbox" name="prestadoresChkFiltros" id="inlineChk" value="ASOCIACION ESPANOLA" checked> As. Española </label>
@@ -178,7 +207,7 @@
           </div>
           </div>
           <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Aplicar</button>
+            <button type="submit" class="btn btn-primary" onclick="filtrar()">Aplicar</button>
             <button type="button" class="btn btn-default" href="javascript:void(0)" onclick="closeNav('sidenavR')">Cancelar</button>
           </div>
         </div>
@@ -191,6 +220,32 @@
     <script src="{% static 'app/js/jspdf.min.js' %}"></script>
     <script src="{% static 'app/js/jquery.min.js' %}"></script>
     <script type="text/javascript">
+
+    function filter() {
+        var persona = document.getElementById("myInput").value.toUpperCase().trim();
+        var centro  = document.getElementById("myInput1").value.toUpperCase().trim();
+        var dia     = document.getElementById("myInput2").value.toUpperCase().trim();
+        var rows = document.querySelectorAll("tr");
+        for (var i = 1; i < rows.length; i++) {
+            var items = rows[i].querySelectorAll("td");
+            if (items.length === 0) continue;
+            var id_persona = items[0];
+            var id_centro = items[1];
+            var id_dia = items[2];
+            var id_p_text = id_persona.innerHTML.toUpperCase().trim();
+            var id_c_text = id_centro.innerHTML.toUpperCase().trim();
+            var id_dia_text = id_dia.innerHTML.toUpperCase().trim();
+            if (id_p_text.includes(persona) &&
+                id_c_text.includes(centro) &&
+                id_dia_text.includes(dia)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+
+    // Filter Test ^ ^ ^
     function printPage() {
       window.print();
     }
@@ -201,6 +256,7 @@
 			function closeNav(s) {
 			    document.getElementById(s).style.width = "0";
 			}
+    /*¿No se usa?
 			function showBar() {
 			    document.getElementById("myDropdown").classList.toggle("show");
 			}window.onclick = function(e) {
@@ -211,7 +267,8 @@
 			      }
 			  }
 			}
-		function showBar2() {
+
+    function showBar2() {
 		    document.getElementById("user").classList.toggle("show");
 		}window.onclick = function(e) {
 		  if (!e.target.matches('.dropbtn')) {
@@ -220,7 +277,7 @@
 		        userLog.classList.remove('show');
 		      }
 		  }
-		}
+		}*/
     //Mostrar mutualustas
       $(document).ready(function(){
       $('input[name="checkB"]').change(function(){
