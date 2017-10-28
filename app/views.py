@@ -130,40 +130,50 @@ def res(request):
                             else:
                                 tiempoViaje = calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
                             horaFinConsulta = hora.hora + tiempoConsulta/60
-                            if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta and tiempoViaje < tiempoMaximo/60):
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras)
-                                q.save()
+                            if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras >0):
+                                llega = "Si"
+                            else:
+                                llega = "No"
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
+                            q.save()
                         else:
                             if(jardin and isJardin):
                                 tiempoViaje = calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
                             else:
                                 tiempoViaje = calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
-                            print(tiempoViaje)
-                            if(hora.hora >=  trabajo.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras)
-                                print(individuo.id)
-                                q.save()
+                            if(hora.hora >=  trabajo.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
+                                llega = "Si"
+                            else:
+                                llega = "No"
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q.save()
                     else:
                         if(isJardin and jardin):
                             if(centro.hora < hora_inicio):
                                 tiempoViaje = calcularTiempos([secCentro, secJardin],transporte,hora.hora)
                                 horaFinConsulta = hora.hora + tiempoConsulta/60
-                                if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                    q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras)
-                                    q.save()
+                                if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
+                                    llega = "Si"
+                                else:
+                                    llega = "No"
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q.save()
                             else:
                                 tiempoViaje = calcularTiempos([secJardin, secCentro],transporte,hora.hora)
-                                print(tiempoViaje)
                                 if(hora.hora >=  jardin.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                    q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras)
-                                    q.save()
+                                    llega = "Si"
+                                else:
+                                    llega = "No"
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q.save()
                         else:
                             tiempoViaje = calcularTiempos([secHogar, secCentro],transporte,hora.hora)
-                            print(tiempoViaje)
                             if(tiempoViaje < tiempoMaximo/60):
-                                q = IndividuoTiempoCentro(id = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras)
-                                q.save()
-    print("idk")
+                                llega = "Si"
+                            else:
+                                llega = "No"
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q.save()
     dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
     table = PersonTable(IndividuoTiempoCentro.objects.all())
     RequestConfig(request, paginate={'per_page': 200}).configure(table)
@@ -200,20 +210,12 @@ def calcularTiempos(anclas,transporte,hora):
     return tiempoViaje/60
 def getSector(lugar, transporte):
     #print(transporte)
-    if(lugar is Centro):
-        print(Centro.id)
-        print("333333333333333333333333333333333333333333333333333333333333333333333")
-    if(lugar is AnclaTemporal):
-        print("KEWEAQWDFCAW")
     if(lugar):
         if(transporte == 'Auto' or transporte == 1):
-            print("lecar")
             return lugar.sector_auto
         else:
-            print("lewalk")
             return lugar.sector_caminando
     else:
-        print("kewea")
         return lugar
 
 def cargarSectores():
@@ -295,7 +297,6 @@ def cargarTiempos():
             tiempos.append(tiempo)
             id +=1
             if(id % 100000 == 0):
-                print("WEW")
                 guardar = SectorTiempo.objects.bulk_create(tiempos)
                 tiempos = []
         if(tiempos):

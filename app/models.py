@@ -43,6 +43,8 @@ class IndividuoTiempoCentro(models.Model):
     tiempo_omnibus   = models.IntegerField(blank=True, null=True)
     tiempo_auto      = models.IntegerField(blank=True, null=True)
     cantidad_pediatras = models.IntegerField()
+    llega = models.CharField(max_length=2)
+
 
     class Meta:
         unique_together = (('individuo', 'centro', 'dia', 'hora'),)
