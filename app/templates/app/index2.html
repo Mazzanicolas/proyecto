@@ -162,36 +162,37 @@
           <strong>Advertencia: </strong> Se remplazan los datos existentes en la base de datos.
         </div>
         <!--alert-->
-        <form>
-          <fieldset class="form-group">
-            <p>Seleccione los datos a cargar</p>
-            <div class="form-check">
-              <label class="form-check-label">
-                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" checked>
-                Conjunto de datos para mutualistas
-              </label>
-            </div>
-            <div class="form-check">
-            <label class="form-check-label">
-                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
-                Conjunto de datos para personas
-              </label>
-            </div>
-          </fieldset>
-          <div class="form-group">
-            <label for="exampleInputFile">Seleccione un archivo</label>
-            <input type="file" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
-            <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Cargar</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
+       <form action=''  method="POST">
+         {% csrf_token %}
+         <fieldset class="form-group">
+           <p>Seleccione los datos a cargar</p>
+           <div class="form-check">
+             <label class="form-check-label">
+               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+               Conjunto de datos para mutualistas
+             </label>
+           </div>
+           <div class="form-check">
+           <label class="form-check-label">
+               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
+               Conjunto de datos para personas
+             </label>
+           </div>
+         </fieldset>
+         <div class="form-group">
+           <label for="exampleInputFile">Seleccione un archivo</label>
+           <input type="file" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
+           <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+         </div>
+     </div>
+     <div class="modal-footer">
+       <button type="submit" class="btn btn-primary">Calcular</button>
+       <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+       </div>
+     </div>
+   </form>
+   </div>
+ </div>
   <!--1-Config-->
   <!--1.2-Config-->
   <div id="respaldar_datos" class="modal fade" role="dialog">
@@ -302,7 +303,7 @@
     <strong> Función no implementada</strong> en la demo.
   </div>
   <!--1-alert-->
-  
+
   </body>
   <footer class="container-fluid">UCU ©2017</footer>
   {% load static %}
