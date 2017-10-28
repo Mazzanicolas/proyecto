@@ -1,0 +1,12 @@
+{% load render_table from django_tables2 %}
+{% load bootstrap3 %}
+{% load static %}
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
+    </head>
+    <body>
+        {% render_table result %}
+    </body>
+</html>

@@ -1,8 +1,12 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from app.models import Individuo, Settings, Prestador, AnclaTemporal,TipoTransporte,Sector, SectorTiempo,IndividuoTiempoCentro, Centro,Pediatra
+from app.tables import PersonTable
+from django_tables2 import RequestConfig
 from shapely.geometry import Polygon, Point
 import shapefile
+from django_filters.views import FilterView
+from django_tables2.views import SingleTableMixin
 from app.omnibus import get_horarios, load_nodos, busqueda
 import csv
 
@@ -101,9 +105,10 @@ def res(request):
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value) #Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
     transporte = request.POST.get("checkM") if request.POST.get("checkM") else request.POST.get("transporteRadio")
-    IndividuoTiempoCentro.objects.all().delete()
     individuos = Individuo.objects.all()
     prestadores = Prestador.objects.all()
+    if(IndividuoTiempoCentro.objects.all()):
+        individuos = []
     for individuo in individuos:
         prest = getPrestador(request,prestadores,individuo,pr)
         transporte = getTransporte(request,individuo) if transporte == "default" else transporte
@@ -160,7 +165,9 @@ def res(request):
                                 q.save()
     print("idk")
     dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
-    context = {'result': IndividuoTiempoCentro.objects.all(), 'dias':dias}
+    table = PersonTable(IndividuoTiempoCentro.objects.all())
+    RequestConfig(request, paginate={'per_page': 200}).configure(table)
+    context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll.html', context)
     #return render(request, 'app/res.html')
 
@@ -281,11 +288,18 @@ def cargarTiempos():
         lineas.extend(l)
         lineas = lineas[1:]
         id = 0
-        sectores = Sector.objects.all()
+        tiempos = []
+        #sectores = Sector.objects.all()
         for caso in lineas:
-            tiempos = SectorTiempo(id = id , sector_1 = sectores.get(id =int(caso[0])),sector_2 = sectores.get(id = int(caso[1])),tiempo = float(caso[2]), distancia = float(caso[3]))
-            tiempos.save()
+            tiempo = SectorTiempo(id = id , sector_1_id = int(caso[0]), sector_2_id = int(caso[1]),tiempo = float(caso[2]), distancia = float(caso[3]))
+            tiempos.append(tiempo)
             id +=1
+            if(id % 100000 == 0):
+                print("WEW")
+                guardar = SectorTiempo.objects.bulk_create(tiempos)
+                tiempos = []
+        if(tiempos):
+            guardar = SectorTiempo.objects.bulk_create(tiempos)
 
 def cargarCentroPediatras():
     with open('app/centros.csv', newline='') as csvfile:
