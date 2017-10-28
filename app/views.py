@@ -168,7 +168,7 @@ def res(request):
     table = PersonTable(IndividuoTiempoCentro.objects.all())
     RequestConfig(request, paginate={'per_page': 200}).configure(table)
     context = {'result': table, 'dias':dias}
-    return render(request, 'app/calcAll.html', context)
+    return render(request, 'app/calcAll2.html', context)
     #return render(request, 'app/res.html')
 
 def getPrestador(request,prestadores,individuo,pr):
