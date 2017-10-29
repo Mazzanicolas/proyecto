@@ -454,4 +454,5 @@ def getFilters(request,filtro):
     for key, value in request.POST.items():
         if(key in filtro):
             filtros.append(value)
+    print (filtros)
     return filtros

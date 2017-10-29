@@ -307,6 +307,7 @@
          </div>
      </div>
      <div class="modal-footer">
+       <button type="submit" class="btn btn-primary btn-lg " id="load" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Cargando " name="submit" value="Upload" />Cargar</button>
        <input type="submit" class="btn btn-primary">Calcular</button>
        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
        </div>
@@ -433,6 +434,13 @@
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+  $('.btn').on('click', function() {
+    var $this = $(this);
+  $this.button('loading');
+    setTimeout(function() {
+       $this.button('reset');
+   }, 999999);
+});
   //Mostrar mutualustas
     $(document).ready(function(){
     $('input[name="checkB"]').change(function(){
