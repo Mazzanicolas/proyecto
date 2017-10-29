@@ -9,20 +9,20 @@
     </head>
     <body>
       <!--NavBar-->
-      <nav class="navbar navbar-default">
-        <div class="container-fluid">
-          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <nav class="navbar navbar-default" style="height:102px;text-align:center;">
+        <div class="container-fluid" style="height:100px;width:1000px;text-align:center;">
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="height:100px; width:1000px;text-align:center;">
             <ul class="nav navbar-nav">
-              <li><div class="panel panel-default"><div class="panel-body"><b>Individuo</b>
+              <li><div class="panel panel-default" style="height:100px; width:200px;"><div class="panel-body"><b>Individuo</b>
                     <input type="text" id="myInput" onkeyup="filter()" placeholder="Buscar por Individuo.." class="form-control"></div>
               </div></li>
-              <li><div class="panel panel-default"><div class="panel-body"><b>Centro</b>
+              <li><div class="panel panel-default" style="height:100px; width:200px;"><div class="panel-body"><b>Centro</b>
                     <input type="text" id="myInput1" onkeyup="filter()" placeholder="Buscar por Centro.." class="form-control"></div>
               </div></li>
-              <li><div class="panel panel-default"><div class="panel-body"><b>Dia</b>
+              <li><div class="panel panel-default" style="height:100px; width:200px;"><div class="panel-body"><b>Dia</b>
                     <input type="text" id="myInput2" onkeyup="filter()" placeholder="Buscar por Dia.." class="form-control"></div>
               </div></li>
-                <li><div class="panel panel-default"><div class="panel-body">
+                <li><div class="panel panel-default" style="height:100px; width:360px;"><div class="panel-body">
               <input type="checkbox" id="hide_id"><b>ID</b>
               <input type="checkbox" id="hide_individuo"><b>Individuo</b>
               <input type="checkbox" id="hide_centro"><b>Centro</b>
@@ -33,13 +33,15 @@
               <input type="checkbox" id="hide_t_auto"><b>T. Auto</b>
               <input type="checkbox" id="hide_cant_ped"><b>Cant. Ped.</b>
               <input type="checkbox" id="hide_llega"><b>Llega</b><br>
-              <button class="btn btn-primary" onclick='hideColumns()'>Ocultar Selección</button>
-              <button class="btn btn-primary" onclick='unHide()'>Mostar Selección</button></div></li>
+              <button class="btn btn-primary btn-xs" onclick='hideColumns()'>Ocultar Selección</button>
+              <button class="btn btn-primary btn-xs" onclick='unHide()'>Mostar Selección</button></div></li>
           </ul>
           </div>
         </div>
       </nav>
+      <div style="height:102px;text-align:center;">
         {% render_table result "app/mytable.html" %}
+      </div>
     </body>
     <script type = "text/javascript">
       function hideColumns(){
