@@ -366,3 +366,81 @@ def cargarCentroPediatras(request):
             inti +=1
 if(not Sector.objects.all()):
     cargarSectores()
+def consultaConFiltro(request):
+    tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
+    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
+    individuos = Individuo.objects.all()
+    prestadores = Prestador.objects.all()
+    if (IndividuoTiempoCentro.objects.all()):
+        individuos = []
+    for individuo in individuos:
+        prest      = [individuo.prestador]#arreglar
+        transporte = getTransporte(request,individuo)
+        trabajo    = individuo.trabajo
+        jardin     = individuo.jardin
+        SecHogar   = getSector(individuo.hogar,transporte)
+        secTrabajo = getSector(trabajo,transporte)
+        secJardin  = getSector(jardin,transporte)
+        for prestador in prest:
+            centros = Centro.objects.filter(prestador = prestador)
+            for centro in centros:
+                secCentro = getSector(centro,transporte)
+                horas     = Pediatra.objects.filter(centro__id_centro = centro.id_centro)
+                for hora in horas:
+                    if(trabajo and isTrabajo):
+                        if(hora.hora < trabajo.hora_inicio):
+                            if(isJardin and jardin):
+                                tiempoViaje = calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
+                            else:
+                                tiempoViaje = calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
+                            horaFinConsulta = hora.hora + tiempoConsulta/60
+                            if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras >0):
+                                llega = "Si"
+                            else:
+                                llega = "No"
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
+                            q.save()
+                        else:
+                            if(jardin and isJardin):
+                                tiempoViaje = calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
+                            else:
+                                tiempoViaje = calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
+                            if(hora.hora >=  trabajo.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
+                                llega = "Si"
+                            else:
+                                llega = "No"
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q.save()
+                    else:
+                        if(isJardin and jardin):
+                            if(centro.hora < hora_inicio):
+                                tiempoViaje     = calcularTiempos([secCentro, secJardin],transporte,hora.hora)
+                                horaFinConsulta = hora.hora + tiempoConsulta/60
+                                if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
+                                    llega = "Si"
+                                else:
+                                    llega = "No"
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q.save()
+                            else:
+                                tiempoViaje = calcularTiempos([secJardin, secCentro],transporte,hora.hora)
+                                if(hora.hora >=  jardin.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
+                                    llega = "Si"
+                                else:
+                                    llega = "No"
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q.save()
+                        else:
+                            tiempoViaje = calcularTiempos([secHogar, secCentro],transporte,hora.hora)
+                            if(tiempoViaje < tiempoMaximo/60):
+                                llega = "Si"
+                            else:
+                                llega = "No"
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q.save()
+    dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
+    table = PersonTable(IndividuoTiempoCentro.objects.all())
+    RequestConfig(request, paginate={'per_page': 100000000000000000}).configure(table)
+    context = {'result': table, 'dias':dias}
+    return render(request, 'app/calcAll2.html', context)
+    #return render(request, 'app/res.html')
