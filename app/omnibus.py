@@ -84,15 +84,15 @@ def get_parada(lista_nodos,cod_parada):
 
 def parada_mas_cercana(x,y,nodos):
 	dist = float('inf')
-	cod_parada = str()
+	nodo = None
 	origen = translate(x,y)
 	for parada in nodos:
 		destino = translate(parada.coords[0],parada.coords[1])
 		aux = vincenty(origen,destino).meters
 		if aux < dist:
 			dist = aux
-			cod_parada = parada.cod_parada
-	return cod_parada
+			nodo = parada
+	return nodo
 
 class Nodo:
 	def __init__(self,cod_parada,x,y):
@@ -141,7 +141,7 @@ class Nodo:
 			if parada_destino[:2] in [x[:2] for x in c_origen]:
 				paradas.append(parada_destino)
 		if len(paradas) != 0:
-			t = float('inf')
+			t =-1# float('inf')
 			for parada in paradas:
 				#print(parada)
 				dest = get_parada(lista_nodos,parada[2])
@@ -150,7 +150,7 @@ class Nodo:
 					if aux > 0:
 						t = min(t,aux)
 			m,s = divmod(t,60)
-			print("{}:{}".format(m,s))
+			print("lexd "+str(t == float('inf')))
 			return t,self,dest
 		else:
 			'''Si no encuentro un omnibus directo busco en la mala
