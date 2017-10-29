@@ -77,8 +77,7 @@ def res(request):
     transporte = request.POST.get("checkM") if request.POST.get("checkM") else request.POST.get("transporteRadio")
     individuos = Individuo.objects.all()
     prestadores = Prestador.objects.all()
-    if(IndividuoTiempoCentro.objects.all()):
-        individuos = []
+    IndividuoTiempoCentro.objects.all().delete()
     for individuo in individuos:
         prest = getPrestador(request,prestadores,individuo,pr)
         transporte = getTransporte(request,individuo) if transporte == "default" else transporte
@@ -146,7 +145,7 @@ def res(request):
                             q.save()
     dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
     table = PersonTable(IndividuoTiempoCentro.objects.all())
-    RequestConfig(request, paginate={'per_page': 30}).configure(table)
+    RequestConfig(request, paginate={'per_page': 100000000000000000}).configure(table)
     context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll2.html', context)
     #return render(request, 'app/res.html')
