@@ -438,9 +438,20 @@ def consultaConFiltro(request):
                                 llega = "No"
                             q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
-    dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
-    table = PersonTable(IndividuoTiempoCentro.objects.all())
+    prestadorFiltro  = getFilters(request,'prestadorFiltro')
+    transporteFiltro = getFilters(request,'transporteFiltro')
+    diaFiltro        = getFilters(request,'diaFiltro')
+    horaFiltro       = getFilters(request,'horaFiltro')
+    consulta = IndividuoTiempoCentro.objects.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transportes, dia__in=diaFiltro, hora__in=horaFiltro)
+    dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
+    table    = PersonTable(consulta)
     RequestConfig(request, paginate={'per_page': 100000000000000000}).configure(table)
     context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll2.html', context)
     #return render(request, 'app/res.html')
+def getFilters(request,filtro):
+    filtros = list()
+    for key, value in request.POST.items():
+        if(key in filtro):
+            filtros.append(value)
+    return filtros
