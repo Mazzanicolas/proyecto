@@ -23,12 +23,51 @@
                     <input type="text" id="myInput2" onkeyup="filter()" placeholder="Buscar por Dia.." class="form-control"></div>
               </div></li>
             </ul>
+            <input type="checkbox" id="hide_id">ID
+            <input type="checkbox" id="hide_individuo">Individuo
+            <input type="checkbox" id="hide_centro">Centro
+            <input type="checkbox" id="hide_dia">Dia
+            <input type="checkbox" id="hide_hora">Hora
+            <input type="checkbox" id="hide_t_caminando">T. Cam.<br>
+            <input type="checkbox" id="hide_t_omnibus">T. Omn.
+            <input type="checkbox" id="hide_t_auto">T. Auto
+            <input type="checkbox" id="hide_cant_ped">Cant. Ped.
+            <input type="checkbox" id="hide_llega">LLega<br>
+            <button onclick='hideColumns()'>Hide Checked</button>
+            <button onclick='unHide()'>Unhide</button>
           </div>
         </div>
       </nav>
         {% render_table result "app/mytable.html" %}
     </body>
     <script type = "text/javascript">
+      function hideColumns(){
+        var rows = document.querySelectorAll("th");
+        if(document.getElementById("hide_id").checked) rows[0].style.display='none';
+        else rows[0].style.display = '';
+        if(document.getElementById("hide_individuo").checked) rows[1].style.display='none';
+        else rows[1].style.display = '';
+        if(document.getElementById("hide_centro").checked) rows[2].style.display='none';
+        else rows[2].style.display = '';
+        if(document.getElementById("hide_dia").checked) rows[3].style.display='none';
+        else rows[3].style.display = '';
+        if(document.getElementById("hide_hora").checked) rows[4].style.display='none';
+        else rows[4].style.display = '';
+        if(document.getElementById("hide_t_caminando").checked) rows[5].style.display='none';
+        else rows[5].style.display = '';
+        if(document.getElementById("hide_t_omnibus").checked) rows[6].style.display='none';
+        else rows[6].style.display = '';
+        if(document.getElementById("hide_t_auto").checked) rows[7].style.display='none';
+        else rows[7].style.display = '';
+        if(document.getElementById("hide_cant_ped").checked) rows[8].style.display='none';
+        else rows[8].style.display = '';
+        if(document.getElementById("hide_llega").checked) rows[9].style.display='none';
+        else rows[9].style.display = '';
+      }
+      function unHide(){
+        var rows = document.querySelectorAll("th");
+        for(var i=0;i<rows.length;i++) rows[i].style.display = '';
+      }
       function filter() {
           var persona = document.getElementById("myInput").value.toUpperCase().trim();
           var centro  = document.getElementById("myInput1").value.toUpperCase().trim();
