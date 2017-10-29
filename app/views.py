@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, Prestador, AnclaTemporal,TipoTransporte,Sector, SectorTiempo,IndividuoTiempoCentro, Centro,Pediatra
+from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro
 from app.tables import PersonTable
 from django_tables2 import RequestConfig
 from shapely.geometry import Polygon, Point
@@ -10,7 +10,6 @@ from django_tables2.views import SingleTableMixin
 from app.omnibus import get_horarios, load_nodos, busqueda
 import csv
 from io import StringIO
-
 from django.core.files.storage import default_storage
 
 global shapeAuto
@@ -25,7 +24,8 @@ sf = shapefile.Reader('app/shpWkng.shp')
 shapeCaminando = sf.shapes()
 
 def index(request):
-
+    if(not Sector.objects.all()):
+        cargarSectores()
     ##cargarCentroPediatras()
     ##cargarIndividuoAnclas()
     ##cargarTiempos()
@@ -364,8 +364,6 @@ def cargarCentroPediatras(request):
                         contador_dias +=1
                         pediatra.save()
             inti +=1
-if(not Sector.objects.all()):
-    cargarSectores()
 def consultaConFiltro(request):
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
