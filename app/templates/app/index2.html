@@ -35,6 +35,9 @@
           <!--4-->
           <li><a href="#" data-toggle="modal" data-target="#fil">Ejecutar</a></li>
           <!--4-->
+          <!--5-->
+          <li><a href="#" data-toggle="modal" data-target="#rsm">Resumen</a></li>
+          <!--5-->
           </ul>
         </div>
       </div>
@@ -248,6 +251,77 @@
     </div>
   </div>
   <!--4-Config-->
+  <!--5-Config-->
+  <div id="rsm" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+    <form action='consulta/'  method="POST">
+    {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Resumen</h4>
+        </div>
+        <div class="modal-body">
+          <!--Transporte-->
+          <div class="panel panel-default">
+            <div class="panel-body">
+              Transporte
+            </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="default" checked> Utilizar predeterminadas</label></br>
+              <div id="transportesContainer" hidden="true">
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio1" value="auto"> Auto </label>
+                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio2" value="caminando"> Caminando </label>
+                <label class="radio-inline disabled"><input type="radio" name="transporteRadio" id="inlineRadio3" value="omnibus" disabled> Omnibus </label></br>
+              </div>
+            </div>
+          <!--Transporte-->
+          </div>
+          <!--Anclas-->
+          <div class="panel panel-default">
+            <div class="panel-body"> Anclas Temporales </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="trabajo" checked> Trabajo </label>
+              <label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="jardin" checked> Jardin </label></br>
+            </div>
+          </div>
+          <!--Anclas-->
+          <!--Mutualistas-->
+          <div class="panel panel-default">
+          <div class="panel-body"> Mutualistas </div>
+          <div class="panel-footer">
+            <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkB" value="default" checked> Utilizar predeterminadas</label></br>
+              <div id="mutualistasContainer"  hidden="true">
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ignorar"> Por defecto </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASSE"> ASSE </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASOCIACION ESPANOLA"> As. Española </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASA DE GALICIA"> Casa de Galicia </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASMU"> CASMU </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CIRCULO CATOLICO"> Circulo Catolico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="COSEM"> Cosem </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CUDAM"> Cudam </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="GREMCA"> Gremca </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL BRITANICO"> H. Britanico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL EVANGELICO"> H. Evangelico </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MEDICA URUGUAYA"> Medica Uruguaya </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MP"> MP </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="SMI"> SMI </label>
+                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="UNIVERSAL"> Universal </label>
+              </div>
+            </div>
+          </div>
+          <!--Mutualistas-->
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Calcular</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </form>
+    </div>
+  </div>
+  <!--5-Config-->
   <!--1-Config-->
   <div id="cargar_datos" class="modal fade" role="dialog">
     <div class="modal-dialog">

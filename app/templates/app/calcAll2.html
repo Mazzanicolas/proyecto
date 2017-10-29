@@ -22,19 +22,20 @@
               <li><div class="panel panel-default"><div class="panel-body"><b>Dia</b>
                     <input type="text" id="myInput2" onkeyup="filter()" placeholder="Buscar por Dia.." class="form-control"></div>
               </div></li>
-            </ul>
-            <input type="checkbox" id="hide_id">ID
-            <input type="checkbox" id="hide_individuo">Individuo
-            <input type="checkbox" id="hide_centro">Centro
-            <input type="checkbox" id="hide_dia">Dia
-            <input type="checkbox" id="hide_hora">Hora
-            <input type="checkbox" id="hide_t_caminando">T. Cam.<br>
-            <input type="checkbox" id="hide_t_omnibus">T. Omn.
-            <input type="checkbox" id="hide_t_auto">T. Auto
-            <input type="checkbox" id="hide_cant_ped">Cant. Ped.
-            <input type="checkbox" id="hide_llega">LLega<br>
-            <button onclick='hideColumns()'>Hide Checked</button>
-            <button onclick='unHide()'>Unhide</button>
+                <li><div class="panel panel-default"><div class="panel-body">
+              <input type="checkbox" id="hide_id"><b>ID</b>
+              <input type="checkbox" id="hide_individuo"><b>Individuo</b>
+              <input type="checkbox" id="hide_centro"><b>Centro</b>
+              <input type="checkbox" id="hide_dia"><b>Dia</b>
+              <input type="checkbox" id="hide_hora"><b>Hora</b>
+              <input type="checkbox" id="hide_t_caminando"><b>T. Cam.</b><br>
+              <input type="checkbox" id="hide_t_omnibus"><b>T. Omn.</b>
+              <input type="checkbox" id="hide_t_auto"><b>T. Auto</b>
+              <input type="checkbox" id="hide_cant_ped"><b>Cant. Ped.</b>
+              <input type="checkbox" id="hide_llega"><b>Llega</b><br>
+              <button class="btn btn-primary" onclick='hideColumns()'>Ocultar Selección</button>
+              <button class="btn btn-primary" onclick='unHide()'>Mostar Selección</button></div></li>
+          </ul>
           </div>
         </div>
       </nav>
@@ -76,9 +77,9 @@
           for (var i = 1; i < rows.length; i++) {
               var items = rows[i].querySelectorAll("td");
               if (items.length === 0) continue;
-              var id_persona = items[0+1];
-              var id_centro = items[1+1];
-              var id_dia = items[2+1];
+              var id_persona = items[1];//Arreglar
+              var id_centro = items[2];
+              var id_dia = items[3];
               var id_p_text = id_persona.innerHTML.toUpperCase().trim();
               var id_c_text = id_centro.innerHTML.toUpperCase().trim();
               var id_dia_text = id_dia.innerHTML.toUpperCase().trim();
