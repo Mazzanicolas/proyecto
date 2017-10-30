@@ -141,7 +141,7 @@ class Nodo:
 			if parada_destino[:2] in [x[:2] for x in c_origen]:
 				paradas.append(parada_destino)
 		if len(paradas) != 0:
-			t =-1# float('inf')
+			t = float('inf')
 			for parada in paradas:
 				#print(parada)
 				dest = get_parada(lista_nodos,parada[2])
@@ -150,7 +150,7 @@ class Nodo:
 					if aux > 0:
 						t = min(t,aux)
 			m,s = divmod(t,60)
-			print("lexd "+str(t == float('inf')))
+			print("{}:{}".format(m,s))
 			return t,self,dest
 		else:
 			'''Si no encuentro un omnibus directo busco en la mala
