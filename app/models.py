@@ -39,9 +39,9 @@ class IndividuoTiempoCentro(models.Model):
     centro    = models.ForeignKey(Centro, models.CASCADE)
     dia       = models.IntegerField()
     hora      = models.IntegerField()
-    tiempo_caminando = models.IntegerField(blank=True, null=True)
-    tiempo_omnibus   = models.IntegerField(blank=True, null=True)
-    tiempo_auto      = models.IntegerField(blank=True, null=True)
+    tiempo_caminando   = models.IntegerField(blank=True, null=True)
+    tiempo_omnibus     = models.IntegerField(blank=True, null=True)
+    tiempo_auto        = models.IntegerField(blank=True, null=True)
     cantidad_pediatras = models.IntegerField()
     llega = models.CharField(max_length=2)
 
