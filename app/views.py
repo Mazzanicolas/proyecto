@@ -7,17 +7,16 @@ from shapely.geometry import Polygon, Point
 import shapefile
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
-from app.omnibus import get_horarios, load_nodos, busqueda
+from app.omnibus import get_horarios, load, busqueda
 import csv
 from io import StringIO
 from django.core.files.storage import default_storage
-
 global shapeAuto
 global shapeCaminando
 global horarios
 global nodos
 horarios = get_horarios('app/horarios.csv')
-nodos = load_nodos('app/nodos.csv')
+nodos = load('app/nodos.csv')
 sf = shapefile.Reader('app/okkk.shp')
 shapeAuto = sf.shapes()
 sf = shapefile.Reader('app/shpWkng.shp')
@@ -209,17 +208,17 @@ def calcularTiempos(anclas,transporte,hora):
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
     else:
         for i in range(0,len(anclas)-1):
-            coords_origen = (anclas[i].x_centroide,anclas[i].y_centroide)
-            coords_destino = (anclas[i+1].x_centroide,anclas[i+1].y_centroide)
+            coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
+            coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
+            #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
             tiempoViaje += busqueda(coords_origen,coords_destino,nodos,horarios,hora)
     return tiempoViaje/60
 def getSector(lugar, transporte):
-    #print(transporte)
-    if(lugar):
-        if(transporte == 'Auto' or transporte == 1):
-            return lugar.sector_auto
-        else:
-            return lugar.sector_caminando
+    #print(transporte):
+    if(transporte == 'Auto' or transporte == 1):
+        return lugar.sector_auto
+    elif(transporte == 'Caminando' or transporte == 0):
+        return lugar.sector_caminando
     else:
         return lugar
 def guardarArchivo(nombre, archivo):
@@ -361,12 +360,76 @@ def cargarCentroPediatras(request):
                         pediatra.save()
             inti +=1
 def consultaConFiltro(request):
-    IndividuoTiempoCentro.objects.all().delete()
+    if(not IndividuoTiempoCentro.objects.all()):
+        calcAndSaveDefault()
+    prestadorFiltro  = getFilters(request,'prestadorFiltro')
+    transporteFiltro = getFilters(request,'transporteFiltro')
+    diaFiltro        = getFilters(request,'diasFiltro')
+    horaFiltro       = getFilters(request,'horasFiltro')
+    print(request.POST)
+    consulta = IndividuoTiempoCentro.objects.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
+    dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
+    print(len(consulta))
+    table    = PersonTable(consulta)
+    RequestConfig(request, paginate={'per_page': 10}).configure(table)
+    context = {'result': table, 'dias':dias}
+    return render(request, 'app/calcAll2.html', context)
+def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
+    individuos = Individuo.objects.all()
+    for indiv in individuos:
+        tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo)
+        totalHoras = 0
+        dictLlegaPorHora = {0:0,1:0,2:0,3:0,4:0,5:0,}
+        cantidadCentrosPorDias ={0:0,1:0,2:0,3:0,4:0,5:0}
+        centrosPorDia = []
+        centros = {}
+        diaAnterior = None
+        for tiempo in tiempos:
+            if tiempo.llega == "Si":
+                dia = tiempo.dia
+                if(diaAnterior and diaAnterior != dia):
+                    cantidadCentrosPorDias[diaAnterior] = len(centrosPorDia)
+                    centrosPorDia = []
+                totalHoras += 1
+                dictLlegaPorHora[dia] = dictLlegaPorHora[dia] + 1
+                centro = tiempo.centro
+                if(centro.id_centro not in centrosPorDia):
+                    centrosPorDia.append(centro.id_centro)
+                if(centro.id_centro not in centros):
+                    centros[centro.id_centro] =  tiempo.tiempoViaje
+                else:
+                    if tiempo.tiempoViaje < centros[centro.id_centro]:
+                        centros[centro.id_centro] = tiempo.tiempoViaje
+        maximo = 0
+        for key, value in dictLlegaPorHora.items():
+            if(value > maximo):
+                maximo = value
+        centro = None
+        for key, value in centros.items():
+            if(not centro == None):
+                if(value < centros[centro]):
+                    centro = key
+        leResumen = MedidasDeResumen(individuo = individuo, cantidadTotalLlega = totalHoras,cantidadHorasLunes = dictLlegaPorHora[0],
+                    cantidadHorasMartes = dictLlegaPorHora[0],cantidadHorasMiercoles = dictLlegaPorHora[0], cantidadHorasJueves = dictLlegaPorHora[0],
+                    cantidadHorasViernes = dictLlegaPorHora[0],cantidadHorasSabado = dictLlegaPorHora[0], cantidadMaximaHoras = maximo,
+                    cantidadCentrosLunes = cantidadCentrosPorDias[0], cantidadCentrosMartes = cantidadCentrosPorDias[0],cantidadCentrosMiercoles = cantidadCentrosPorDias[0],
+                    cantidadCentrosJueves = cantidadCentrosPorDias[0], cantidadCentrosViernes = cantidadCentrosPorDias[0],cantidadCentrosSabado = cantidadCentrosPorDias[0],
+                    cantidadTotalCentros = len(centros), centroOptimo = centro)
+
+
+def getFilters(request,filtro):
+    filtros = []
+    for key, value in request.POST.items():
+        if(filtro.upper() in key.upper()):
+            filtros.append(value)
+    return filtros
+def calcAndSaveDefault():
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
     individuos = Individuo.objects.all()
     prestadores = Prestador.objects.all()
     for individuo in individuos:
+        print("WEW"+str(individuo.id))
         prest      = [individuo.prestador]#arreglar
         transporte = individuo.tipo_transporte.id
         trabajo    = individuo.trabajo
@@ -431,21 +494,3 @@ def consultaConFiltro(request):
                                 llega = "No"
                             q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
-    prestadorFiltro  = getFilters(request,'prestadorFiltro')
-    transporteFiltro = getFilters(request,'transporteFiltro')
-    diaFiltro        = getFilters(request,'diasFiltro')
-    horaFiltro       = getFilters(request,'horasFiltro')
-    consulta = IndividuoTiempoCentro.objects.filter(individuo_id__id = 93)#centro__prestador__nombre__in = prestadorFiltro)#, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
-    dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
-    print(len(consulta))
-    table    = PersonTable(consulta)
-    RequestConfig(request, paginate={'per_page': 10}).configure(table)
-    context = {'result': table, 'dias':dias}
-    return render(request, 'app/calcAll2.html', context)
-    #return render(request, 'app/res.html')
-def getFilters(request,filtro):
-    filtros = []
-    for key, value in request.POST.items():
-        if(filtro.upper() in key.upper()):
-            filtros.append(value)
-    return filtros
