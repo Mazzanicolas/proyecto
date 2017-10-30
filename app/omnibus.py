@@ -10,40 +10,40 @@ VELOCIDAD_CAMINANDO = 1.4
 global horarios
 
 def translate(easting, northing, zone = 21, northernHemisphere=False):
-    if not northernHemisphere:
-        northing = 10000000 - northing
-    a = 6378137
-    e = 0.081819191
-    e1sq = 0.006739497
-    k0 = 0.9996
-    arc = northing / k0
-    mu = arc / (a * (1 - math.pow(e, 2) / 4.0 - 3 * math.pow(e, 4) / 64.0 - 5 * math.pow(e, 6) / 256.0))
-    ei = (1 - math.pow((1 - e * e), (1 / 2.0))) / (1 + math.pow((1 - e * e), (1 / 2.0)))
-    ca = 3 * ei / 2 - 27 * math.pow(ei, 3) / 32.0
-    cb = 21 * math.pow(ei, 2) / 16 - 55 * math.pow(ei, 4) / 32
-    cc = 151 * math.pow(ei, 3) / 96
-    cd = 1097 * math.pow(ei, 4) / 512
-    phi1 = mu + ca * math.sin(2 * mu) + cb * math.sin(4 * mu) + cc * math.sin(6 * mu) + cd * math.sin(8 * mu)
-    n0 = a / math.pow((1 - math.pow((e * math.sin(phi1)), 2)), (1 / 2.0))
-    r0 = a * (1 - e * e) / math.pow((1 - math.pow((e * math.sin(phi1)), 2)), (3 / 2.0))
-    fact1 = n0 * math.tan(phi1) / r0
-    _a1 = 500000 - easting
-    dd0 = _a1 / (n0 * k0)
-    fact2 = dd0 * dd0 / 2
-    t0 = math.pow(math.tan(phi1), 2)
-    Q0 = e1sq * math.pow(math.cos(phi1), 2)
-    fact3 = (5 + 3 * t0 + 10 * Q0 - 4 * Q0 * Q0 - 9 * e1sq) * math.pow(dd0, 4) / 24
-    fact4 = (61 + 90 * t0 + 298 * Q0 + 45 * t0 * t0 - 252 * e1sq - 3 * Q0 * Q0) * math.pow(dd0, 6) / 720
-    lof1 = _a1 / (n0 * k0)
-    lof2 = (1 + 2 * t0 + Q0) * math.pow(dd0, 3) / 6.0
-    lof3 = (5 - 2 * Q0 + 28 * t0 - 3 * math.pow(Q0, 2) + 8 * e1sq + 24 * math.pow(t0, 2)) * math.pow(dd0, 5) / 120
-    _a2 = (lof1 - lof2 + lof3) / math.cos(phi1)
-    _a3 = _a2 * 180 / math.pi
-    latitude = 180 * (phi1 - fact1 * (fact2 + fact3 + fact4)) / math.pi
-    if not northernHemisphere:
-        latitude = -latitude
-    longitude = ((zone > 0) and (6 * zone - 183.0) or 3.0) - _a3
-    return (latitude, longitude)
+	if not northernHemisphere:
+		northing = 10000000 - northing
+	a = 6378137
+	e = 0.081819191
+	e1sq = 0.006739497
+	k0 = 0.9996
+	arc = northing / k0
+	mu = arc / (a * (1 - math.pow(e, 2) / 4.0 - 3 * math.pow(e, 4) / 64.0 - 5 * math.pow(e, 6) / 256.0))
+	ei = (1 - math.pow((1 - e * e), (1 / 2.0))) / (1 + math.pow((1 - e * e), (1 / 2.0)))
+	ca = 3 * ei / 2 - 27 * math.pow(ei, 3) / 32.0
+	cb = 21 * math.pow(ei, 2) / 16 - 55 * math.pow(ei, 4) / 32
+	cc = 151 * math.pow(ei, 3) / 96
+	cd = 1097 * math.pow(ei, 4) / 512
+	phi1 = mu + ca * math.sin(2 * mu) + cb * math.sin(4 * mu) + cc * math.sin(6 * mu) + cd * math.sin(8 * mu)
+	n0 = a / math.pow((1 - math.pow((e * math.sin(phi1)), 2)), (1 / 2.0))
+	r0 = a * (1 - e * e) / math.pow((1 - math.pow((e * math.sin(phi1)), 2)), (3 / 2.0))
+	fact1 = n0 * math.tan(phi1) / r0
+	_a1 = 500000 - easting
+	dd0 = _a1 / (n0 * k0)
+	fact2 = dd0 * dd0 / 2
+	t0 = math.pow(math.tan(phi1), 2)
+	Q0 = e1sq * math.pow(math.cos(phi1), 2)
+	fact3 = (5 + 3 * t0 + 10 * Q0 - 4 * Q0 * Q0 - 9 * e1sq) * math.pow(dd0, 4) / 24
+	fact4 = (61 + 90 * t0 + 298 * Q0 + 45 * t0 * t0 - 252 * e1sq - 3 * Q0 * Q0) * math.pow(dd0, 6) / 720
+	lof1 = _a1 / (n0 * k0)
+	lof2 = (1 + 2 * t0 + Q0) * math.pow(dd0, 3) / 6.0
+	lof3 = (5 - 2 * Q0 + 28 * t0 - 3 * math.pow(Q0, 2) + 8 * e1sq + 24 * math.pow(t0, 2)) * math.pow(dd0, 5) / 120
+	_a2 = (lof1 - lof2 + lof3) / math.cos(phi1)
+	_a3 = _a2 * 180 / math.pi
+	latitude = 180 * (phi1 - fact1 * (fact2 + fact3 + fact4)) / math.pi
+	if not northernHemisphere:
+		latitude = -latitude
+	longitude = ((zone > 0) and (6 * zone - 183.0) or 3.0) - _a3
+	return (latitude, longitude)
 
 def get_tiempo(cod_linea,cod_variante,origen,destino,horarios,hora=0):
 	#tiempo entre 2 paradas cercanas o conectadas en omnibus
@@ -84,15 +84,15 @@ def get_parada(lista_nodos,cod_parada):
 
 def parada_mas_cercana(x,y,nodos):
 	dist = float('inf')
-	nodo = None
+	cod_parada = str()
 	origen = translate(x,y)
 	for parada in nodos:
 		destino = translate(parada.coords[0],parada.coords[1])
 		aux = vincenty(origen,destino).meters
 		if aux < dist:
 			dist = aux
-			nodo = parada
-	return nodo
+			cod_parada = parada.cod_parada
+	return cod_parada
 
 class Nodo:
 	def __init__(self,cod_parada,x,y):
@@ -118,40 +118,39 @@ class Nodo:
 			s += ',{}'.format(adyacentes)
 		return s
 
-	def search(self, lista_nodos, destino, horarios, hora = 0): #Falta poner las horas
-		#lista de lineas accesibles desde el origen
-		c_origen = [l[:2] + [self.cod_parada] for l in self.lineas]
-		for p in self.adyacentes: # p = [cod_parada, tiempo]
-			parada = get_parada(lista_nodos,p[0])
-			if parada is not None:
-				for l in parada.lineas:
-					if l[:2] not in [x[:2] for x in c_origen]:
-						c_origen.append(l[:2] + [parada.cod_parada])
-		#lista de lineas accesibles desde el destino
-		c_destino = [l[:2] + [destino.cod_parada] for l in destino.lineas]
-		for p in destino.adyacentes:
-			parada = get_parada(lista_nodos,p[0])
-			if parada is not None:
-				for l in parada.lineas:
-					if l[:2] not in [x[:2] for x in c_destino]:
-						c_destino.append(l[:2] + [parada.cod_parada])
+	def search(self, lista_nodos, destino, horarios, hora = 0):
+		#lista de lineas accesibles desde un nodo
+		def cercanos(nodo,lista_nodos):
+			res = [l[:2] + [nodo] for l in nodo.lineas]
+			for p in nodo.adyacentes: # p = [cod_parada, tiempo]
+				parada = get_parada(lista_nodos,p[0])
+				if parada is not None:
+					for l in parada.lineas:
+						if l[:2] not in [x[:2] for x in res]:
+							res.append(l[:2] + [parada])
+			return res
+
+		c_origen = cercanos(self,lista_nodos)
+		c_destino = cercanos(destino,lista_nodos)
 		paradas = list()
-		#busco un par cod_linea, cod_variante en las dos listas
-		for parada_destino in c_destino:
-			if parada_destino[:2] in [x[:2] for x in c_origen]:
-				paradas.append(parada_destino)
+		for orig in c_origen:
+			for dest in c_destino:
+				if orig[:2] == dest[:2]:
+					paradas.append([orig[0],orig[1],orig[2],dest[2]])
 		if len(paradas) != 0:
 			t = float('inf')
+			res_origen = None
+			res_destino = None
 			for parada in paradas:
-				#print(parada)
-				dest = get_parada(lista_nodos,parada[2])
-				if dest is not (None or self):
-					aux = get_tiempo(parada[0],parada[1],self,dest,horarios,hora)
-					if aux > 0:
-						t = min(t,aux)
+				#get_tiempo(cod_linea,cod_variante,origen,destino,horarios,hora=0)
+				aux = get_tiempo(parada[0],parada[1],parada[2],parada[3],horarios,hora)
+				if aux < t:
+					t = aux
+					res_origen = parada[2]
+					res_destino = parada[3]
 			m,s = divmod(t,60)
-			print("{}:{}".format(m,s))
-			return t,self,dest
+			print("{}:{}".format(m,s),"b")
+			return t,res_origen,res_destino
 		else:
 			'''Si no encuentro un omnibus directo busco en la mala
 			todas las paradas que conecten el origen con el destino
@@ -182,14 +181,23 @@ class Nodo:
 							if primer_tramo > 0 and segundo_tramo > 0:
 								t = min(t,primer_tramo + segundo_tramo)
 				m,s = divmod(t,60)
-				print("{}:{}".format(m,s))
+				print("{}:{}".format(m,s),"a")
 				return t,self,destino
 
-def busqueda(origen, destino, nodos, horarios, hora):
-	nodo_origen = parada_mas_cercana(origen[0],origen[1],nodos)
-	nodo_destino = parada_mas_cercana(destino[0],destino[1],nodos)
+def busqueda(origen, destino, hora):
+	nodos = load('nodos.csv')
+	with open('test/test_horarios2.csv') as f:
+		horarios = f.read().split('\n')
+		horarios = list(map(lambda x: x.split(','),horarios))
+	nodo_origen = get_parada(nodos,parada_mas_cercana(origen[0],origen[1],nodos))
+	#print(nodo_origen)
+	nodo_destino = get_parada(nodos,parada_mas_cercana(destino[0],destino[1],nodos))
+	#print(nodo_destino)
 	t,parada_origen,parada_destino = nodo_origen.search(nodos,nodo_destino,horarios,hora)
-	return t + tiempo_caminando(origen,parada_origen.coords) + tiempo_caminando(destino,parada_destino.coords)
+	t_caminando_tramo1 = tiempo_caminando(origen,parada_origen.coords)
+	t_caminando_tramo2 = tiempo_caminando(destino,parada_destino.coords)
+	t_total = (t + t_caminando_tramo1 + t_caminando_tramo2)
+	return t_total
 
 def cargar_nodos(file_name):
 	nodos = list()
@@ -225,7 +233,7 @@ def save(lista_nodos,file_name):
 		f.write("CODIGO_PARADA,X,Y,LINEAS,ADYACENTES\n")
 		f.write('\n'.join(l))
 
-def load_nodos(file_name):
+def load(file_name):
 	with open(file_name) as f:
 		a = f.read().split('\n')[1:]
 	nodos = list()
@@ -244,17 +252,23 @@ def load_nodos(file_name):
 	return nodos
 
 def get_horarios(file_name):
-    with open(file_name) as f:
-        horarios = f.read().split('\n')
-        horarios = list(map(lambda x: x.split(','),horarios))
-        return horarios
+	with open(file_name) as f:
+		horarios = f.read().split('\n')
+		horarios = list(map(lambda x: x.split(','),horarios))
+	return horarios
 
 if __name__ == '__main__':
 	#nodos = cargar_nodos('test/test_horarios.csv')
 	#cargar_adyacentes(nodos)
 	#save(nodos,'nodos2.csv')
-	nodos = load_nodos('nodos.csv')
-	horarios = get_horarios('horarios.csv')
-	index_0 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '3999'][0] #2968
-	index_1 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '3507'][0] #3719
-	nodos[index_0].search(nodos,nodos[index_1],horarios,15)
+	nodos = load('nodos.csv')
+	#horarios = get_horarios('test/test_horarios2.csv')
+	#index_0 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '3847'][0] #2968
+	#index_1 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '6017'][0] #3183
+	#a = nodos[index_0].search(nodos,nodos[index_1],horarios,15)
+	#-----------------------------
+	origen = [575168,6137630]
+	destino = [576443,6138480]
+	print(parada_mas_cercana(origen[0],origen[1],nodos))
+	print(parada_mas_cercana(destino[0],destino[1],nodos))
+	print(busqueda(origen,destino,15))
