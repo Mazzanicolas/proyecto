@@ -21,6 +21,9 @@ class Centro(models.Model):
     direccion = models.CharField(max_length=100, blank=True, null=True)
     prestador = models.ForeignKey('Prestador', models.CASCADE)
 
+    class Meta:
+        ordering = ['id_centro']
+
 class Settings(models.Model):
     setting = models.CharField(primary_key=True, max_length=100)
     value = models.CharField(max_length=100, blank=True, null=True)
@@ -33,20 +36,21 @@ class Individuo(models.Model):
     trabajo = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='trabajo')
     jardin = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='jardin')
 
+    class Meta:
+        ordering = ['id']
+
 
 class IndividuoTiempoCentro(models.Model):
     individuo = models.ForeignKey(Individuo, models.CASCADE)
     centro    = models.ForeignKey(Centro, models.CASCADE)
     dia       = models.IntegerField()
     hora      = models.IntegerField()
-    tiempo_caminando = models.IntegerField(blank=True, null=True)
-    tiempo_omnibus   = models.IntegerField(blank=True, null=True)
-    tiempo_auto      = models.IntegerField(blank=True, null=True)
+    tiempoViaje = models.IntegerField(blank=True, null=True)
     cantidad_pediatras = models.IntegerField()
     llega = models.CharField(max_length=2)
 
-
     class Meta:
+        ordering = ['individuo','centro','dia','hora']
         unique_together = (('individuo', 'centro', 'dia', 'hora'),)
 
 class Pediatra(models.Model):
@@ -57,6 +61,7 @@ class Pediatra(models.Model):
 
     class Meta:
         unique_together = (('centro', 'dia', 'hora'),)
+        ordering = ['centro', 'dia','hora']
 
 
 class Prestador(models.Model):
@@ -84,19 +89,29 @@ class TipoTransporte(models.Model):
     nombre = models.CharField(max_length=100)
 class MedidasDeResumen(models.Model):
     persona = models.ForeignKey(Individuo, models.CASCADE)
-    cantidadTotalLlega = models.IntegerField()
-    cantidadMaximaHoras = models.IntegerField()
+    cantidadTotalHoras = models.IntegerField()
     cantidadHorasLunes = models.IntegerField()
     cantidadHorasMartes = models.IntegerField()
     cantidadHorasMiercoles = models.IntegerField()
     cantidadHorasJueves = models.IntegerField()
     cantidadHorasViernes = models.IntegerField()
     cantidadHorasSabado = models.IntegerField()
-    cantidadTotalCentros = models.IntegerField()
+    cantidadMaximaHoras = models.IntegerField()
+    cantidadConsultasLunes = models.IntegerField()
+    cantidadConsultasMartes = models.IntegerField()
+    cantidadConsultasMiercoles = models.IntegerField()
+    cantidadConsultasJueves = models.IntegerField()
+    cantidadConsultasViernes = models.IntegerField()
+    cantidadConsultasSabado = models.IntegerField()
+    cantidadTotalConsultas = models.IntegerField()
     cantidadCentrosLunes = models.IntegerField()
     cantidadCentrosMartes = models.IntegerField()
     cantidadCentrosMiercoles = models.IntegerField()
     cantidadCentrosJueves = models.IntegerField()
     cantidadCentrosViernes = models.IntegerField()
     cantidadCentrosSabado = models.IntegerField()
+    cantidadTotalCentros = models.IntegerField()
     centroOptimo = models.ForeignKey(Centro, models.CASCADE)
+
+    class Meta:
+        ordering = ['persona']

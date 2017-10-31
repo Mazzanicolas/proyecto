@@ -1,16 +1,12 @@
 from django.http import HttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro
-from app.tables import PersonTable
+from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.tables import PersonTable,ResumenTable
 from django_tables2 import RequestConfig
 from shapely.geometry import Polygon, Point
 import shapefile
-from django_filters.views import FilterView
-from django_tables2.views import SingleTableMixin
 from app.omnibus import get_horarios, load, busqueda
 import csv
-from io import StringIO
-from django.core.files.storage import default_storage
 global shapeAuto
 global shapeCaminando
 global horarios
@@ -25,9 +21,6 @@ shapeCaminando = sf.shapes()
 def index(request):
     if(not Sector.objects.all()):
         cargarSectores()
-    ##cargarCentroPediatras()
-    ##cargarIndividuoAnclas()
-    ##cargarTiempos()
     post = request.POST
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
         s = Settings(setting = "tiempoMaximo",value = "60")
@@ -102,7 +95,7 @@ def res(request):
                                 llega = "Si"
                             else:
                                 llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
                             q.save()
                         else:
                             if(jardin and isJardin):
@@ -113,7 +106,7 @@ def res(request):
                                 llega = "Si"
                             else:
                                 llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
                     else:
                         if(isJardin and jardin):
@@ -124,7 +117,7 @@ def res(request):
                                     llega = "Si"
                                 else:
                                     llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                                 q.save()
                             else:
                                 tiempoViaje = calcularTiempos([secJardin, secCentro],transporte,hora.hora)
@@ -132,7 +125,7 @@ def res(request):
                                     llega = "Si"
                                 else:
                                     llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                                 q.save()
                         else:
                             tiempoViaje = calcularTiempos([secHogar, secCentro],transporte,hora.hora)
@@ -140,7 +133,7 @@ def res(request):
                                 llega = "Si"
                             else:
                                 llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
     dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
     table = PersonTable(IndividuoTiempoCentro.objects.all())
@@ -159,6 +152,8 @@ def cargarMutualistas(archivo):
         t = TipoTransporte(0,"Caminando")
         t.save()
         t = TipoTransporte(2,"bus")
+        t.save()
+        t = TipoTransporte(3,"Auto")
         t.save()
         p = Prestador(1,"ASSE")
         p.save()
@@ -203,7 +198,7 @@ def getTransporte(request,individuo):
     return transporte
 def calcularTiempos(anclas,transporte,hora):
     tiempoViaje = 0
-    if(not (transporte == "bus" or transporte == 2 or transporte == 3) ):
+    if(not (transporte == "bus" or transporte == 2) ):
         for i in range(0,len(anclas)-1):
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
     else:
@@ -215,7 +210,7 @@ def calcularTiempos(anclas,transporte,hora):
     return tiempoViaje/60
 def getSector(lugar, transporte):
     #print(transporte):
-    if(transporte == 'Auto' or transporte == 1):
+    if(transporte == 'Auto' or transporte == 1 or transporte == 3):
         return lugar.sector_auto
     elif(transporte == 'Caminando' or transporte == 0):
         return lugar.sector_caminando
@@ -345,9 +340,9 @@ def cargarCentroPediatras(request):
         #Centro, Dia, Hora, Cantidad de pediatras
         #dias = ["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"]
             contador_dias = 11
-            for i in range(5):
+            for i in range(6):
                 for j in horas:
-                    if(contador_dias >106): ##Arreglar
+                    if(contador_dias > 106): ##Arreglar
                         break
                     if ((caso[contador_dias]) == ''):
                         caso[contador_dias]=0
@@ -366,70 +361,98 @@ def consultaConFiltro(request):
     transporteFiltro = getFilters(request,'transporteFiltro')
     diaFiltro        = getFilters(request,'diasFiltro')
     horaFiltro       = getFilters(request,'horasFiltro')
-    print(request.POST)
-    consulta = IndividuoTiempoCentro.objects.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
+    consulta = IndividuoTiempoCentro.objects.all()#.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
     dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
-    print(len(consulta))
     table    = PersonTable(consulta)
-    RequestConfig(request, paginate={'per_page': 10}).configure(table)
+    RequestConfig(request, paginate={'per_page': 200}).configure(table)
     context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll2.html', context)
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
-    individuos = Individuo.objects.all()
-    for indiv in individuos:
+    if(MedidasDeResumen.objects.all()):
+        individuos = []
+    else:
+        individuos = Individuo.objects.all()
+    for individuo in individuos:
         tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo)
-        totalHoras = 0
-        dictLlegaPorHora = {0:0,1:0,2:0,3:0,4:0,5:0,}
-        cantidadCentrosPorDias ={0:0,1:0,2:0,3:0,4:0,5:0}
-        centrosPorDia = []
-        centros = {}
-        diaAnterior = None
+        dictConsultasPorDia = {0:0,1:0,2:0,3:0,4:0,5:0}
+        dictHorasPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
+        dictCentrosPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
+        centros = dict()
         for tiempo in tiempos:
-            if tiempo.llega == "Si":
+            if(tiempo.llega == "Si"):
                 dia = tiempo.dia
-                if(diaAnterior and diaAnterior != dia):
-                    cantidadCentrosPorDias[diaAnterior] = len(centrosPorDia)
-                    centrosPorDia = []
-                totalHoras += 1
-                dictLlegaPorHora[dia] = dictLlegaPorHora[dia] + 1
-                centro = tiempo.centro
-                if(centro.id_centro not in centrosPorDia):
-                    centrosPorDia.append(centro.id_centro)
-                if(centro.id_centro not in centros):
-                    centros[centro.id_centro] =  tiempo.tiempoViaje
+                dictConsultasPorDia[dia] = dictConsultasPorDia[dia] + 1
+                dictHorasPorDia[dia].add(tiempo.hora)
+                dictCentrosPorDia[dia].add(tiempo.centro_id)
+                if(tiempo.centro_id in centros):
+                    if(tiempo.tiempoViaje < centros[tiempo.centro_id]):
+                        centros[tiempo.centro_id] = tiempo.tiempoViaje
                 else:
-                    if tiempo.tiempoViaje < centros[centro.id_centro]:
-                        centros[centro.id_centro] = tiempo.tiempoViaje
-        maximo = 0
-        for key, value in dictLlegaPorHora.items():
-            if(value > maximo):
-                maximo = value
-        centro = None
-        for key, value in centros.items():
-            if(not centro == None):
-                if(value < centros[centro]):
-                    centro = key
-        leResumen = MedidasDeResumen(individuo = individuo, cantidadTotalLlega = totalHoras,cantidadHorasLunes = dictLlegaPorHora[0],
-                    cantidadHorasMartes = dictLlegaPorHora[0],cantidadHorasMiercoles = dictLlegaPorHora[0], cantidadHorasJueves = dictLlegaPorHora[0],
-                    cantidadHorasViernes = dictLlegaPorHora[0],cantidadHorasSabado = dictLlegaPorHora[0], cantidadMaximaHoras = maximo,
-                    cantidadCentrosLunes = cantidadCentrosPorDias[0], cantidadCentrosMartes = cantidadCentrosPorDias[0],cantidadCentrosMiercoles = cantidadCentrosPorDias[0],
-                    cantidadCentrosJueves = cantidadCentrosPorDias[0], cantidadCentrosViernes = cantidadCentrosPorDias[0],cantidadCentrosSabado = cantidadCentrosPorDias[0],
-                    cantidadTotalCentros = len(centros), centroOptimo = centro)
+                    centros[tiempo.centro_id] = tiempo.tiempoViaje
+        totalHoras = getTotalFromDict(dictHorasPorDia)
+        totalConsultas = getTotalFromDict(dictConsultasPorDia)
+        totalCentros = len(centros)
+        centroOptimo = getCentroOptimo(centros)
+        leResumen = MedidasDeResumen(persona = individuo, cantidadTotalHoras = totalHoras,cantidadHorasLunes = len(dictHorasPorDia[0]),
+                    cantidadHorasMartes = len(dictHorasPorDia[1]),cantidadHorasMiercoles = len(dictHorasPorDia[2]), cantidadHorasJueves = len(dictHorasPorDia[3]),
+                    cantidadHorasViernes = len(dictHorasPorDia[4]),cantidadHorasSabado = len(dictHorasPorDia[5]), cantidadMaximaHoras = getMaximoDict(dictHorasPorDia),
+                    cantidadConsultasLunes = dictConsultasPorDia[0], cantidadConsultasMartes = dictConsultasPorDia[1],cantidadConsultasMiercoles = dictConsultasPorDia[2],
+                    cantidadConsultasJueves = dictConsultasPorDia[3], cantidadConsultasViernes = dictConsultasPorDia[4],cantidadConsultasSabado = dictConsultasPorDia[5],
+                    cantidadTotalConsultas = totalConsultas, cantidadCentrosLunes = len(dictCentrosPorDia[0]), cantidadCentrosMartes = len(dictCentrosPorDia[1]),
+                    cantidadCentrosMiercoles = len(dictCentrosPorDia[2]),cantidadCentrosJueves = len(dictCentrosPorDia[3]), cantidadCentrosViernes = len(dictCentrosPorDia[4]),
+                    cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = Centro.objects.get(id_centro = centroOptimo))
 
-
+        leResumen.save()
+    consulta = MedidasDeResumen.objects.all()
+    table  = ResumenTable(consulta)
+    RequestConfig(request, paginate={'per_page': 10}).configure(table)
+    context = {'result': table}
+    return render(request, 'app/calcAll2.html', context)
+def getCentroOptimo(centros):
+    centroOptimo = None
+    for key, value in centros.items():
+        if(centroOptimo and value < centros[centroOptimo]):
+            centroOptimo = key
+        else:
+            centroOptimo = key
+    return centroOptimo
+def getMaximoDict(mapa):
+    maximo = 0
+    for value in mapa.values():
+        aux = value if type(value) == int else len(value)
+        if( aux > maximo):
+            maximo = aux
+    return maximo
+def getTotalFromDict(mapa):
+    res = 0
+    for value in mapa.values():
+        res += value if type(value) == int else len(value)
+    return res
 def getFilters(request,filtro):
     filtros = []
     for key, value in request.POST.items():
         if(filtro.upper() in key.upper()):
             filtros.append(value)
     return filtros
+def getListOfDays(stringDays):
+    daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5}
+    daysByComma = stringDays.split(',')
+    resDays = []
+    for day in daysByComma:
+        if('-' in day):
+            frm, to = day.split('-')
+            frm = daysList[frm]
+            to = daysList[to]
+            resDays = resDays + list(range(frm,to+1))
+        else:
+            resDays.append(day)
+    return resDays
 def calcAndSaveDefault():
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
     individuos = Individuo.objects.all()
     prestadores = Prestador.objects.all()
     for individuo in individuos:
-        print("WEW"+str(individuo.id))
         prest      = [individuo.prestador]#arreglar
         transporte = individuo.tipo_transporte.id
         trabajo    = individuo.trabajo
@@ -443,7 +466,7 @@ def calcAndSaveDefault():
                 secCentro = getSector(centro,transporte)
                 horas     = Pediatra.objects.filter(centro__id_centro = centro.id_centro)
                 for hora in horas:
-                    if(trabajo):
+                    if(trabajo and hora.dia in getListOfDays(trabajo.dias)):
                         if(hora.hora < trabajo.hora_inicio):
                             if(jardin):
                                 tiempoViaje = calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
@@ -454,7 +477,7 @@ def calcAndSaveDefault():
                                 llega = "Si"
                             else:
                                 llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
                             q.save()
                         else:
                             if(jardin):
@@ -465,18 +488,18 @@ def calcAndSaveDefault():
                                 llega = "Si"
                             else:
                                 llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
                     else:
                         if(jardin):
-                            if(centro.hora < hora_inicio):
+                            if(hora.hora < jardin.hora_inicio):
                                 tiempoViaje     = calcularTiempos([secCentro, secJardin],transporte,hora.hora)
                                 horaFinConsulta = hora.hora + tiempoConsulta/60
                                 if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
                                     llega = "Si"
                                 else:
                                     llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                                 q.save()
                             else:
                                 tiempoViaje = calcularTiempos([secJardin, secCentro],transporte,hora.hora)
@@ -484,7 +507,7 @@ def calcAndSaveDefault():
                                     llega = "Si"
                                 else:
                                     llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                                 q.save()
                         else:
                             tiempoViaje = calcularTiempos([secHogar, secCentro],transporte,hora.hora)
@@ -492,5 +515,5 @@ def calcAndSaveDefault():
                                 llega = "Si"
                             else:
                                 llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempo_auto = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
