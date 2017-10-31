@@ -1,23 +1,34 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.filters import IndividuoTiempoCentroFilter
 from app.tables import PersonTable,ResumenTable
 from django_tables2 import RequestConfig
 from shapely.geometry import Polygon, Point
+from django_filters.views import FilterView
+from django_tables2.views import SingleTableMixin
+from app.forms import FooFilterFormHelper
 import shapefile
-from app.omnibus import get_horarios, load, busqueda
+from io import StringIO
+from app.bus.omnibus import get_horarios, load, busqueda
 import csv
 global shapeAuto
 global shapeCaminando
 global horarios
 global nodos
-horarios = get_horarios('app/horarios.csv')
-nodos = load('app/nodos.csv')
-sf = shapefile.Reader('app/okkk.shp')
+horarios = get_horarios('app/bus/horarios.csv')
+nodos = load('app/bus/nodos.csv')
+sf = shapefile.Reader('app/files/shapeAuto.shp')
 shapeAuto = sf.shapes()
-sf = shapefile.Reader('app/shpWkng.shp')
+sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
+class FilteredPersonListView(SingleTableMixin, FilterView):
+    table_class = PersonTable
+    model = IndividuoTiempoCentro
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filterset_class = IndividuoTiempoCentroFilter
 def index(request):
     if(not Sector.objects.all()):
         cargarSectores()
@@ -239,8 +250,6 @@ def centroid(shape):
         return poligono.representative_point()
     else:
         return poligono.centroid
-def saveTimes(request):
-    return render(request, 'app/index.html')
 def parsear_hora(hora):
     if(not "." in hora):
         str(float(hora))
@@ -357,18 +366,14 @@ def cargarCentroPediatras(request):
 def consultaConFiltro(request):
     if(not IndividuoTiempoCentro.objects.all()):
         calcAndSaveDefault()
-    prestadorFiltro  = getFilters(request,'prestadorFiltro')
-    transporteFiltro = getFilters(request,'transporteFiltro')
-    diaFiltro        = getFilters(request,'diasFiltro')
-    horaFiltro       = getFilters(request,'horasFiltro')
-    consulta = IndividuoTiempoCentro.objects.all()#.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
+    #prestadorFiltro  = getFilters(request,'prestadorFiltro')
+    #transporteFiltro = getFilters(request,'transporteFiltro')
+    #diaFiltro        = getFilters(request,'diasFiltro')
+    #horaFiltro       = getFilters(request,'horasFiltro')
+    consulta = IndividuoTiempoCentro.objects.select_related().all()#.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
     dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
     table    = PersonTable(consulta)
-<<<<<<< HEAD
-    RequestConfig(request, paginate={'per_page': 1000}).configure(table)
-=======
-    RequestConfig(request, paginate={'per_page': 200}).configure(table)
->>>>>>> 8fb27c1e7f730b975b416f0ad12e8465f93e884a
+    RequestConfig(request).configure(table)
     context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll2.html', context)
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
