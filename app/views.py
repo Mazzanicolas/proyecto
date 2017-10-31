@@ -281,7 +281,7 @@ def cargarIndividuoAnclas(requestf):
         individuo.save()
 
 def getSectorForPoint(ancal,tipo):
-    if(tipo == "Auto" or tipo == 1):
+    if(tipo == "Auto" or tipo == 1 ):
         shapes = shapeAuto
     else:
         shapes = shapeCaminando
@@ -436,7 +436,7 @@ def getFilters(request,filtro):
     return filtros
 def getListOfDays(stringDays):
     daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5}
-    daysByComma = stringDays.split(',')
+    daysByComma = stringDays.split(';')
     resDays = []
     for day in daysByComma:
         if('-' in day):
