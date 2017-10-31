@@ -45,27 +45,88 @@
     </body>
     <script type = "text/javascript">
       function hideColumns(){
-        var rows = document.querySelectorAll("th");
-        if(document.getElementById("hide_id").checked) rows[0].style.display='none';
-        else rows[0].style.display = '';
-        if(document.getElementById("hide_individuo").checked) rows[1].style.display='none';
-        else rows[1].style.display = '';
-        if(document.getElementById("hide_centro").checked) rows[2].style.display='none';
-        else rows[2].style.display = '';
-        if(document.getElementById("hide_dia").checked) rows[3].style.display='none';
-        else rows[3].style.display = '';
-        if(document.getElementById("hide_hora").checked) rows[4].style.display='none';
-        else rows[4].style.display = '';
-        if(document.getElementById("hide_t_caminando").checked) rows[5].style.display='none';
-        else rows[5].style.display = '';
-        if(document.getElementById("hide_t_omnibus").checked) rows[6].style.display='none';
-        else rows[6].style.display = '';
-        if(document.getElementById("hide_t_auto").checked) rows[7].style.display='none';
-        else rows[7].style.display = '';
-        if(document.getElementById("hide_cant_ped").checked) rows[8].style.display='none';
-        else rows[8].style.display = '';
-        if(document.getElementById("hide_llega").checked) rows[9].style.display='none';
-        else rows[9].style.display = '';
+        var cols = document.querySelectorAll("th");
+        var rows = document.querySelectorAll("tr");
+        if(document.getElementById("hide_id").checked) {
+          rows[0].style.display='none';
+          cols[0].style.display='none';
+        }
+        else {
+          rows[0].style.display = '';
+          cols[0].style.display = '';
+        }
+        if(document.getElementById("hide_individuo").checked) {
+          rows[1].style.display='none';
+          cols[1].style.display='none';
+        }
+        else {
+          rows[1].style.display = '';
+          cols[1].style.display = '';
+        }
+        if(document.getElementById("hide_centro").checked) {
+          rows[2].style.display='none';
+          cols[2].style.display='none';
+        }
+        else {
+          rows[2].style.display = '';
+          cols[2].style.display = '';
+        }
+        if(document.getElementById("hide_dia").checked) {
+          rows[3].style.display='none';
+          cols[3].style.display='none';
+        }
+        else {
+          rows[3].style.display = '';
+          cols[3].style.display = '';
+        }
+        if(document.getElementById("hide_hora").checked) {
+          rows[4].style.display='none';
+          cols[4].style.display='none';
+        }
+        else {
+          rows[4].style.display = '';
+          cols[4].style.display = '';
+        }
+        if(document.getElementById("hide_t_caminando").checked) {
+          rows[5].style.display='none';
+          cols[5].style.display='none';
+        }
+        else {
+          rows[5].style.display = '';
+          cols[5].style.display = '';
+        }
+        if(document.getElementById("hide_t_omnibus").checked) {
+          rows[6].style.display='none';
+          cols[6].style.display='none';
+        }
+        else {
+          rows[6].style.display = '';
+          cols[6].style.display = '';
+        }
+        if(document.getElementById("hide_t_auto").checked) {
+          rows[7].style.display='none';
+          cols[7].style.display='none';
+        }
+        else {
+          rows[7].style.display = '';
+          cols[7].style.display = '';
+        }
+        if(document.getElementById("hide_cant_ped").checked) {
+          rows[8].style.display='none';
+          cols[8].style.display='none';
+        }
+        else {
+          rows[8].style.display = '';
+          cols[8].style.display = '';
+        }
+        if(document.getElementById("hide_llega").checked) {
+          rows[9].style.display='none';
+          cols[9].style.display='none';
+        }
+        else {
+          rows[9].style.display = '';
+          cols[9].style.display = '';
+        }
       }
       function unHide(){
         var rows = document.querySelectorAll("th");

@@ -21,8 +21,6 @@
                 <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos</a></li>
                 <li><a href="#" data-toggle="modal" data-target="#respaldar_datos">Respaldar Datos</a></li>
                 <li role="separator" class="divider"></li>
-                <li><a href="#" data-toggle="modal" data-target="#importar_matriz">Importar Matriz</a></li>
-                <li><a href="#" data-toggle="modal" data-target="#exportar_matriz">Exportar Matriz</a></li>
               </ul>
             </li>
           <!--1-->
@@ -325,13 +323,11 @@
          <div class="form-group">
            <label for="inputFile">Seleccione un archivo</label>
            <input type="file" class="form-control-file" name = "inputFile" aria-describedby="fileHelp">
-           <input type="submit" class="btn btn-primary" name="submit" value="Upload" />
            <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
          </div>
      </div>
      <div class="modal-footer">
        <button type="submit" class="btn btn-primary btn-lg " id="load" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Cargando " name="submit" value="Upload" />Cargar</button>
-       <input type="submit" class="btn btn-primary">Calcular</button>
        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
        </div>
      </div>
