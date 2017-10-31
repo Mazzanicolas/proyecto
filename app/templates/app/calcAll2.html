@@ -10,7 +10,7 @@
     <body>
       <!--NavBar-->
       <nav class="navbar navbar-default" style="height:102px;text-align:center;">
-        <div class="container-fluid" style="height:100px;width:1000px;text-align:center;">
+        <div class="container-fluid" style="height:100px;width:1150px;text-align:center;">
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
               <li><div class="panel panel-default" style="height:100px; width:195px;"><div class="panel-body"><b>Individuo</b>
@@ -35,6 +35,8 @@
               <input type="checkbox" id="hide_llega"><b>Llega</b><br>
               <button class="btn btn-primary btn-xs" onclick='hideColumns()'>Ocultar Selección</button>
               <button class="btn btn-primary btn-xs" onclick='unHide()'>Mostar Selección</button></div></li>
+              <li><div style="height:45px; width:110px;text-align:center;"><button class="btn btn-primary" onclick="printPage()">Descargar</button></div></li>
+              <li><div style="height:45px; width:110px;text-align:center;"><button class="btn btn-primary" onclick="">Resumen</button></div></li>
           </ul>
           </div>
         </div>
@@ -131,6 +133,9 @@
       function unHide(){
         var rows = document.querySelectorAll("th");
         for(var i=0;i<rows.length;i++) rows[i].style.display = '';
+      }
+      function printPage() {
+        window.print();
       }
       function filter() {
           var persona = document.getElementById("myInput").value.toUpperCase().trim();

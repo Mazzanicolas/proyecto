@@ -371,7 +371,7 @@ def consultaConFiltro(request):
     dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
     print(len(consulta))
     table    = PersonTable(consulta)
-    RequestConfig(request, paginate={'per_page': 10}).configure(table)
+    RequestConfig(request, paginate={'per_page': 1000}).configure(table)
     context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll2.html', context)
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
