@@ -149,7 +149,7 @@ class Nodo:
                     res_origen = parada[2]
                     res_destino = parada[3]
             m,s = divmod(t,60)
-            print("{}:{}".format(m,s),"directo")
+            #print("{}:{}".format(m,s),"directo")
             return t,res_origen,res_destino
         else:
             '''Si no encuentro un omnibus directo busco en la mala
@@ -188,14 +188,14 @@ class Nodo:
                                 res_origen = linea_o[2]
                                 res_destino = linea_d[2]
                 m,s = divmod(t,60)
-                print("{}:{}".format(m,s),"transbordo")
+                #print("{}:{}".format(m,s),"transbordo")
                 return t,res_origen,res_destino
             return -1,self,destino
 
 def busqueda(origen, destino, nodos,horarios,hora):
     nodo_origen = get_parada(nodos,parada_mas_cercana(origen[0],origen[1],nodos))
     nodo_destino = get_parada(nodos,parada_mas_cercana(destino[0],destino[1],nodos))
-    if nodo_origen is nodo_destino: 
+    if nodo_origen is nodo_destino:
         return 0
     t,parada_origen,parada_destino = nodo_origen.search(nodos,nodo_destino,horarios,hora)
     t_caminando_tramo1 = tiempo_caminando(origen,parada_origen.coords)

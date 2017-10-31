@@ -75,7 +75,7 @@ def res(request):
         transporte = getTransporte(request,individuo) if transporte == "default" else transporte
         trabajo = individuo.trabajo
         jardin = individuo.jardin
-        SecHogar = getSector(individuo.hogar,transporte)
+        secHogar = getSector(individuo.hogar,transporte)
         secTrabajo = getSector(trabajo,transporte)
         secJardin = getSector(jardin,transporte)
         for prestador in prest:
@@ -153,7 +153,7 @@ def cargarMutualistas(archivo):
         t.save()
         t = TipoTransporte(2,"bus")
         t.save()
-        t = TipoTransporte(3,"Auto")
+        t = TipoTransporte(3,"bus")
         t.save()
         p = Prestador(1,"ASSE")
         p.save()
@@ -198,7 +198,7 @@ def getTransporte(request,individuo):
     return transporte
 def calcularTiempos(anclas,transporte,hora):
     tiempoViaje = 0
-    if(not (transporte == "bus" or transporte == 2) ):
+    if(not (transporte == "bus" or transporte == 2 or transporte == 3)):
         for i in range(0,len(anclas)-1):
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
     else:
@@ -210,7 +210,7 @@ def calcularTiempos(anclas,transporte,hora):
     return tiempoViaje/60
 def getSector(lugar, transporte):
     #print(transporte):
-    if(transporte == 'Auto' or transporte == 1 or transporte == 3):
+    if(transporte == 'Auto' or transporte == 1):
         return lugar.sector_auto
     elif(transporte == 'Caminando' or transporte == 0):
         return lugar.sector_caminando
@@ -453,11 +453,12 @@ def calcAndSaveDefault():
     individuos = Individuo.objects.all()
     prestadores = Prestador.objects.all()
     for individuo in individuos:
+        print("wew")
         prest      = [individuo.prestador]#arreglar
         transporte = individuo.tipo_transporte.id
         trabajo    = individuo.trabajo
         jardin     = individuo.jardin
-        SecHogar   = getSector(individuo.hogar,transporte)
+        secHogar   = getSector(individuo.hogar,transporte)
         secTrabajo = getSector(trabajo,transporte)
         secJardin  = getSector(jardin,transporte)
         for prestador in prest:
@@ -468,7 +469,7 @@ def calcAndSaveDefault():
                 for hora in horas:
                     if(trabajo and hora.dia in getListOfDays(trabajo.dias)):
                         if(hora.hora < trabajo.hora_inicio):
-                            if(jardin):
+                            if(jardin and hora.dia in getListOfDays(jardin.dias)):
                                 tiempoViaje = calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
                             else:
                                 tiempoViaje = calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
@@ -480,7 +481,7 @@ def calcAndSaveDefault():
                             q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
                             q.save()
                         else:
-                            if(jardin):
+                            if(jardin and hora.dia in getListOfDays(jardin.dias)):
                                 tiempoViaje = calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
                             else:
                                 tiempoViaje = calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
@@ -491,7 +492,7 @@ def calcAndSaveDefault():
                             q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
                             q.save()
                     else:
-                        if(jardin):
+                        if(jardin and hora.dia in getListOfDays(jardin.dias)):
                             if(hora.hora < jardin.hora_inicio):
                                 tiempoViaje     = calcularTiempos([secCentro, secJardin],transporte,hora.hora)
                                 horaFinConsulta = hora.hora + tiempoConsulta/60
