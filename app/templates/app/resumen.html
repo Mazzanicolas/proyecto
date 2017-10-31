@@ -1,0 +1,6 @@
+{% load render_table from django_tables2 %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'app/css/main.css' %}">
+<!doctype html>
+{% render_table table "app/mytable.html" %}
