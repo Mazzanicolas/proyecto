@@ -364,7 +364,11 @@ def consultaConFiltro(request):
     consulta = IndividuoTiempoCentro.objects.all()#.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
     dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
     table    = PersonTable(consulta)
+<<<<<<< HEAD
+    RequestConfig(request, paginate={'per_page': 1000}).configure(table)
+=======
     RequestConfig(request, paginate={'per_page': 200}).configure(table)
+>>>>>>> 8fb27c1e7f730b975b416f0ad12e8465f93e884a
     context = {'result': table, 'dias':dias}
     return render(request, 'app/calcAll2.html', context)
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
