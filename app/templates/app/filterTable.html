@@ -6,8 +6,10 @@
 <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
 {% if filter %}
     <form action="" method="get" class="form form-inline">
-        {% bootstrap_form filter.form layout='inline' %}
-        {% bootstrap_button 'filter' %}
+        <div class = 'navbar navbar-default'>
+          {% bootstrap_form filter.form layout='inline' %}
+          {% bootstrap_button 'filter' %}
+        </div>
     </form>
 {% endif %}
 {% render_table table 'django_tables2/bootstrap.html' %}

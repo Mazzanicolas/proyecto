@@ -67,6 +67,8 @@ class Pediatra(models.Model):
 class Prestador(models.Model):
     id = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=100)
+    def __str__(self):
+        return u'{0}'.format(self.nombre)
 
 class Sector(models.Model):
     x_centroide = models.IntegerField()
@@ -87,6 +89,8 @@ class SectorTiempo(models.Model):
 class TipoTransporte(models.Model):
     id = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=100)
+    def __str__(self):
+        return u'{0}'.format(self.nombre)
 class MedidasDeResumen(models.Model):
     persona = models.ForeignKey(Individuo, models.CASCADE)
     cantidadTotalHoras = models.IntegerField()

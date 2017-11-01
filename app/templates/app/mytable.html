@@ -1,7 +1,7 @@
 {% load django_tables2 %}
 {% load i18n %}
 
-<div class="table-container">
+<div class="table-container" style = 'text-align:center;'>
 {% block table %}
 <table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %}>
     {% block table.thead %}

@@ -29,6 +29,17 @@ class FilteredPersonListView(SingleTableMixin, FilterView):
     template_name = 'app/filterTable.html'
     paginate_by = 200
     filterset_class = IndividuoTiempoCentroFilter
+    def get_queryset(self, **kwargs):
+        if(not IndividuoTiempoCentro.objects.all()):
+            calcAndSaveDefault()
+        qs = super(FilteredPersonListView, self).get_queryset()
+        self.filter = self.filterset_class(self.request.GET, queryset=qs)
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(FilteredPersonListView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
 def index(request):
     if(not Sector.objects.all()):
         cargarSectores()
