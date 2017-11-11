@@ -11,6 +11,7 @@ class AnclaTemporal(models.Model):
     dias = models.CharField(max_length = 20)
     sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_auto')
     sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_caminando')
+    parada = models.IntegerField(blank=True, null=True)
 
 class Centro(models.Model):
     id_centro = models.IntegerField(primary_key = True)
@@ -46,8 +47,16 @@ class IndividuoTiempoCentro(models.Model):
     dia       = models.IntegerField()
     hora      = models.IntegerField()
     tiempoViaje = models.IntegerField(blank=True, null=True)
-    cantidad_pediatras = models.IntegerField()
-    llega = models.CharField(max_length=2)
+    cantidad_pediatras = models.IntegerField(null=True)
+    tHogarCentro = models.IntegerField(null=True)
+    tHogarTrabajo = models.IntegerField(null=True)
+    tHogarJardin = models.IntegerField(null=True)
+    tCentroHogar = models.IntegerField(null=True)
+    tCentroJardin = models.IntegerField(null=True)
+    tTrabajoJardin= models.IntegerField(null=True)
+    tTrabajoHogar= models.IntegerField(null=True)
+    tJardinTrabajo= models.IntegerField(null=True)
+    tJardinCentro= models.IntegerField(null=True)
 
     class Meta:
         ordering = ['individuo','centro','dia','hora']
