@@ -233,8 +233,7 @@ def calcularTiempos(anclas,transporte,hora):
         for i in range(0,len(anclas)-1):
             coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
             coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
-            #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
-            tiempoViaje += busqueda(coords_origen,coords_destino,nodos,horarios,hora)
+            tiempoViaje += busqueda(coords_origen,coords_destino,nodos,horarios,hora)/60
     return tiempoViaje/60
 def getSector(lugar, transporte):
     #print(transporte):

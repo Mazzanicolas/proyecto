@@ -1,13 +1,15 @@
 from shapely.geometry import Point
 from geopy.distance import vincenty
 import math
+import time
 
 #http://www.montevideo.gub.uy/aquehorapasa/aquehorapasa.html
 
 global VELOCIDAD_CAMINANDO
-VELOCIDAD_CAMINANDO = 1.4
+VELOCIDAD_CAMINANDO = 1.4 # 1.4 km/h
 
-global horarios
+global TIEMPO_ESPERA
+TIEMPO_ESPERA = 5*60 # 5 minutos en segundos
 
 def translate(easting, northing, zone = 21, northernHemisphere=False):
     if not northernHemisphere:
@@ -49,35 +51,35 @@ def get_tiempo(cod_linea,cod_variante,origen,destino,horarios,hora=0):
     #tiempo entre 2 paradas cercanas o conectadas en omnibus
     t = float('inf')
     if [cod_linea,cod_variante] in [x[:2] for x in origen.lineas]:
-        ord_origen = list(filter(
-            lambda x: x[0]==cod_linea and x[1]==cod_variante,origen.lineas))[0][2]
-        ord_destino = list(filter(
-            lambda x: x[0]==cod_linea and x[1]==cod_variante,destino.lineas))[0][2]
+        ord_origen = int(list(filter(
+            lambda x: x[0]==cod_linea and x[1]==cod_variante,origen.lineas))[0][2])
+        ord_destino = int(list(filter(
+            lambda x: x[0]==cod_linea and x[1]==cod_variante,destino.lineas))[0][2])
         if ord_origen < ord_destino:
-            recorrido = list()
+            t_viaje_parada = 45
             for h in horarios:
-                if len(h) > 1 and h[1]==cod_linea and h[2]==cod_variante:
-                    if int(ord_origen) <= int(h[3]) < int(ord_destino):
-                        recorrido.append(h)
-            recorrido = sorted(recorrido, key=lambda x: int(x[3]))
-            if len(recorrido) > 0:
-                t_omnibus = int(recorrido[0][-2]) #incializo el tiempo con la espera en la parada
-                for parada in recorrido:
-                    t_omnibus += int(parada[-1]) #en cada paso le sumo el tiempo de viaje a la proxima parada
-                t = min(t,t_omnibus) #me quedo con el menor tiempo
+                if h[0] == cod_linea and h[1] == cod_variante:
+                    t_viaje_parada = int(h[2])
+                    break
+            #incializo el tiempo con la espera en la parada
+            t_omnibus = TIEMPO_ESPERA + (ord_destino - ord_origen)*t_viaje_parada
+            t = min(t,t_omnibus) #me quedo con el menor tiempo
     return t
 
 def tiempo_caminando(origen,destino):
     origen = translate(origen[0],origen[1])
     destino = translate(destino[0],destino[1])
-    t = vincenty(origen,destino).kilometers * VELOCIDAD_CAMINANDO
+    km = vincenty(origen,destino).kilometers
+    t = (km / VELOCIDAD_CAMINANDO) * 3600
     return t
 
 def get_parada(lista_nodos,cod_parada):
     try:
-        index = [lista_nodos.index(nodo) for nodo in lista_nodos
-                    if nodo.cod_parada == cod_parada][0]
-        return lista_nodos[index]
+
+        return [nodo for nodo in lista_nodos if nodo.cod_parada == str(cod_parada)][0]
+        #index = [lista_nodos.index(nodo) for nodo in lista_nodos
+        #            if nodo.cod_parada == cod_parada][0]
+        #return lista_nodos[index]
     except:
         return None
 
@@ -106,102 +108,88 @@ class Nodo:
     def __repr__(self):
         return 'Parada {}'.format(self.cod_parada)
 
-    def to_string(self): #devuelve cod_parada,x,y,lineas,adyacentes para un nodo
+    '''
+    devuelve cod_parada,x,y,lineas,adyacentes para un nodo
+    '''
+    def to_string(self):
         s = '{},{},{}'.format(self.cod_parada,self.coords[0],self.coords[1])
         if len(self.lineas) > 0:
             lineas = ';'.join([':'.join(linea) for linea in self.lineas])
             s += ',{}'.format(lineas)
         if len(self.adyacentes) > 0:
             adyacentes = ';'.join(
-                [':'.join(map(str,ady)) for ady in self.adyacentes])
+                [ady.cod_parada for ady in self.adyacentes])
             s += ',{}'.format(adyacentes)
         return s
 
-    def cercanos(self,lista_nodos):
-        res = [l[:2] + [self] for l in self.lineas]
-        for p in self.adyacentes: # p = [cod_parada, tiempo]
-            parada = get_parada(lista_nodos,p[0])
-            if parada is not None:
-                for l in parada.lineas:
-                    if l[:2] not in [x[:2] for x in res]:
-                        res.append(l[:2] + [parada])
-        return res
-
-    def search(self, lista_nodos, destino, horarios, hora = 0):
-        #lista de lineas accesibles desde un nodo
-
-        c_origen = self.cercanos(lista_nodos)
-        c_destino = destino.cercanos(lista_nodos)
-        paradas = list()
-        for orig in c_origen:
-            for dest in c_destino:
-                if orig[:2] == dest[:2]:
-                    paradas.append([orig[0],orig[1],orig[2],dest[2]])
-        if len(paradas) != 0:
-            t = float('inf')
-            res_origen = self
-            res_destino = destino
-            for parada in paradas:
-                #get_tiempo(cod_linea,cod_variante,origen,destino,horarios,hora=0)
-                aux = get_tiempo(parada[0],parada[1],parada[2],parada[3],horarios,hora)
-                if aux < t:
-                    t = aux
-                    res_origen = parada[2]
-                    res_destino = parada[3]
-            m,s = divmod(t,60)
-            #print("{}:{}".format(m,s),"directo")
-            return t,res_origen,res_destino
-        else:
-            '''Si no encuentro un omnibus directo busco en la mala
-            todas las paradas que conecten el origen con el destino
-            Si encuentro para una parada una linea que conecte con el origen
-            y otra con el destino, corto y la agrego a la lista.'''
-            for nodo in lista_nodos:
-                conecta_origen = list()
-                conecta_destino = list()
-                for linea in nodo.lineas:
-                    #if linea[:2] in [x[:2] for x in c_origen]:
-                    #    conecta_origen.append(linea[:2] + [nodo])
-                    #elif linea[:2] in [x[:2] for x in c_destino]:
-                    #    conecta_destino.append(linea[:2] + [nodo])
-                    for elem in c_origen:
-                        if linea[:2] == elem[:2]:
-                            conecta_origen.append(linea[:2] + [elem[2]])
-                    for elem in c_destino:
-                        if linea[:2] == elem[:2]:
-                            conecta_destino.append(linea[:2] + [elem[2]])
-                if conecta_origen and conecta_destino:
-                    paradas.append([nodo,conecta_origen,conecta_destino])
-            if len(paradas) != 0:
-                res_origen = self
-                res_destino = destino
-                t = float('inf')
-                for parada in paradas:
-                    for linea_o in parada[1]:
-                        for linea_d in parada[2]:
-                            primer_tramo = get_tiempo(linea_o[0],linea_o[1],
-                                linea_o[2],parada[0],horarios,hora)
-                            segundo_tramo = get_tiempo(linea_d[0],linea_d[1],
-                                parada[0],linea_d[2],horarios,hora)
-                            if (primer_tramo + segundo_tramo) < t:
-                                t = primer_tramo + segundo_tramo
-                                res_origen = linea_o[2]
-                                res_destino = linea_d[2]
-                m,s = divmod(t,60)
-                #print("{}:{}".format(m,s),"transbordo")
-                return t,res_origen,res_destino
-            return -1,self,destino
-
-def busqueda(origen, destino, nodos,horarios,hora):
-    nodo_origen = get_parada(nodos,parada_mas_cercana(origen[0],origen[1],nodos))
-    nodo_destino = get_parada(nodos,parada_mas_cercana(destino[0],destino[1],nodos))
+def busqueda(cod_origen, coords_origen, cod_destino, coords_destino, nodos,horarios,hora):
+    t0=time.time()
+    nodo_origen = get_parada(nodos,cod_origen)
+    nodo_destino = get_parada(nodos,cod_destino)
+    t1 = time.time()
+    print("t",t1-t0)
     if nodo_origen is nodo_destino:
-        return 0
-    t,parada_origen,parada_destino = nodo_origen.search(nodos,nodo_destino,horarios,hora)
-    t_caminando_tramo1 = tiempo_caminando(origen,parada_origen.coords)
-    t_caminando_tramo2 = tiempo_caminando(destino,parada_destino.coords)
+        return 0 #Si las paradas origen y destino son la misma, no hay tiempo de viaje
+    t_caminando = tiempo_caminando(coords_origen,coords_destino)
+    if (t_caminando/60) < 30:
+        return t_caminando
+    #t,parada_origen,parada_destino = nodo_origen.search(nodos,nodo_destino,horarios,hora)
+    t = bfs_search(nodos,nodo_origen,nodo_destino,horarios,hora)
+    if t < 0:
+        return t
+    t_caminando_tramo1 = tiempo_caminando(coords_origen,nodo_origen.coords)
+    t_caminando_tramo2 = tiempo_caminando(coords_destino,nodo_destino.coords)
     t_total = (t + t_caminando_tramo1 + t_caminando_tramo2)
     return t_total
+
+def bfs(lista_nodos,start,goal):
+    visited = set()
+    queue = [(start,[start])]
+    while queue:
+        (nodo,path) = queue.pop(0)
+        if nodo not in visited:
+            for ady in (set(nodo.adyacentes) - set(path)):
+                if ady.cod_parada == goal.cod_parada:
+                    return path + [ady]
+                else:
+                    queue.append((ady,path + [ady]))
+            visited.add(nodo)
+    return queue
+
+def bfs_search(lista_nodos,start,goal,horarios,hora):
+    # Si existe una o mas lineas que conecten directamente el origen con el
+    # destino saco el tiempo. Si no, hay un transbordo y tengo que hacer bfs
+    interseccion = lambda l1,l2: [inner_list for inner_list in l1 if inner_list in l2]
+    lineas_origen = [x[:2] for x in start.lineas]
+    lineas = interseccion(lineas_origen,[x[:2] for x in goal.lineas])
+    if lineas != list():
+        t = float('inf')
+        for l in lineas:
+            t = min(t,get_tiempo(l[0],l[1],start,goal,horarios,hora))
+        if t != float('inf'):
+            return t
+    path = bfs(lista_nodos,start,goal)
+    if path != []:
+        t = 0
+        index = 0
+        while index < len(path):
+            nodo_a = path[index]
+            lineas_a = [x[:2] for x in nodo_a.lineas]
+            index += 1
+            while index < len(path):
+                nodo_aux = path[index]
+                if interseccion(lineas_a,[x[:2] for x in nodo_aux.lineas]):
+                    index += 1
+                else:
+                    break
+            lineas = interseccion(lineas_a,[x[:2] for x in nodo_aux.lineas])
+            if lineas != list():
+                t_aux = float('inf')
+                for l in lineas:
+                    t_aux = min(t_aux,get_tiempo(l[0],l[1],nodo_a,nodo_aux,horarios,hora))
+                    t += t_aux
+        return t
+    return -1
 
 def cargar_nodos(file_name):
     nodos = list()
@@ -211,7 +199,7 @@ def cargar_nodos(file_name):
         for linea in a:
             linea = linea.split(',')
             if linea[0] not in aux: #Si no hay un nodo creado para la parada
-                nodo = Nodo(linea[0],linea[4],linea[5]) #Codigo parada, x, y
+                nodo = Nodo(linea[0],linea[-2],linea[-1]) #Codigo parada, x, y
                 aux.append(linea[0])
                 nodos.append(nodo)
             else:
@@ -223,11 +211,11 @@ def cargar_nodos(file_name):
 
 def cargar_adyacentes(lista_nodos):
     for nodo in lista_nodos:
-        area = Point(nodo.coords[0],nodo.coords[1]).buffer(500)
-        for otro_nodo in lista_nodos:
-            if (otro_nodo is not nodo and
-                area.contains(Point(otro_nodo.coords[0],otro_nodo.coords[1]))):
-                nodo.adyacentes.append([otro_nodo.cod_parada])
+        adyacentes = list()
+        for ady in nodo.adyacentes:
+            nodo_aux = get_parada(lista_nodos,ady)
+            adyacentes.append(nodo_aux)
+        nodo.adyacentes = adyacentes
 
 def save(lista_nodos,file_name):
     l = list()
@@ -251,8 +239,9 @@ def load(file_name):
             if len(linea) == 5:
                 adyacentes = linea[4].split(';')
                 for ady in adyacentes:
-                    nodo.adyacentes.append(ady.split(':'))
+                    nodo.adyacentes.append(ady)
         nodos.append(nodo)
+    cargar_adyacentes(nodos)
     return nodos
 
 def get_horarios(file_name):
@@ -262,17 +251,16 @@ def get_horarios(file_name):
     return horarios
 
 if __name__ == '__main__':
-    #nodos = cargar_nodos('test/test_horarios.csv')
-    #cargar_adyacentes(nodos)
-    #save(nodos,'nodos2.csv')
+    #nodos = cargar_nodos('v_uptu_paradas.csv')
+    #save(nodos,'nodos.csv')
     nodos = load('nodos.csv')
+    #cargar_adyacentes2(nodos)
     horarios = get_horarios('horarios.csv')
-    #index_0 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '3847'][0] #2968
-    #index_1 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '6017'][0] #3183
-    #a = nodos[index_0].search(nodos,nodos[index_1],horarios,15)
-    #-----------------------------
-    origen = [571259.267923942, 6145404.66093832]
-    destino = [576101.9025, 6141075.761]
-    print(parada_mas_cercana(origen[0],origen[1],nodos))
-    print(parada_mas_cercana(destino[0],destino[1],nodos))
-    print(busqueda(origen,destino,nodos,horarios,15))
+    index_0 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '4836'][0] #4836
+    index_1 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == '5788'][0] #3183
+    #print(bfs_search(nodos,nodos[index_0],nodos[index_1],horarios,15))
+    t0 = time.time()
+    a = busqueda(4836,nodos[index_0].coords,5788,nodos[index_1].coords,nodos,horarios,15)
+    t1 = time.time()
+    print("calc",t1-t0)
+    print(a)
