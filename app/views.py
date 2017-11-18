@@ -363,6 +363,7 @@ def cargarCentroPediatras(request):
             centro = Centro(inti,float(caso[9]),float(caso[10]),None,None,caso[7],int(caso[2]))
             centro.sector_auto = getSectorForPoint(centro,"Auto")
             centro.sector_caminando = getSectorForPoint(centro,"Caminando")
+            centro.parada = parada_mas_cercana(float(caso[9]),float(caso[10]),nodos)
             centro.save()
         ## Pediatra
         #Centro, Dia, Hora, Cantidad de pediatras
@@ -632,10 +633,12 @@ def newCalcularTiempos(anclas,transporte):
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
     else:
         for i in range(0,len(anclas)-1):
-            coords_origen = (anclas[i])
-            coords_destino = (anclas[i+1])
+            coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
+            cod_origen = anclas[i].parada
+            coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
+            cod_destino = anclas[i+1].parada
             #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
-            tiempoViaje += busqueda(coords_origen,coords_destino,nodos,horarios,hora)
+            tiempoViaje += busqueda(cod_origen,coords_origen,cod_destino,coords_destino,nodos,horarios,hora)
     return tiempoViaje/60
 def newGetSector(lugar, transporte):
     #print(transporte):
