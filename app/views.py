@@ -10,7 +10,7 @@ from django_tables2.views import SingleTableMixin
 from app.forms import FooFilterFormHelper
 import shapefile
 from io import StringIO
-from app.bus.omnibus import get_horarios, load, busqueda, parada_mas_cercana
+from app.bus.omnibus import get_horarios, load, busqueda, parada_mas_cercana, get_parada
 import csv
 from django.shortcuts import redirect
 global shapeAuto
@@ -18,7 +18,7 @@ global shapeCaminando
 global horarios
 global nodos
 horarios = get_horarios('app/bus/horarios.csv')
-nodos = load('app/bus/nodos.csv')
+nodos = load('app/bus/test_nodos_cercanos.csv')
 sf = shapefile.Reader('app/files/shapeAuto.shp')
 shapeAuto = sf.shapes()
 sf = shapefile.Reader('app/files/shapeCaminando.shp')
@@ -633,12 +633,10 @@ def newCalcularTiempos(anclas,transporte):
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
     else:
         for i in range(0,len(anclas)-1):
-            coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
-            cod_origen = anclas[i].parada
-            coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
-            cod_destino = anclas[i+1].parada
+            parada_origen = get_parada(nodos,anclas[i])
+            parada_destino = get_parada(nodos,anclas[i+1])
             #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
-            tiempoViaje += busqueda(cod_origen,coords_origen,cod_destino,coords_destino,nodos,horarios,hora)
+            tiempoViaje += busqueda(parada_origen,parada_origen.coords,parada_destino,parada_destino.coords,nodos,horarios,hora)
     return tiempoViaje/60
 def newGetSector(lugar, transporte):
     #print(transporte):
