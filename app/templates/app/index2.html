@@ -99,9 +99,9 @@
             <div class="panel-footer">
               <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="default" checked> Utilizar predeterminadas</label></br>
               <div id="transportesContainer" hidden="true">
-                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio1" value="auto"> Auto </label>
-                <label class="radio-inline"><input type="radio" name="transporteRadio" id="inlineRadio2" value="caminando"> Caminando </label>
-                <label class="radio-inline disabled"><input type="radio" name="transporteRadio" id="inlineRadio3" value="omnibus" disabled> Omnibus </label></br>
+                <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio1" value="1"> Auto </label>
+                <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio2" value="0"> Caminando </label>
+                <label class="radio-inline disabled"><input type="radio" name="tipoTransporte" id="inlineRadio3" value="2" disabled> Omnibus </label></br>
               </div>
             </div>
           <!--Transporte-->
@@ -121,21 +121,21 @@
           <div class="panel-footer">
             <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkB" value="default" checked> Utilizar predeterminadas</label></br>
               <div id="mutualistasContainer"  hidden="true">
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ignorar"> Por defecto </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASSE"> ASSE </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="ASOCIACION ESPANOLA"> As. Española </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASA DE GALICIA"> Casa de Galicia </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CASMU"> CASMU </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CIRCULO CATOLICO"> Circulo Catolico </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="COSEM"> Cosem </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="CUDAM"> Cudam </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="GREMCA"> Gremca </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL BRITANICO"> H. Britanico </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="HOSPITAL EVANGELICO"> H. Evangelico </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MEDICA URUGUAYA"> Medica Uruguaya </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="MP"> MP </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="SMI"> SMI </label>
-                <label class="radio-inline"><input type="radio" name="mutualistasRadio" id="inlineRadio" value="UNIVERSAL"> Universal </label>
+                <!--label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="ignorar"> Por defecto </label-->
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="ASSE"> ASSE </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="ASOCIACION ESPANOLA"> As. Española </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CASA DE GALICIA"> Casa de Galicia </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CASMU"> CASMU </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CIRCULO CATOLICO"> Circulo Catolico </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="COSEM"> Cosem </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CUDAM"> Cudam </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="GREMCA"> Gremca </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="HOSPITAL BRITANICO"> H. Britanico </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="HOSPITAL EVANGELICO"> H. Evangelico </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="MEDICA URUGUAYA"> Medica Uruguaya </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="MP"> MP </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="SMI"> SMI </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="UNIVERSAL"> Universal </label>
               </div>
             </div>
           </div>
@@ -166,20 +166,20 @@
             <div class="panel-body"><input type="checkbox" id="cbf" name="checkBf" value="default" checked> Prestadores a mostrar</div>
               <div class="panel-footer">
                 <div id="mutualistasContainerFiltros"  hidden="true">
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro1" id="inlineChk" value="ASSE" checked> ASSE </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro2" id="inlineChk" value="ASOCIACION ESPANOLA" checked> As. Española </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro3" id="inlineChk" value="CASA DE GALICIA" checked> Casa de Galicia </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro4" id="inlineChk" value="CASMU" checked> CASMU </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro5" id="inlineChk" value="CIRCULO CATOLICO" checked> Circulo Catolico </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro6" id="inlineChk" value="COSEM" checked> Cosem </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro7" id="inlineChk" value="CUDAM" checked> Cudam </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro8" id="inlineChk" value="GREMCA" checked> Gremca </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro9" id="inlineChk" value="HOSPITAL BRITANICO" checked> H. Britanico </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro10" id="inlineChk" value="HOSPITAL EVANGELICO" checked> H. Evangelico </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro11" id="inlineChk" value="MEDICA URUGUAYA" checked> Medica Uruguaya </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro12" id="inlineChk" value="MP" checked> MP </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro13" id="inlineChk" value="SMI" checked> SMI </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestadorFiltro14" id="inlineChk" value="UNIVERSAL" checked> Universal </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="ASSE" checked> ASSE </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="ASOCIACION ESPANOLA" checked> As. Española </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CASA DE GALICIA" checked> Casa de Galicia </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CASMU" checked> CASMU </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CIRCULO CATOLICO" checked> Circulo Catolico </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="COSEM" checked> Cosem </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CUDAM" checked> Cudam </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="GREMCA" checked> Gremca </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="HOSPITAL BRITANICO" checked> H. Britanico </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="HOSPITAL EVANGELICO" checked> H. Evangelico </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="MEDICA URUGUAYA" checked> Medica Uruguaya </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="MP" checked> MP </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="SMI" checked> SMI </label>
+              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="UNIVERSAL" checked> Universal </label>
             </div>
           </div>
         </div>
@@ -187,9 +187,9 @@
           <div class="panel-body"><input type="checkbox" id="cbf2" name="checkBf2" value="default" checked> Medios de transporte a mostrar</div>
             <div class="panel-footer">
               <div id="transporteContainerFiltros"  hidden="true">
-                  <label class="checkbox-inline"><input type="checkbox" name="transporteFiltro1" id="inlineChk2" value="Auto" checked> Auto </label>
-                  <label class="checkbox-inline"><input type="checkbox" name="transporteFiltro2" id="inlineChk2" value="Omnibus" checked> Omnibus </label>
-                  <label class="checkbox-inline"><input type="checkbox" name="transporteFiltro3" id="inlineChk2" value="Caminando" checked> Caminando </label>
+                  <label class="checkbox-inline"><input type="checkbox" name="tipoTransporte" id="inlineChk2" value="1" checked> Auto </label>
+                  <label class="checkbox-inline"><input type="checkbox" name="tipoTransporte" id="inlineChk2" value="2" checked> Omnibus </label>
+                  <label class="checkbox-inline"><input type="checkbox" name="tipoTransporte" id="inlineChk2" value="0" checked> Caminando </label>
                 </div>
               </div>
             </div>
@@ -197,12 +197,12 @@
               <div class="panel-body"><input type="checkbox" id="cbf3" name="checkBf3" value="default" checked> Dias a mostrar</div>
                 <div class="panel-footer">
                   <div id="diasContainerFiltros"  hidden="true">
-                    <label class="checkbox-inline"><input type="checkbox" name="diasFiltro1" id="inlineChk3" value="1" checked> Lunes </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="diasFiltro2" id="inlineChk3" value="2" checked> Martes </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="diasFiltro3" id="inlineChk3" value="3" checked> Miercoles </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="diasFiltro4" id="inlineChk3" value="4" checked> Jueves </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="diasFiltro5" id="inlineChk3" value="5" checked> Viernes </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="diasFiltro6" id="inlineChk3" value="6" checked> Sabado </label>
+                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="0" checked> Lunes </label>
+                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="1" checked> Martes </label>
+                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="2" checked> Miercoles </label>
+                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="3" checked> Jueves </label>
+                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="4" checked> Viernes </label>
+                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="5" checked> Sabado </label>
                   </div>
               </div>
             </div>
