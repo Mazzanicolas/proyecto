@@ -1,18 +1,23 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from django.db.models import F
 from app.filters import IndividuoTiempoCentroFilter
 from app.tables import PersonTable,ResumenTable,TestPersonTable
 from django_tables2 import RequestConfig
 from shapely.geometry import Polygon, Point
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
-from app.forms import FooFilterFormHelper
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div
+from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 import shapefile
 from io import StringIO
+import time
 from app.bus.omnibus import get_horarios, load, busqueda, parada_mas_cercana, get_parada
 import csv
 from django.shortcuts import redirect
+from django_tables2 import SingleTableView
 global shapeAuto
 global shapeCaminando
 global horarios
@@ -27,18 +32,56 @@ shapeCaminando = sf.shapes()
 def test(request):
     if(not IndividuoTiempoCentro.objects.all()):
         newCalcTimes()
-    print("wew")
     response = redirect('consultaConFiltro')
     response['Location'] += '?individuo=87'
     return response
     return redirect('consultaConFiltro')
-class FilteredPersonListView(SingleTableMixin, FilterView):
-    table_class = PersonTable
-    model = IndividuoTiempoCentro
+
+class PagedFilteredTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = IndividuoTiempoCentro.objects.filter(individuo__prestador = F('centro__prestador'));
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(PagedFilteredTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(PagedFilteredTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class FooFilterFormHelper(FormHelper):
+    form_class = 'form-horizontal'
+    label_class = 'col-lg-2'
+    field_class = 'col-lg-8'
+    form_method = 'GET'
+    layout = Layout(
+        TabHolder(
+        Tab('Individuo-Centro',
+        'individuo',
+        Div('centro')
+        ),
+        Tab('Hora-Dia',
+        'hora',InlineCheckboxes('dia')
+        ),
+        Tab('Prestadores', 'trabajo',InlineCheckboxes('prestador')),
+        Tab('Transporte', 'tiempoViaje',InlineCheckboxes('transporte')),
+        ),
+        Div(Submit('submit', 'Apply Filter',css_class='btn-primary')),
+    )
+class FilteredPersonListView(PagedFilteredTableView):
+    table_class = TestPersonTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
-    filterset_class = IndividuoTiempoCentroFilter
-    page = 2
+    filter_class = IndividuoTiempoCentroFilter
+    formhelper_class = FooFilterFormHelper
 class TestFilteredPersonListView(SingleTableMixin, FilterView):
     table_class = TestPersonTable
     model = IndividuoTiempoCentro
@@ -46,7 +89,15 @@ class TestFilteredPersonListView(SingleTableMixin, FilterView):
     paginate_by = 200
     filterset_class = IndividuoTiempoCentroFilter
     page = 2
+def printCentroids():
+    for shape in shapeAuto:
+        p = Polygon(shape.points)
+        if(p.is_valid):
+            return p.representative_point()
+        else:
+            return p.centroid
 def index(request):
+    printCentroids()
     if(not Sector.objects.all()):
         cargarSectores()
     post = request.POST
@@ -84,91 +135,6 @@ def index(request):
     consT = Settings.objects.get(setting = "tiempoConsulta").value
     context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT}
     return render(request, 'app/index2.html',context)
-def res(request):
-    print("*********")
-    isJardin = request.POST.get("anclaJar")
-    isTrabajo = request.POST.get("anclaTra")
-    if request.POST.get("checkB") == 'default':
-        pr = request.POST.get("checkB")
-    else:
-        pr = request.POST.get("mutualistasRadio")
-    tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
-    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
-    transporte = request.POST.get("checkM") if request.POST.get("checkM") else request.POST.get("transporteRadio")
-    individuos = Individuo.objects.all()
-    prestadores = Prestador.objects.all()
-    IndividuoTiempoCentro.objects.all().delete()
-    for individuo in individuos:
-        prest = getPrestador(request,prestadores,individuo,pr)
-        transporte = getTransporte(request,individuo) if transporte == "default" else transporte
-        trabajo = individuo.trabajo
-        jardin = individuo.jardin
-        secHogar = getSector(individuo.hogar,transporte)
-        secTrabajo = getSector(trabajo,transporte)
-        secJardin = getSector(jardin,transporte)
-        for prestador in prest:
-            centros = Centro.objects.filter(prestador = prestador)
-            for centro in centros:
-                secCentro = getSector(centro,transporte)
-                horas = Pediatra.objects.filter(centro__id_centro = centro.id_centro)
-                for hora in horas:
-                    if(trabajo and isTrabajo):
-                        if(hora.hora < trabajo.hora_inicio):
-                            if(isJardin and jardin):
-                                tiempoViaje = calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
-                            else:
-                                tiempoViaje = calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
-                            horaFinConsulta = hora.hora + tiempoConsulta/60
-                            if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras >0):
-                                llega = "Si"
-                            else:
-                                llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
-                            q.save()
-                        else:
-                            if(jardin and isJardin):
-                                tiempoViaje = calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
-                            else:
-                                tiempoViaje = calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
-                            if(hora.hora >=  trabajo.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
-                                llega = "Si"
-                            else:
-                                llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                            q.save()
-                    else:
-                        if(isJardin and jardin):
-                            if(centro.hora < hora_inicio):
-                                tiempoViaje = calcularTiempos([secCentro, secJardin],transporte,hora.hora)
-                                horaFinConsulta = hora.hora + tiempoConsulta/60
-                                if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
-                                    llega = "Si"
-                                else:
-                                    llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                                q.save()
-                            else:
-                                tiempoViaje = calcularTiempos([secJardin, secCentro],transporte,hora.hora)
-                                if(hora.hora >=  jardin.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                    llega = "Si"
-                                else:
-                                    llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                                q.save()
-                        else:
-                            tiempoViaje = calcularTiempos([secHogar, secCentro],transporte,hora.hora)
-                            if(tiempoViaje < tiempoMaximo/60):
-                                llega = "Si"
-                            else:
-                                llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                            q.save()
-    dias = ["Lunes","Martes","Miercoles", "Jueves","Viernes","Sabado","Domingo"]
-    table = PersonTable(IndividuoTiempoCentro.objects.all())
-    RequestConfig(request, paginate={'per_page': 100000000000000000}).configure(table)
-    context = {'result': table, 'dias':dias}
-    return render(request, 'app/calcAll2.html', context)
-    #return render(request, 'app/res.html')
 def cargarMutualistas(archivo):
         Prestador.objects.all().delete()
         p = Prestador(11,"MEDICA URUGUAYA")
@@ -210,46 +176,12 @@ def cargarMutualistas(archivo):
         p = Prestador(15,"NOEXISTE")
         p.save()
 
-def getPrestador(request,prestadores,individuo,pr):
-    if (pr == 'default'):
-        prest = [individuo.prestador]
-    elif (pr == 'ignorar'):
-        prest = prestadores
-    else:
-        prest = prestadores.filter(nombre = pr)
-    return prest
-def getTransporte(request,individuo):
-    if(request.POST.get("checkM") == "default"):
-        transporte = individuo.tipo_transporte.id
-    else:
-        transporte = request.POST.get("transporteRadio")
-    return transporte
-def calcularTiempos(anclas,transporte,hora):
-    tiempoViaje = 0
-    if(not (transporte == "bus" or transporte == 2 or transporte == 3)):
-        for i in range(0,len(anclas)-1):
-            tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
-    else:
-        for i in range(0,len(anclas)-1):
-            coords_origen = (anclas[i].x_coord,anclas[i].y_coord)
-            coords_destino = (anclas[i+1].x_coord,anclas[i+1].y_coord)
-            tiempoViaje += busqueda(coords_origen,coords_destino,nodos,horarios,hora)/60
-    return tiempoViaje/60
-def getSector(lugar, transporte):
-    #print(transporte):
-    if(transporte == 'Auto' or transporte == 1):
-        return lugar.sector_auto
-    elif(transporte == 'Caminando' or transporte == 0):
-        return lugar.sector_caminando
-    else:
-        return lugar
 def guardarArchivo(nombre, archivo):
     with default_storage.open('tmp/'+nombre, 'wb+') as destination:
         for chunk in archivo.chunks():
             destination.write(chunk)
         csv = os.path.join(settings.MEDIA_ROOT, destination)
         return csv
-
 
 def cargarSectores():
     for i in range(len(shapeAuto)):
@@ -282,21 +214,28 @@ def cargarIndividuoAnclas(requestf):
     lineas = lineas[1:]
     idAncla = 0
     for caso in lineas:
+        print("Individuo "+caso[0])
         ## Ancla
         #Coordenada X, Coordenada Y, Tipo, Hora inicio, Hora fin, Dias, Sector auto, Sector caminando
         #Duda Tecnica -Contemplar casos donde no hay jardin y/o trabajo
-        anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,parsear_hora(caso[7]) ,parsear_hora(caso[8]) ,caso[6] ,None,None)
-        anclaJardin.sector_auto = getSectorForPoint(anclaJardin,"Auto")
-        anclaJardin.sector_caminando = getSectorForPoint(anclaJardin,"Caminando")
-        anclaJardin.parada = parada_mas_cercana(float(caso[10]),float(caso[11]),nodos)
-        anclaJardin.save()
-        idAncla +=1
-        anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",parsear_hora(caso[17]),parsear_hora(caso[18]),caso[16],None,None)
-        anclaTrabajo.sector_auto = getSectorForPoint(anclaTrabajo,"Auto")
-        anclaTrabajo.sector_caminando = getSectorForPoint(anclaTrabajo,"Caminando")
-        anclaTrabajo.parada = parada_mas_cercana(float(caso[14]),float(caso[15]),nodos)
-        anclaTrabajo.save()
-        idAncla +=1
+        if(caso[5] == "1"):
+            anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,parsear_hora(caso[7]) ,parsear_hora(caso[8]) ,caso[6] ,None,None)
+            anclaJardin.sector_auto = getSectorForPoint(anclaJardin,"Auto")
+            anclaJardin.sector_caminando = getSectorForPoint(anclaJardin,"Caminando")
+            anclaJardin.parada = parada_mas_cercana(float(caso[10]),float(caso[11]),nodos)
+            anclaJardin.save()
+            idAncla +=1
+        else:
+            anclaJardin = None
+        if(caso[12] == "1"):
+            anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",parsear_hora(caso[17]),parsear_hora(caso[18]),caso[16],None,None)
+            anclaTrabajo.sector_auto = getSectorForPoint(anclaTrabajo,"Auto")
+            anclaTrabajo.sector_caminando = getSectorForPoint(anclaTrabajo,"Caminando")
+            anclaTrabajo.parada = parada_mas_cercana(float(caso[14]),float(caso[15]),nodos)
+            anclaTrabajo.save()
+            idAncla +=1
+        else:
+            anclaTrabajo = None
         anclaHogar   = AnclaTemporal(idAncla,float(caso[22]),float(caso[23]),"hogar",None,None,"L-D",None,None)
         anclaHogar.sector_auto = getSectorForPoint(anclaHogar,"Auto")
         anclaHogar.sector_caminando = getSectorForPoint(anclaHogar,"Caminando")
@@ -305,7 +244,7 @@ def cargarIndividuoAnclas(requestf):
         idAncla +=1
         ## Individuo
         #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
-        individuo  = Individuo(int(caso[0]),int(caso[19]),int(caso[1]),anclaHogar.id,anclaTrabajo.id,anclaJardin.id)
+        individuo  = Individuo(int(caso[0]),int(caso[19]),int(caso[1]),anclaHogar.id,anclaTrabajo.id if anclaTrabajo is not None else None,anclaJardin.id if anclaJardin is not None else None)
         individuo.save()
 
 def getSectorForPoint(ancal,tipo):
@@ -316,8 +255,12 @@ def getSectorForPoint(ancal,tipo):
     point = Point(ancal.x_coord,ancal.y_coord)
     for i in range(len(shapes)):
         polygon = Polygon(shapes[i].points)
-        if(polygon.contains(point)):
+        if(ancal.x_coord == polygon.centroid.wkt):
+            print("Same x")
+        if(point.within(polygon)):
             return Sector.objects.get(shape = i, tipo_sector = tipo)
+    if(tipo == "Auto"):
+        print(point.wkt)
 
 def cargarTiempos(tipo,request):
     print(request.FILES)
@@ -383,32 +326,24 @@ def cargarCentroPediatras(request):
                         contador_dias +=1
                         pediatra.save()
             inti +=1
-def consultaConFiltro(request):
-    if(not IndividuoTiempoCentro.objects.all()):
-        calcAndSaveDefault()
-    #prestadorFiltro  = getFilters(request,'prestadorFiltro')
-    #transporteFiltro = getFilters(request,'transporteFiltro')
-    #diaFiltro        = getFilters(request,'diasFiltro')
-    #horaFiltro       = getFilters(request,'horasFiltro')
-    consulta = IndividuoTiempoCentro.objects.select_related().all()#.filter(centro__prestador__nombre__in = prestadorFiltro, individuo__tipo_transporte__nombre__in = transporteFiltro, dia__in=diaFiltro, hora__in=horaFiltro)
-    dias     = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"]
-    table    = PersonTable(consulta)
-    RequestConfig(request).configure(table)
-    context = {'result': table, 'dias':dias}
-    return render(request, 'app/calcAll2.html', context)
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
+    tiempoInicio = time.time()
     if(MedidasDeResumen.objects.all()):
         individuos = []
     else:
-        individuos = Individuo.objects.all()
+        individuos = Individuo.objects.all()[0:3]
+    resultList = []
     for individuo in individuos:
-        tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo)
+        print("Individuo: "+str(individuo.id))
+        tiempoIni = time.time()
+        tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo)#, centro__prestador__id = individuo.prestador.id)
         dictConsultasPorDia = {0:0,1:0,2:0,3:0,4:0,5:0}
         dictHorasPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         dictCentrosPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         centros = dict()
         for tiempo in tiempos:
-            if(tiempo.llega == "Si"):
+            llega = checkLlega(individuo,tiempo.dia,tiempo.hora,tiempo.tiempoViaje,tiempo.cantidad_pediatras)
+            if(llega == "Si"):
                 dia = tiempo.dia
                 dictConsultasPorDia[dia] = dictConsultasPorDia[dia] + 1
                 dictHorasPorDia[dia].add(tiempo.hora)
@@ -430,11 +365,13 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
                     cantidadTotalConsultas = totalConsultas, cantidadCentrosLunes = len(dictCentrosPorDia[0]), cantidadCentrosMartes = len(dictCentrosPorDia[1]),
                     cantidadCentrosMiercoles = len(dictCentrosPorDia[2]),cantidadCentrosJueves = len(dictCentrosPorDia[3]), cantidadCentrosViernes = len(dictCentrosPorDia[4]),
                     cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = Centro.objects.get(id_centro = centroOptimo))
-
-        leResumen.save()
+        resultList.append(leResumen)
+        print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
+        #leResumen.save()
     consulta = MedidasDeResumen.objects.all()
-    table  = ResumenTable(consulta)
-    RequestConfig(request, paginate={'per_page': 10}).configure(table)
+    table  = ResumenTable(resultList)
+    RequestConfig(request, paginate={'per_page': 1000}).configure(table)
+    print("Tiempo total: "+str(time.time()-tiempoInicio))
     context = {'result': table}
     return render(request, 'app/calcAll2.html', context)
 def getCentroOptimo(centros):
@@ -457,12 +394,6 @@ def getTotalFromDict(mapa):
     for value in mapa.values():
         res += value if type(value) == int else len(value)
     return res
-def getFilters(request,filtro):
-    filtros = []
-    for key, value in request.POST.items():
-        if(filtro.upper() in key.upper()):
-            filtros.append(value)
-    return filtros
 def getListOfDays(stringDays):
     daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5}
     daysByComma = stringDays.split(';')
@@ -476,85 +407,52 @@ def getListOfDays(stringDays):
         else:
             resDays.append(day)
     return resDays
-def calcAndSaveDefault():
+def checkLlega(individuo,dia,hora,tiempoViaje, cantidad_pediatras):
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
-    individuos = Individuo.objects.all()
-    prestadores = Prestador.objects.all()
-    for individuo in individuos:
-        print("wew")
-        prest      = [individuo.prestador]#arreglar
-        transporte = individuo.tipo_transporte.id
-        trabajo    = individuo.trabajo
-        jardin     = individuo.jardin
-        secHogar   = getSector(individuo.hogar,transporte)
-        secTrabajo = getSector(trabajo,transporte)
-        secJardin  = getSector(jardin,transporte)
-        for prestador in prest:
-            centros = Centro.objects.filter(prestador = prestador)
-            for centro in centros:
-                secCentro = getSector(centro,transporte)
-                horas     = Pediatra.objects.filter(centro__id_centro = centro.id_centro)
-                for hora in horas:
-                    if(trabajo and hora.dia in getListOfDays(trabajo.dias)):
-                        if(hora.hora < trabajo.hora_inicio):
-                            if(jardin and hora.dia in getListOfDays(jardin.dias)):
-                                tiempoViaje = calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
-                            else:
-                                tiempoViaje = calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
-                            horaFinConsulta = hora.hora + tiempoConsulta/60
-                            if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras >0):
-                                llega = "Si"
-                            else:
-                                llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras, llega =  llega)
-                            q.save()
-                        else:
-                            if(jardin and hora.dia in getListOfDays(jardin.dias)):
-                                tiempoViaje = calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
-                            else:
-                                tiempoViaje = calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
-                            if(hora.hora >=  trabajo.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
-                                llega = "Si"
-                            else:
-                                llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                            q.save()
-                    else:
-                        if(jardin and hora.dia in getListOfDays(jardin.dias)):
-                            if(hora.hora < jardin.hora_inicio):
-                                tiempoViaje     = calcularTiempos([secCentro, secJardin],transporte,hora.hora)
-                                horaFinConsulta = hora.hora + tiempoConsulta/60
-                                if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje and tiempoViaje < tiempoMaximo/60 and hora.cantidad_pediatras>0):
-                                    llega = "Si"
-                                else:
-                                    llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                                q.save()
-                            else:
-                                tiempoViaje = calcularTiempos([secJardin, secCentro],transporte,hora.hora)
-                                if(hora.hora >=  jardin.hora_fin + tiempoViaje and tiempoViaje < tiempoMaximo/60):
-                                    llega = "Si"
-                                else:
-                                    llega = "No"
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                                q.save()
-                        else:
-                            tiempoViaje = calcularTiempos([secHogar, secCentro],transporte,hora.hora)
-                            if(tiempoViaje < tiempoMaximo/60):
-                                llega = "Si"
-                            else:
-                                llega = "No"
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia = hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60, cantidad_pediatras=hora.cantidad_pediatras,llega =  llega)
-                            q.save()
+    trabajo = individuo.trabajo
+    jardin = individuo.jardin
+    hogar = individuo.hogar
+    if(cantidad_pediatras<=0 or tiempoViaje < tiempoMaximo/60):
+        return "No"
+    if(trabajo and dia in getListOfDays(trabajo.dias)):
+        if(hora < trabajo.hora_inicio):
+            horaFinConsulta = hora + tiempoConsulta/60
+            if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta):
+                return "Si"
+            else:
+                return "No"
+        else:
+            if(hora >=  trabajo.hora_fin + tiempoViaje):
+                return "Si"
+            else:
+                return "No"
+    else:
+        if(jardin and dia in getListOfDays(jardin.dias)):
+            if(hora < jardin.hora_inicio):
+                horaFinConsulta = hora + tiempoConsulta/60
+                if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje):
+                    return "Si"
+                else:
+                    return "No"
+            else:
+                if(hora >=  jardin.hora_fin + tiempoViaje):
+                    return "Si"
+                else:
+                    return "No"
+        else:
+            return "Si"
 def newCalcTimes():
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
-    individuos = Individuo.objects.all()
-    prestadores = Prestador.objects.all()
+    individuos = Individuo.objects.select_related().all()
+    prestadores = Prestador.objects.select_related().all()
+    centros = Centro.objects.select_related().all()
+    pedi = Pediatra.objects.select_related()
     for individuo in individuos:
-        print("wew")
-        prest      = [individuo.prestador]#arreglar
+        tiempoRestante = 0
+        tiempoInicio = time.time()
+        prest      = prestadores#[individuo.prestador]#arreglar
         transporte = individuo.tipo_transporte.id
         trabajo    = individuo.trabajo
         jardin     = individuo.jardin
@@ -562,87 +460,113 @@ def newCalcTimes():
         secTrabajo = newGetSector(trabajo,transporte)
         secJardin  = newGetSector(jardin,transporte)
         tHogarTrabajo = newCalcularTiempos([secHogar, secTrabajo],transporte)
-        tHogarJardin = newCalcularTiempos([secHogar, secJardin],transporte)
-        tJardinTrabajo = newCalcularTiempos([secJardin, secTrabajo],transporte)
+        tHogarJardin =  newCalcularTiempos([secHogar, secJardin],transporte)
+        tJardinTrabajo =newCalcularTiempos([secJardin, secTrabajo],transporte)
         tTrabajoJardin = newCalcularTiempos([secJardin, secHogar],transporte)
         tTrabajoHogar = newCalcularTiempos([secTrabajo, secHogar],transporte)
-        for prestador in prest:
-            centros = Centro.objects.filter(prestador = prestador)
-            for centro in centros:
-                secCentro = newGetSector(centro,transporte)
-                horas     = Pediatra.objects.filter(centro__id_centro = centro.id_centro)
-                tHogarCentro = newCalcularTiempos([secHogar, secCentro],transporte)
-                tJardinCentro= newCalcularTiempos([secJardin, secCentro],transporte)
-                tCentroHogar =newCalcularTiempos([secCentro, secHogar],transporte)
-                tCentroJardin =newCalcularTiempos([secCentro, secJardin],transporte)
-                for hora in horas:
-                    if(trabajo and hora.dia in getListOfDays(trabajo.dias)):
-                        if(hora.hora < trabajo.hora_inicio):
-                            if(jardin and hora.dia in getListOfDays(jardin.dias)):
-                                tiempoViaje = tCentroJardin + tJardinTrabajo #calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
-                            else:
-                                tiempoViaje = tCentroHogar + tHogarTrabajo ## calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60,
-                                    cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo*60, tHogarJardin = tHogarJardin*60,tJardinTrabajo = tJardinTrabajo*60,
-                                    tTrabajoJardin = tTrabajoJardin*60,tTrabajoHogar = tTrabajoHogar*60,
-                                    tHogarCentro = tHogarCentro*60,tJardinCentro = tJardinCentro*60,
-                                    tCentroHogar = tCentroHogar*60,tCentroJardin = tCentroJardin*60)
-                            q.save()
+        tiempoRestante += time.time() - tiempoInicio
+        loopTime = 0
+        for centro in centros:
+            aux = time.time()
+            secCentro = newGetSector(centro,transporte)
+            horas     = Pediatra.objects.filter(centro = centro)
+            tHogarCentro = newCalcularTiempos([secHogar, secCentro],transporte)
+            tJardinCentro= newCalcularTiempos([secJardin, secCentro],transporte)
+            tCentroHogar =newCalcularTiempos([secCentro, secHogar],transporte)
+            tCentroJardin =newCalcularTiempos([secCentro, secJardin],transporte)
+            listaHoras = []
+            tiempoRestante += time.time()-aux
+            ini = time.time()
+            for hora in horas:
+                if((not (trabajo is None)) and hora.dia in getListOfDays(trabajo.dias)):
+                    if(hora.hora < trabajo.hora_inicio):
+                        if((not (jardin is None)) and hora.dia in getListOfDays(jardin.dias)):
+                            tiempoViaje = tCentroJardin + tJardinTrabajo #calcularTiempos([secCentro, secJardin, secTrabajo],transporte,hora.hora)
                         else:
-                            if(jardin and hora.dia in getListOfDays(jardin.dias)):
-                                tiempoViaje = tTrabajoJardin + tJardinCentro ##calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
-                            else:
-                                tiempoViaje = tTrabajoHogar + tHogarCentro ##calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60,
-                                    cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo*60, tHogarJardin = tHogarJardin*60,tJardinTrabajo = tJardinTrabajo*60,
-                                    tTrabajoJardin = tTrabajoJardin*60,tTrabajoHogar = tTrabajoHogar*60,
-                                    tHogarCentro = tHogarCentro*60,tJardinCentro = tJardinCentro*60,
-                                    tCentroHogar = tCentroHogar*60,tCentroJardin = tCentroJardin*60)
-                            q.save()
+                            tiempoViaje = tCentroHogar + tHogarTrabajo ## calcularTiempos([secCentro,secHogar, secTrabajo],transporte,hora.hora)
+                        q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje/60,
+                                cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo/60, tHogarJardin = tHogarJardin/60,tJardinTrabajo = tJardinTrabajo/60,
+                                tTrabajoJardin = tTrabajoJardin/60,tTrabajoHogar = tTrabajoHogar/60,
+                                tHogarCentro = tHogarCentro/60,tJardinCentro = tJardinCentro/60,
+                                tCentroHogar = tCentroHogar/60,tCentroJardin = tCentroJardin/60)
+                        listaHoras.append(q)
+                        #q.save()
                     else:
-                        if(jardin and hora.dia in getListOfDays(jardin.dias)):
-                            if(hora.hora < jardin.hora_inicio):
-                                tiempoViaje     = tCentroJardin #calcularTiempos([secCentro, secJardin],transporte,hora.hora)
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60,
-                                        cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo*60, tHogarJardin = tHogarJardin*60,tJardinTrabajo = tJardinTrabajo*60,
-                                        tTrabajoJardin = tTrabajoJardin*60,tTrabajoHogar = tTrabajoHogar*60,
-                                        tHogarCentro = tHogarCentro*60,tJardinCentro = tJardinCentro*60,
-                                        tCentroHogar = tCentroHogar*60,tCentroJardin = tCentroJardin*60)
-                                q.save()
-                            else:
-                                tiempoViaje = tJardinCentro ##calcularTiempos([secJardin, secCentro],transporte,hora.hora)
-                                q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60,
-                                        cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo*60, tHogarJardin = tHogarJardin*60,tJardinTrabajo = tJardinTrabajo*60,
-                                        tTrabajoJardin = tTrabajoJardin*60,tTrabajoHogar = tTrabajoHogar*60,
-                                        tHogarCentro = tHogarCentro*60,tJardinCentro = tJardinCentro*60,
-                                        tCentroHogar = tCentroHogar*60,tCentroJardin = tCentroJardin*60)
-                                q.save()
+                        if((not (jardin is None)) and hora.dia in getListOfDays(jardin.dias)):
+                            tiempoViaje = tTrabajoJardin + tJardinCentro ##calcularTiempos([secTrabajo, secJardin, secCentro],transporte,hora.hora)
                         else:
-                            tiempoViaje = tHogarCentro ##calcularTiempos([secHogar, secCentro],transporte,hora.hora)
-                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje*60,
-                                    cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo*60, tHogarJardin = tHogarJardin*60,tJardinTrabajo = tJardinTrabajo*60,
-                                    tTrabajoJardin = tTrabajoJardin*60,tTrabajoHogar = tTrabajoHogar*60,
-                                    tHogarCentro = tHogarCentro*60,tJardinCentro = tJardinCentro*60,
-                                    tCentroHogar = tCentroHogar*60,tCentroJardin = tCentroJardin*60)
-                            q.save()
+                            tiempoViaje = tTrabajoHogar + tHogarCentro ##calcularTiempos([secTrabajo, secHogar, secCentro],transporte,hora.hora)
+                        q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje/60,
+                                cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo/60, tHogarJardin = tHogarJardin/60,tJardinTrabajo = tJardinTrabajo/60,
+                                tTrabajoJardin = tTrabajoJardin/60,tTrabajoHogar = tTrabajoHogar/60,
+                                tHogarCentro = tHogarCentro/60,tJardinCentro = tJardinCentro/60,
+                                tCentroHogar = tCentroHogar/60,tCentroJardin = tCentroJardin/60)
+                        listaHoras.append(q)
+                        #q.save()
+                else:
+                    if((not (jardin is None)) and hora.dia in getListOfDays(jardin.dias)):
+                        if(hora.hora < jardin.hora_inicio):
+                            tiempoViaje     = tCentroJardin #calcularTiempos([secCentro, secJardin],transporte,hora.hora)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje/60,
+                                    cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo/60, tHogarJardin = tHogarJardin/60,tJardinTrabajo = tJardinTrabajo/60,
+                                    tTrabajoJardin = tTrabajoJardin/60,tTrabajoHogar = tTrabajoHogar/60,
+                                    tHogarCentro = tHogarCentro/60,tJardinCentro = tJardinCentro/60,
+                                    tCentroHogar = tCentroHogar/60,tCentroJardin = tCentroJardin/60)
+                            listaHoras.append(q)
+                            #q.save()
+                        else:
+                            tiempoViaje = tJardinCentro ##calcularTiempos([secJardin, secCentro],transporte,hora.hora)
+                            q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje/60,
+                                    cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo/60, tHogarJardin = tHogarJardin/60,tJardinTrabajo = tJardinTrabajo/60,
+                                    tTrabajoJardin = tTrabajoJardin/60,tTrabajoHogar = tTrabajoHogar/60,
+                                    tHogarCentro = tHogarCentro/60,tJardinCentro = tJardinCentro/60,
+                                    tCentroHogar = tCentroHogar/60,tCentroJardin = tCentroJardin/60)
+                            listaHoras.append(q)
+                            #q.save()
+                    else:
+                        tiempoViaje = tHogarCentro ##calcularTiempos([secHogar, secCentro],transporte,hora.hora)
+                        q = IndividuoTiempoCentro(individuo = individuo , centro = centro, dia =hora.dia, hora = hora.hora ,tiempoViaje = tiempoViaje/60,
+                                cantidad_pediatras=hora.cantidad_pediatras,tHogarTrabajo = tHogarTrabajo/60, tHogarJardin = tHogarJardin/60,tJardinTrabajo = tJardinTrabajo/60,
+                                tTrabajoJardin = tTrabajoJardin/60,tTrabajoHogar = tTrabajoHogar/60,
+                                tHogarCentro = tHogarCentro/60,tJardinCentro = tJardinCentro/60,
+                                tCentroHogar = tCentroHogar/60,tCentroJardin = tCentroJardin/60)
+                        listaHoras.append(q)
+            loopTime += time.time()-ini    #q.save()
+            IndividuoTiempoCentro.objects.bulk_create(listaHoras)
+        print("Termino el individuo: "+str(individuo.id))
+        print("El loopTime es: "+str(loopTime))
+        print("El restante es: "+str(tiempoRestante))
+        print("El tiempoTotal es: "+str(time.time()-tiempoInicio))
 def newCalcularTiempos(anclas,transporte):
     tiempoViaje = 0
     hora = 0
-    if(not (transporte == "bus" or transporte == 2 or transporte == 3)):
+    if(True):#not (transporte == "bus" or transporte == 2 or transporte == 3)):
         for i in range(0,len(anclas)-1):
-            tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo/60
+            if(anclas[i] is None or anclas[i+1] is None):
+                return -7000#-1/60
+            tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo
+            return tiempoViaje
     else:
+        print(anclas)
         for i in range(0,len(anclas)-1):
+            if(anclas[i] is None or anclas[i+1] is None):
+                return -7000#-1/60
+            print(nodos)
+            print(get_parada(nodos,anclas[i]))
+            print(get_parada(nodos,anclas[i+1]))
             parada_origen = get_parada(nodos,anclas[i])
             parada_destino = get_parada(nodos,anclas[i+1])
             #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
             tiempoViaje += busqueda(parada_origen,parada_origen.coords,parada_destino,parada_destino.coords,nodos,horarios,hora)
-    return tiempoViaje/60
+            return tiempoViaje
 def newGetSector(lugar, transporte):
     #print(transporte):
-    if(transporte == 'Auto' or transporte == 1):
+    if(lugar is None):
+        return None
+    if(True):#transporte == 'Auto' or transporte == 1):
         return lugar.sector_auto
     elif(transporte == 'Caminando' or transporte == 0):
-        return lugar.sector_caminando
+        #return lugar.sector_caminando
+        return lugar.sector_auto
     else:
-        return lugar.parada
+        return lugar

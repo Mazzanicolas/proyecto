@@ -3,25 +3,12 @@
 {% bootstrap_css %}
 {% bootstrap_javascript %}
 {% load static %}
+{% load django_tables2 crispy_forms_tags %}
+{% crispy filter.form filter.form.helper %}
+<script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
 <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
-{% if filter %}
-  <form action="" method="get" class="form form-inline">
-    <nav class="navbar navbar-default" style="text-align:center;">
-      <div class="container-fluid" style="height:100px;width:1150px;text-align:center;">
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul class="nav navbar-nav">
-            <li><div class="panel panel-default" style="height:100px; width:900px;"><div class="panel-body">
-              {% bootstrap_form filter.form layout='inline' %}
-            </li>
-            <li><div class="panel panel-default" style="height:100px; width:95px;"><div class="panel-body">
-              {% bootstrap_button 'Filtrar' %}
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-  </form>
-{% endif %}
-<div style="height:102px;text-align:center;">
-  {% render_table table 'django_tables2/bootstrap.html' %}
-</div>
+<link rel="stylesheet" href="{% static 'app/css/default.css'%}" />
+<script type="text/javascript" src="{% static 'app/js/bootstrap-tab.js' %}">  </script>
+
+{% render_table table 'django_tables2/bootstrap.html' %}

@@ -25,7 +25,7 @@ class TestPersonTable(tables.Table):
     tipoTransporte = tables.Column(accessor = 'individuo.tipo_transporte.nombre', verbose_name = 'Transporte')
     llega = tables.Column(empty_values = ())
     def render_llega(self, record):
-        return plsWhy(record.individuo,record.dia,record.hora,record.tiempoViaje,record.cantidad_pediatras)
+        return checkLlega(record.individuo,record.dia,record.hora,record.tiempoViaje,record.cantidad_pediatras)
     class Meta:
         per_page = 200
         model = IndividuoTiempoCentro
@@ -48,17 +48,18 @@ class ResumenTable(tables.Table):
                     'cantidadCentrosMiercoles' ,'cantidadCentrosJueves' , 'cantidadCentrosViernes' ,
                     'cantidadCentrosSabado' , 'cantidadTotalCentros' , 'centroOptimo')
         exclude = ('id',)
-def plsWhy(individuo,dia,hora,tiempoViaje, cantidad_pediatras):
+
+def checkLlega(individuo,dia,hora,tiempoViaje, cantidad_pediatras):
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
     trabajo = individuo.trabajo
     jardin = individuo.jardin
     hogar = individuo.hogar
-    if(cantidad_pediatras<=0 or tiempoViaje < tiempoMaximo/60):
+    if(cantidad_pediatras<=0 or tiempoViaje > tiempoMaximo):
         return "No"
     if(trabajo and dia in getListOfDays(trabajo.dias)):
         if(hora < trabajo.hora_inicio):
-            horaFinConsulta = hora + tiempoConsulta/60
+            horaFinConsulta = hora + tiempoConsulta
             if(trabajo.hora_inicio >= tiempoViaje + horaFinConsulta):
                 return "Si"
             else:
@@ -71,7 +72,7 @@ def plsWhy(individuo,dia,hora,tiempoViaje, cantidad_pediatras):
     else:
         if(jardin and dia in getListOfDays(jardin.dias)):
             if(hora < jardin.hora_inicio):
-                horaFinConsulta = hora + tiempoConsulta/60
+                horaFinConsulta = hora + tiempoConsulta
                 if(jardin.hora_inicio >= horaFinConsulta + tiempoViaje):
                     return "Si"
                 else:
