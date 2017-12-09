@@ -61,7 +61,7 @@ python manage.py makemigrations
 ```
 python manage.py migrate
 ```
-* Esto crea la estructura base de datos
+* Esto crea la estructura de la base de datos
 ```
 python manage.py runserver
 ```
