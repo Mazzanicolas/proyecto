@@ -9,7 +9,7 @@ from shapely.geometry import Polygon, Point
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTML
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 import shapefile
 from io import StringIO
@@ -74,7 +74,10 @@ class FooFilterFormHelper(FormHelper):
         Tab('Prestadores', 'trabajo',InlineCheckboxes('prestador')),
         Tab('Transporte', 'tiempoViaje',InlineCheckboxes('transporte')),
         ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary')),
+        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
+        HTML("""
+            <br>    <br> 
+        """),
     )
 class FilteredPersonListView(PagedFilteredTableView):
     table_class = TestPersonTable

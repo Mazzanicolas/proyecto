@@ -6,7 +6,7 @@
 {% load django_tables2 crispy_forms_tags %}
 {% crispy filter.form filter.form.helper %}
 <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
-<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script src="{% static 'app/js/jqueryui.js' %}"></script>
 <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
 <link rel="stylesheet" href="{% static 'app/css/default.css'%}" />
 <script type="text/javascript" src="{% static 'app/js/bootstrap-tab.js' %}">  </script>

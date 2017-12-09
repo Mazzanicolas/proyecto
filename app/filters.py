@@ -15,10 +15,10 @@ class IndividuoTiempoCentroFilter(django_filters.FilterSet):
     dia = django_filters.MultipleChoiceFilter(label = 'Filtrar por Dia', name='dia',choices = DIAS)
     tiempoViaje = django_filters.NumberFilter(name='tiempoViaje',label="Tiempo de viaje maximo", lookup_expr='lte')
     individuo = django_filters.NumberFilter(label = 'Filtrar por Individuo', name='individuo__id')
-    trabajo = django_filters.BooleanFilter(label = "Trabaja?", name = "individuo__trabajo", lookup_expr='isnull')
+    trabajo = django_filters.BooleanFilter(label = "Trabaja", name = "individuo__trabajo", lookup_expr='isnull')
     centro = django_filters.NumberFilter(label = 'Filtrar por Centro', name = 'centro__id_centro')
     ##tipoTransporte = django_filters.CharFilter(label = 'Transporte', name = 'individuo__tipo_transporte__nombre')
-    hora = django_filters.RangeFilter(label = 'horas', name = 'hora')
+    hora = django_filters.RangeFilter(label = 'Filtrar Rango Horario', name = 'hora')
     prestador = django_filters.filters.ModelMultipleChoiceFilter(
         name='centro__prestador__nombre',
         to_field_name='nombre',
