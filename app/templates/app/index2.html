@@ -1,18 +1,25 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <style>
+     #map {
+       width: 100%;
+       height: 750px;
+       background-color: grey;
+     }
+    </style>
 		<meta charset="UTF-8">
 		<title>Proyecto 2017</title>
     {% load static %}
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
     <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
     <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
     </head>
   <body>
     <!--NavBar-->
     <nav class="navbar navbar-default">
       <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><a class="navbar-brand" href="#">Proyecto 2017</a>
           <ul class="nav navbar-nav">
           <!--1-->
             <li class="dropdown">
@@ -445,13 +452,199 @@
     <strong> Función no implementada</strong> en la demo.
   </div>
   <!--1-alert-->
-
+  <!--Mapa-->
+  <div class="panel panel-default" id="mapContainer">
+    <nav class="navbar navbar-defaul">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand">Graficar</a>
+        </div>
+        <div class="navbar-form navbar-left">
+          <div class="form-group">
+            <select class="form-control"  id="nme">
+              <option>Hogar</option>
+              <option>Jardin</option>
+              <option>Trabajo</option>
+            </select>
+            <input  class="form-control" placeholder="Latitud" id="latO">
+            <input  class="form-control" placeholder="Longitud" id="lngO">
+            <button class="btn btn-default" id="cvtBtn">Convertir</button>
+          </div>
+          <button class="btn btn-default" id="addBtn">Agregar</button>
+          <select class="form-control"  id="lgrsA"></select>
+          <select class="form-control"  id="lgrsB"></select>
+          <button class="btn btn-default" id="unrBtn">Unir</button>
+          <button type="button" class="btn btn-default btn-sm" id="rfsh">
+            <img src="{% static 'app/img/rfsh.png' %}" />
+          </button>
+        </div>
+      </div>
+    </nav>
+    <div class="panel-body">
+      <div  id="map"></div>
+    </div>
+  </div>
   </body>
   <footer class="container-fluid">UCU ©2017</footer>
   {% load static %}
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+  //Cargar Mapa
+    var map;
+
+    var map;
+    var lugares = ['Hogar','Jardin','Trabajo'];
+    function initMap() {
+      var latO	 =  -34.888664;
+      var lngO	 =  -56.159157;
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: parseFloat(latO), lng: parseFloat(lngO)},
+          zoom: 14
+        });
+      }
+    var count = -1;
+
+    $(function() {
+          var btn = $('#addBtn').click(function () {
+            btn.button('loading')
+            var nme = document.getElementById("nme").value;
+            var originLat = parseFloat(document.getElementById("latO").value);
+            var originLong = parseFloat(document.getElementById("lngO").value);
+            lugares[nme]=[originLat,originLong];
+            document.getElementById('lgrsA').innerHTML += '<option>'+nme+'</option>';
+            document.getElementById('lgrsB').innerHTML += '<option>'+nme+'</option>';
+            var icn = "{% static 'app/img/tbj.png' %}";
+            if(nme=='Jardin'){
+              icn =  "{% static 'app/img/jrd.png' %}";
+            } else if (nme == 'Hogar'){
+              icn =  "{% static 'app/img/hme.png' %}";
+            }
+            var myLatLng = {lat: originLat, lng: originLong};
+              var marker = new google.maps.Marker({
+                position: myLatLng,
+                icon: icn,
+                map: map,
+                title: nme
+              });
+            setTimeout(function () {
+              btn.button('reset')
+            }, 300)
+          })
+        })
+
+        $(function() {
+              var btn = $('#unrBtn').click(function () {
+                btn.button('loading')
+                var org = lugares[document.getElementById("lgrsA").value];
+                var dst = lugares[document.getElementById("lgrsB").value];
+                var flightPlanCoordinates = [
+                      {lat: org[0], lng: org[1]},
+                      {lat: dst[0], lng: dst[1]}]
+                var camino = new google.maps.Polyline({
+                    path: flightPlanCoordinates,
+                    geodesic: true,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 2,
+                    icons: [{
+                        icon: {path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW},
+                        offset: '100%'
+                    }]
+                  });
+                  camino.setMap(map);
+                setTimeout(function () {
+                  btn.button('reset')
+                }, 300)
+              })
+            })
+
+          $(function() {
+                var btn = $('#cvtBtn').click(function () {
+                  btn.button('loading')
+                  var x = parseFloat(document.getElementById("latO").value);
+                  var y = parseFloat(document.getElementById("lngO").value);
+                  var xy = utmToLatLng(x,y)
+                  document.getElementById("latO").value = xy[0];
+                  document.getElementById("lngO").value = xy[1];
+                  setTimeout(function () {
+                    btn.button('reset')
+                  }, 300)
+                })
+              })
+
+            $(function() {
+              var btn = $('#rfsh').click(function () {
+                btn.button('loading')
+                document.getElementById('lgrsA').innerHTML = '';
+                document.getElementById('lgrsB').innerHTML = '';
+                lugares['Hogar'] = [0,0];
+                lugares['Jardin'] = [0,0];
+                lugares['Trabajo'] = [0,0];
+                setTimeout(function () {
+                btn.button('reset')
+                }, 300)
+              })
+            })
+
+        function utmToLatLng(easting, northing){
+            var zone = 21; //Cambiar: montevideo esta en la zona 21
+            var northernHemisphere =0;//Cambiar: montevideo esta al sur
+            if (!northernHemisphere){
+                northing = 10000000 - northing;
+            }
+
+            var a = 6378137;
+            var e = 0.081819191;
+            var e1sq = 0.006739497;
+            var k0 = 0.9996;
+
+            var arc = northing / k0;
+            var mu = arc / (a * (1 - Math.pow(e, 2) / 4.0 - 3 * Math.pow(e, 4) / 64.0 - 5 * Math.pow(e, 6) / 256.0));
+
+            var ei = (1 - Math.pow((1 - e * e), (1 / 2.0))) / (1 + Math.pow((1 - e * e), (1 / 2.0)));
+
+            var ca = 3 * ei / 2 - 27 * Math.pow(ei, 3) / 32.0;
+
+            var cb = 21 * Math.pow(ei, 2) / 16 - 55 * Math.pow(ei, 4) / 32;
+            var cc = 151 * Math.pow(ei, 3) / 96;
+            var cd = 1097 * Math.pow(ei, 4) / 512;
+            var phi1 = mu + ca * Math.sin(2 * mu) + cb * Math.sin(4 * mu) + cc * Math.sin(6 * mu) + cd * Math.sin(8 * mu);
+
+            var n0 = a / Math.pow((1 - Math.pow((e * Math.sin(phi1)), 2)), (1 / 2.0));
+
+            var r0 = a * (1 - e * e) / Math.pow((1 - Math.pow((e * Math.sin(phi1)), 2)), (3 / 2.0));
+            var fact1 = n0 * Math.tan(phi1) / r0;
+
+            var _a1 = 500000 - easting;
+            var dd0 = _a1 / (n0 * k0);
+            var fact2 = dd0 * dd0 / 2;
+
+            var t0 = Math.pow(Math.tan(phi1), 2);
+            var Q0 = e1sq * Math.pow(Math.cos(phi1), 2);
+            var fact3 = (5 + 3 * t0 + 10 * Q0 - 4 * Q0 * Q0 - 9 * e1sq) * Math.pow(dd0, 4) / 24;
+
+            var fact4 = (61 + 90 * t0 + 298 * Q0 + 45 * t0 * t0 - 252 * e1sq - 3 * Q0 * Q0) * Math.pow(dd0, 6) / 720;
+
+            var lof1 = _a1 / (n0 * k0);
+            var lof2 = (1 + 2 * t0 + Q0) * Math.pow(dd0, 3) / 6.0;
+            var lof3 = (5 - 2 * Q0 + 28 * t0 - 3 * Math.pow(Q0, 2) + 8 * e1sq + 24 * Math.pow(t0, 2)) * Math.pow(dd0, 5) / 120;
+            var _a2 = (lof1 - lof2 + lof3) / Math.cos(phi1);
+            var _a3 = _a2 * 180 / Math.PI;
+
+            var latitude = 180 * (phi1 - fact1 * (fact2 + fact3 + fact4)) / Math.PI;
+
+            if (!northernHemisphere){
+                latitude = -latitude;
+            }
+
+            var longitude = ((zone > 0) && (6 * zone - 183.0) || 3.0) - _a3;
+
+            var res=  [latitude, longitude];
+            return res;
+            }
+
+    //old vvv new ^^^
   $('.btn').on('click', function() {
     var $this = $(this);
   $this.button('loading');
@@ -541,4 +734,7 @@
                     });
                 });
   </script>
+  <script async defer
+   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALIO88xKB1Hwd4kKalnRZQvtu5iCwLBVQ&callback=initMap">
+   </script>
 </html>
