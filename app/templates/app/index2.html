@@ -471,9 +471,15 @@
             <button class="btn btn-default" id="cvtBtn">Convertir</button>
           </div>
           <button class="btn btn-default" id="addBtn">Agregar</button>
+          <input class="form-control" onclick="clearMarkers();" type=button value="Ocultar Marcadores">
+          <input class="form-control" onclick="showMarkers();" type=button value="Mostrar Marcadores">
           <select class="form-control"  id="lgrsA"></select>
           <select class="form-control"  id="lgrsB"></select>
           <button class="btn btn-default" id="unrBtn">Unir</button>
+          <button class="form-control" onclick="toggleHeatmap()">Heatmap</button>
+          <button class="form-control" onclick="changeGradient()">Gradiente</button>
+          <button class="form-control" onclick="changeRadius()">Radio</button>
+          <button class="form-control" onclick="changeOpacity()">Opacidad</button>
           <button type="button" class="btn btn-default btn-sm" id="rfsh">
             <img src="{% static 'app/img/rfsh.png' %}" />
           </button>
@@ -491,20 +497,72 @@
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
   //Cargar Mapa
-    var map;
-
-    var map;
+    var map, heatmap;
+    var markers = [];
     var lugares = ['Hogar','Jardin','Trabajo'];
     function initMap() {
       var latO	 =  -34.888664;
       var lngO	 =  -56.159157;
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: parseFloat(latO), lng: parseFloat(lngO)},
-          zoom: 14
+          zoom: 12
+        });
+        heatmap = new google.maps.visualization.HeatmapLayer({
+          data: getPoints(),
+          map: map
         });
       }
-    var count = -1;
 
+    function toggleHeatmap() {
+      heatmap.setMap(heatmap.getMap() ? null : map);
+    }
+    function changeGradient() {
+      var gradient = [
+        'rgba(0, 255, 255, 0)',
+        'rgba(0, 255, 255, 1)',
+        'rgba(0, 191, 255, 1)',
+        'rgba(0, 127, 255, 1)',
+        'rgba(0, 63, 255, 1)',
+        'rgba(0, 0, 255, 1)',
+        'rgba(0, 0, 223, 1)',
+        'rgba(0, 0, 191, 1)',
+        'rgba(0, 0, 159, 1)',
+        'rgba(0, 0, 127, 1)',
+        'rgba(63, 0, 91, 1)',
+        'rgba(127, 0, 63, 1)',
+        'rgba(191, 0, 31, 1)',
+        'rgba(255, 0, 0, 1)'
+        ]
+      heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
+    }
+
+    function changeRadius() {
+      heatmap.set('radius', heatmap.get('radius') ? null : 20);
+    }
+    function changeOpacity() {
+      heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+    }
+    function getPoints() {
+      centros = [[-34.90789983084485,-56.21188583082826],[-34.87420988513144,-56.25163024169635],[-34.85471267658412,-56.24552782077986],[-34.83191038444337,-56.245965540530364],[-34.843894250396865,-56.250296937907216],[-34.803248635125335,-56.338211093376394],[-34.850800285929566,-56.2442618485746],[-34.86545843742159,-56.2207588942146],
+      [-34.86608203085772,-56.249647056045056],[-34.82663949876625,-56.31851522482474],[-34.844464403125755,-56.2744204026315],[-34.858253317934846,-56.250844929833555],[-34.82153632090448,-56.28257105901889],[-34.849959488647926,-56.267480933571036],[-34.853800684284685,-56.27044416616361],[-34.8562983618083,-56.242406587252425],
+      [-34.879303779464315,-56.270766002198755],[-34.86605518758125,-56.33487468811004],[-34.86119948489274,-56.23451772101251],[-34.885875069856255,-56.29326195595671],[-34.78865020965208,-56.353488230567855],[-34.84352816857524,-56.256764379118465],[-34.85411444055079,-56.230645320650936],[-34.86653778040478,-56.26819825988321],
+      [-34.82874015251763,-56.35481541868589],[-34.86938348309337,-56.170710686191256],[-34.87075120451768,-56.21788613640903],[-34.85582585387369,-56.174008184617904],[-34.84875465974794,-56.18715003303194],[-34.84673805913104,-56.17292864283959],[-34.84010977533783,-56.12267358880144],[-34.77544355034039,-56.04218221156409],
+      [-34.79827494930011,-56.09270565902401],[-34.78617033514172,-56.06252976892369],[-34.801723733387725,-56.087234708137714],[-34.77715900212743,-56.03446863973209],[-34.77613011900128,-56.05270934264765],[-34.847491549773856,-56.112650420012066],[-34.81521909776607,-56.10567799980142],[-34.8715300659978,-56.09684602022626],
+      [-34.87650983087791,-56.06580644984409],[-34.87256576540402,-56.11199310003916],[-34.871731816065086,-56.11801951020081],[-34.8444076522377,-56.13978043952838],[-34.86254576959341,-56.16589023011387],[-34.83502601996224,-56.15830933006757],[-34.822451211775245,-56.169998020217506],[-34.82337489785785,-56.156308159677586],
+      [-34.835100819893434,-56.17420397976129],[-34.840236354210916,-56.15405066012133],[-34.836222539024135,-56.17978070048926],[-34.822819710885796,-56.168651923531804],[-34.819439174559975,-56.13971423995263],[-34.82158530217835,-56.14121829018119],[-34.80626198067365,-56.16336815965943],[-34.786262994742266,-56.15764438050916],
+      [-34.802381163799545,-56.12136366987247],[-34.788198336290826,-56.1279899204364],[-34.797867465131866,-56.14886058680188],[-34.82623588088439,-56.13236061953023],[-34.75702752663112,-56.11011431944802],[-34.83192960040328,-56.219397550325596],[-34.82240069757118,-56.231114739690135],[-34.7877069212733,-56.23316253966531],
+      [-34.79841494448431,-56.22825358994971],[-34.84363561364284,-56.19290550999112],[-34.807863782733875,-56.214863950168244],[-34.81419020878629,-56.21325737052464],[-34.839948317792974,-56.192551489437],[-34.797028491126085,-56.24891251016661],[[]-34.82675142877273,-56.22711810980732],[-34.83577597287922,-56.22986383005261]]
+
+      
+      //alert(centros)
+      points = [];
+      for(var i =0;i<centros.length;i++){
+        points.push(new google.maps.LatLng(centros[i][0],centros[i][1]))
+      }
+        return points
+    }
+
+    var count = -1;
     $(function() {
           var btn = $('#addBtn').click(function () {
             btn.button('loading')
@@ -521,17 +579,40 @@
               icn =  "{% static 'app/img/hme.png' %}";
             }
             var myLatLng = {lat: originLat, lng: originLong};
-              var marker = new google.maps.Marker({
-                position: myLatLng,
-                icon: icn,
-                map: map,
-                title: nme
-              });
+            addMarker(myLatLng,icn,nme);
             setTimeout(function () {
               btn.button('reset')
             }, 300)
           })
         })
+        function addMarker(location,icn,nme) {
+        var marker = new google.maps.Marker({
+          position: location,
+          icon: icn,
+          map: map,
+          title: nme
+        });
+        markers.push(marker);
+      }
+        // Sets the map on all markers in the array.
+      function setMapOnAll(map) {
+         for (var i = 0; i < markers.length; i++) {
+             markers[i].setMap(map);
+         }
+       }
+       // Removes the markers from the map, but keeps them in the array.
+       function clearMarkers() {
+         setMapOnAll(null);
+       }
+       // Shows any markers currently in the array.
+       function showMarkers() {
+         setMapOnAll(map);
+       }
+        // Deletes all markers in the array by removing references to them.
+        function deleteMarkers() {
+         clearMarkers();
+         markers = [];
+        }
 
         $(function() {
               var btn = $('#unrBtn').click(function () {
@@ -581,6 +662,7 @@
                 lugares['Hogar'] = [0,0];
                 lugares['Jardin'] = [0,0];
                 lugares['Trabajo'] = [0,0];
+                deleteMarkers();
                 setTimeout(function () {
                 btn.button('reset')
                 }, 300)
@@ -735,6 +817,6 @@
                 });
   </script>
   <script async defer
-   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALIO88xKB1Hwd4kKalnRZQvtu5iCwLBVQ&callback=initMap">
+   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALIO88xKB1Hwd4kKalnRZQvtu5iCwLBVQ&libraries=visualization&callback=initMap">
    </script>
 </html>
