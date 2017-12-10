@@ -49,7 +49,7 @@ En caso de tener problema con alguna libreria descargar los [.whl](https://www.l
 
 1. Crear en PostgresSQL una base de datos con el nombre `proyecto` con contraseña `1234`(Esto va a cambiar).
 
-Para los siguientes pasos Python debe estar en las variables de entorno. En caso de no tenerlo remplazar `python` o `py` por el directiro donde se ecuentra `python.exe`. 
+Para los siguientes pasos Python debe estar en las variables de entorno. En caso de no tenerlo remplazar `python` o `py` por el directorio donde se ecuentra `python.exe`. 
 
 2. Clonar el repositorio y moverse en un terminal al directorio de trabajo.
 
