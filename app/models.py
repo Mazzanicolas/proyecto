@@ -33,6 +33,8 @@ class Settings(models.Model):
 class Individuo(models.Model):
     id = models.IntegerField(primary_key=True)
     tipo_transporte = models.ForeignKey('TipoTransporte', models.DO_NOTHING)
+    tieneJardin = models.BooleanField()
+    tieneTrabajo = models.BooleanField()
     prestador = models.ForeignKey('Prestador', models.CASCADE)
     hogar = models.ForeignKey(AnclaTemporal, models.CASCADE, related_name='hogar')
     trabajo = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='trabajo')
@@ -41,14 +43,11 @@ class Individuo(models.Model):
     class Meta:
         ordering = ['id']
 
-
-class IndividuoTiempoCentro(models.Model):
+class IndividuoCentro(models.Model):
     individuo = models.ForeignKey(Individuo, models.CASCADE)
     centro    = models.ForeignKey(Centro, models.CASCADE)
-    dia       = models.IntegerField()
-    hora      = models.IntegerField()
-    tiempoViaje = models.IntegerField(blank=True, null=True)
-    cantidad_pediatras = models.IntegerField(null=True)
+    tiempoViajeAntesTrabajo = models.IntegerField(blank=True, null=True)
+    tiempoViajeDespuesTrabajo = models.IntegerField(blank=True, null=True)
     tHogarCentro = models.IntegerField(null=True)
     tHogarTrabajo = models.IntegerField(null=True)
     tHogarJardin = models.IntegerField(null=True)
@@ -58,6 +57,17 @@ class IndividuoTiempoCentro(models.Model):
     tTrabajoHogar= models.IntegerField(null=True)
     tJardinTrabajo= models.IntegerField(null=True)
     tJardinCentro= models.IntegerField(null=True)
+    class Meta:
+        ordering = ['individuo','centro']
+        unique_together = (('individuo', 'centro'),)
+
+class IndividuoTiempoCentro(models.Model):
+    individuo = models.ForeignKey(Individuo, models.CASCADE)
+    centro    = models.ForeignKey(Centro, models.CASCADE)
+    dia       = models.IntegerField()
+    hora      = models.IntegerField()
+    tiempoViaje = models.IntegerField(blank=True, null=True)
+    cantidad_pediatras = models.IntegerField(null=True)
 
     class Meta:
         ordering = ['individuo','centro','dia','hora']
@@ -89,6 +99,7 @@ class Sector(models.Model):
 class SectorTiempo(models.Model):
     sector_1 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sector_1')
     sector_2 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sector_2')
+    tipoSectores = models.IntegerField()
     tiempo = models.FloatField()
     distancia = models.FloatField(blank=True, null=True)
 

@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'bootstrap3',
-    'app.apps.AppConfig',
+    'app',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_tables2',
     'django_filters',
     'crispy_forms',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -108,10 +109,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CELERY_RESULT_BACKEND = 'redis://'
+
+CELERY_BROKER_URL = 'redis://'
+
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
-
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -121,7 +128,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
