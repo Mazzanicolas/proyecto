@@ -3,6 +3,8 @@ import django_tables2 as tables
 from .models import IndividuoTiempoCentro,IndividuoCentro, MedidasDeResumen, Settings
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
+from django_tables2.export.views import ExportMixin
+
 
 
 class PersonTable(tables.Table):
@@ -18,7 +20,7 @@ class PersonTable(tables.Table):
         model = IndividuoTiempoCentro
         attrs = {"class": "paleblue"}
         exclude = ('id',)
-class TestPersonTable(tables.Table):
+class TestPersonTable(ExportMixin, tables.Table):
     tVia = 0
     individuo = tables.Column(accessor = 'individuo.id',verbose_name='Individuo')
     centro = tables.Column(accessor='centro.id_centro',verbose_name='Centro')
@@ -36,7 +38,7 @@ class TestPersonTable(tables.Table):
         attrs = {"class": "paleblue"}
         exclude = ('id',)
         sequence = ('individuo', 'prestador', 'centro','tipoTransporte','dia','hora','tiempoViaje','llega',)
-class ResumenTable(tables.Table):
+class ResumenTable(ExportMixin,tables.Table):
     persona = tables.Column(accessor = 'persona.id',verbose_name='Individuo')
     centroOptimo = tables.Column(accessor='centroOptimo.id_centro',verbose_name='Centro Optimo')
     class Meta:
@@ -70,7 +72,7 @@ def checkLlega(individuo,centro, dia,hora,tiempoViaje, cantidad_pediatras):
             if(jardin and dia in getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     horaAcumulada += tiempos.tCentroJardin
-                    if(horaAcumulada <= jardin.hora):
+                    if(horaAcumulada <= jardin.hora_inicio):
                         horaAcumulada += tiempos.tJardinTrabajo
                         if(horaAcumulada <= trabajo.hora_inicio):
                             return "Si"
@@ -123,7 +125,6 @@ def getListOfDays(stringDays):
             resDays.append(day)
     return resDays
 def calcTiempoDeViaje(individuo,centro,dia,hora):
-    print(individuo.id)
     tieneTrabajo = individuo.tieneTrabajo
     tieneJardin = individuo.tieneJardin
     hogar = individuo.hogar
@@ -138,15 +139,15 @@ def calcTiempoDeViaje(individuo,centro,dia,hora):
                 if(hora < jardin.hora_inicio):
                     return tiempos.tHogarCentro
                 else:
-                    return tiempos.tHogarJardin + tJardinCentro
+                    return tiempos.tHogarJardin + tiempos.tJardinCentro
             else:
                 return tiempos.tHogarCentro
         else:
             if(tieneJardin and dia in getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    return tiempos.tTrabajoHogar + tHogarCentro
+                    return tiempos.tTrabajoHogar + tiempos.tHogarCentro
                 else:
-                    return tiempos.tTrabajoJardin + tJardinCentro
+                    return tiempos.tTrabajoJardin + tiempos.tJardinCentro
             else:
                 return tiempos.tHogarCentro
     else:

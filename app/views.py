@@ -4,6 +4,7 @@ from django.shortcuts import render
 from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 from django.db.models import F
 import math
+from django_tables2.export.export import TableExport
 from app.filters import IndividuoTiempoCentroFilter
 from app.tables import PersonTable,ResumenTable,TestPersonTable
 from django_tables2 import RequestConfig
@@ -14,6 +15,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTML
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 import shapefile
+from django_tables2.export.views import ExportMixin
+
 from io import StringIO
 import time
 from app.bus.omnibus import get_horarios, load, busqueda, parada_mas_cercana, get_parada
@@ -85,7 +88,7 @@ class FooFilterFormHelper(FormHelper):
             <br>    <br>
         """),
     )
-class FilteredPersonListView(PagedFilteredTableView):
+class FilteredPersonListView(ExportMixin,PagedFilteredTableView):
     table_class = TestPersonTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -215,6 +218,7 @@ def parsear_hora(hora):
 
 def cargarIndividuoAnclas(requestf):
     Individuo.objects.all().delete()
+    AnclaTemporal.objects.all().delete()
     csvfile = requestf.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     l = csv.reader(csvf, delimiter=',', quotechar='"')
@@ -272,27 +276,39 @@ def getSectorForPoint(ancal,tipo):
         if(ancal.x_coord == polygon.centroid.wkt):
             print("Same x")
         if(point.within(polygon)):
-            return Sector.objects.get(shape = i, tipo_sector = tipo)
+            return Sector.objects.get(id = len(shapeAuto)+i)#, tipo_sector = tipo)
     if(tipo == "Auto"):
         print(point.wkt)
 
 def cargarTiempos(tipo,request):
     print(request.FILES)
-    SectorTiempo.objects.filter(tipo = tipo).delete()
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
-    l = csv.reader(csvf, delimiter=',')
+    if(tipo == 0):
+        SectorTiempo.objects.filter(id__lt = len(shapeAuto)**2).delete()
+        l = csv.reader(csvf, delimiter=',')
+        id = 0
+    else:
+        SectorTiempo.objects.filter(id__gte = len(shapeAuto)**2).delete()
+        l = csv.reader(csvf, delimiter=';')
+        id = len(shapeAuto)**2
     lineas=[]
     lineas.extend(l)
     lineas = lineas[1:]
-    id = 0
     tiempos = []
     #sectores = Sector.objects.all()
     for caso in lineas:
-        tiempo = SectorTiempo(id = id , sector_1_id = int(caso[0]), sector_2_id = int(caso[1]),tiempo = float(caso[2]), distancia = float(caso[3]),tipo = tipo)
+        if(tipo == 0):
+            sector1 = int(caso[0])
+            sector2 = int(caso[1])
+        else:
+            sector1 = int(caso[0]) + len(shapeAuto)
+            sector2 = int(caso[1]) + len(shapeAuto)
+        tiempo = SectorTiempo(id = id , sector_1_id = sector1, sector_2_id = sector2,tiempo = float(caso[2]), distancia = float(caso[3]))
         tiempos.append(tiempo)
         id +=1
         if(id % 100000 == 0):
+            print(id)
             guardar = SectorTiempo.objects.bulk_create(tiempos)
             tiempos = []
     if(tiempos):
@@ -300,6 +316,7 @@ def cargarTiempos(tipo,request):
 
 def cargarCentroPediatras(request):
     Pediatra.objects.all().delete()
+    Centro.objects.all()
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     l = csv.reader(csvf, delimiter=',')
@@ -345,7 +362,7 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
         indQuery = Individuo.objects.all()
         #size = math.ceil(len(indQuery)/8)
         #individuos = [[indQuery[i:i + size]] for i in range(0, len(indQuery), size)]
-        individuos = [[i.id] for i in indQuery]
+        individuos = [[i.id] for i in indQuery][0:4]
         #print(len(individuos))
         #individuos = ([1],[2],[3]) #list(Individuo.objects.values_list('id')[0:3])
     resultList = []
@@ -354,11 +371,13 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     resumenObjectList = result.join()
     resumenObjectList = sum(sum(resumenObjectList,[]), [])
     table  = ResumenTable(resumenObjectList)
+    RequestConfig(request).configure(table)
+    exporter = TableExport('csv', table)
+    return exporter.response('table.{}'.format('csv'))
     print(resumenObjectList)
-    context = {"result":table}
+    context = {"table":table}
     print("Time in seconds = "+str(time.time() - tiempoInicio))
     return render(request, 'app/calcAll2.html', context)
-
 
 def newCalcTimes():
     print("Lllegue")
@@ -417,7 +436,13 @@ def newCalcularTiempos(anclas,transporte):
         for i in range(0,len(anclas)-1):
             if(anclas[i] is None or anclas[i+1] is None):
                 return -7000#-1/60
-            tiempoViaje += (SectorTiempo.objects.get(sector_1 = anclas[i], sector_2 = anclas[i+1])).tiempo
+            if(anclas[i].id <= anclas[i+1].id):
+                sector1 = anclas[i]
+                sector2 = anclas[i+1]
+            else:
+                sector1 = anclas[i+1]
+                sector2 = anclas[i]
+            tiempoViaje += (SectorTiempo.objects.get(sector_1 = sector1, sector_2 = sector2).tiempo)
             return tiempoViaje
     else:
         print(anclas)
@@ -436,15 +461,15 @@ def newGetSector(lugar, transporte):
     #print(transporte):
     if(lugar is None):
         return None
-    if(True):#transporte == 'Auto' or transporte == 1):
+    if(transporte == 'AUTO' or transporte == 1):
         return lugar.sector_auto
-    elif(transporte == 'Caminando' or transporte == 0):
-        #return lugar.sector_caminando
-        return lugar.sector_auto
+    elif(transporte == 'CAMINANDO' or transporte == 0):
+        return lugar.sector_caminando
     else:
+        return lugar.sector_auto
         return lugar
 def init():
-    if(IndividuoTiempoCentro.objects.count() == 0):
+    if(IndividuoTiempoCentro.objects.count() == 0 and Centro.objects.count() > 0 and Individuo.objects.count() > 0):
         individuos = Individuo.objects.all()
         centros = Centro.objects.all()
         for individuo in individuos:

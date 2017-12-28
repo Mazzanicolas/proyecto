@@ -1,4 +1,4 @@
-{% load render_table from django_tables2 %}
+{% load django_tables2 %}
 {% load bootstrap3 %}
 {% load static %}
 <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}">
@@ -43,7 +43,12 @@
         </div>
       </nav>
       <div style="height:102px;text-align:center;">
-        {% render_table result 'django_tables2/bootstrap.html' %}
+        {% for format in table.export_formats %}
+            <a href="{% querystring '_export'=format %}">
+                download  <code>.{{ format }}</code>
+            </a>
+        {% endfor %}
+        {% render_table table 'django_tables2/bootstrap.html' %}
       </div>
     </body>
     <script type = "text/javascript">

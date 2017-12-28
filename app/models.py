@@ -99,7 +99,6 @@ class Sector(models.Model):
 class SectorTiempo(models.Model):
     sector_1 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sector_1')
     sector_2 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sector_2')
-    tipoSectores = models.IntegerField()
     tiempo = models.FloatField()
     distancia = models.FloatField(blank=True, null=True)
 
