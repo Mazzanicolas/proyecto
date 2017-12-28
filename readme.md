@@ -7,7 +7,8 @@ Aplicación para el cálculo de la zona de disponiblidad para mutualistas en Mon
 
 1. Descargar e instalar [PostgresSQL 9.6](https://www.openscg.com/bigsql/postgresql/installers.jsp/).
 2. Descargar e instalar [Python 3.5+](https://www.python.org). 
-3. Instalar las librerias de Python usando `pip install` o `pip3 install`
+3. Descargar e instalar [Redis 2.4.6](http://ruilopes.com/redis-setup/).
+4. Instalar las librerias de Python usando `pip install` o `pip3 install`
 * `Django 2.0`
 ```
 pip install django
@@ -44,10 +45,26 @@ pip install pyshp
 ```
 pip install geopy
 ```
+* `Celery 4.1.0`
+```
+pip install celery
+```
+* `Tablib 0.12.1`
+```
+pip install tablib
+```
+* `Redis 2.10.6`
+```
+pip install redis
+```
+* `Django Celery Results 1.0.1`
+```
+pip install django_celery_results
+```
 En caso de tener problema con alguna libreria descargar los [.whl](https://www.lfd.uci.edu/~gohlke/pythonlibs/)
 ## Build
 
-1. Crear en PostgresSQL una base de datos con el nombre `proyecto` con contraseña `1234`(Esto va a cambiar).
+1. Crear en PostgresSQL una base de datos con el nombre `proyectodb` con contraseña `1234`(Esto va a cambiar).
 
 Para los siguientes pasos Python debe estar en las variables de entorno. En caso de no tenerlo remplazar `python` o `py` por el directorio donde se ecuentra `python.exe`. 
 
@@ -62,6 +79,12 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 * Esto crea la estructura de la base de datos
+
+3. Abrir `redis-server.exe` como administrador
+
+4. En el repositorio clonado ejecutar `redis.bat` y esperar que cargue
+
+5. Volver al cmd donde se creo la estructura de la base de datos
 ```
 python manage.py runserver
 ```
