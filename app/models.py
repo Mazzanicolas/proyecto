@@ -68,7 +68,7 @@ class IndividuoTiempoCentro(models.Model):
     hora      = models.IntegerField()
     tiempoViaje = models.IntegerField(blank=True, null=True)
     cantidad_pediatras = models.IntegerField(null=True)
-
+    llegaGeografico = models.CharField(max_length = 20,blank=True, null=True)
     class Meta:
         ordering = ['individuo','centro','dia','hora']
         unique_together = (('individuo', 'centro', 'dia', 'hora'),)

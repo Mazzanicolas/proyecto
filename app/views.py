@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen,SectorTiempoOmnibus
+from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen,SectorTiempoOmnibus,IndividuoCentro
 from django.db.models import F
 import math
 from django_tables2.export.export import TableExport
@@ -386,11 +386,11 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
         indQuery = Individuo.objects.all()
         #size = math.ceil(len(indQuery)/8)
         #individuos = [[indQuery[i:i + size]] for i in range(0, len(indQuery), size)]
-        individuos = [[i.id] for i in indQuery]
+        individuos = [[i.id] for i in indQuery][0:4]
         #print(len(individuos))
         #individuos = ([1],[2],[3]) #list(Individuo.objects.values_list('id')[0:3])
     resultList = []
-    job = suzuki.chunks(individuos,25).group()
+    job = suzuki.chunks(individuos,1).group()
     result = job.apply_async()
     resumenObjectList = result.join()
     resumenObjectList = sum(sum(resumenObjectList,[]), [])

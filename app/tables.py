@@ -24,20 +24,24 @@ class TestPersonTable(ExportMixin, tables.Table):
     tVia = 0
     individuo = tables.Column(accessor = 'individuo.id',verbose_name='Individuo')
     centro = tables.Column(accessor='centro.id_centro',verbose_name='Centro')
-    prestador = tables.Column(accessor = 'individuo.prestador.nombre', verbose_name = 'Prestador')
+    prestadorIndividuo = tables.Column(accessor = 'individuo.prestador.nombre', verbose_name = 'Prestador del Individuo')
+    prestadorCentro = tables.Column(accessor = 'centro.prestador.nombre', verbose_name = 'Prestador del Centro')
     tipoTransporte = tables.Column(accessor = 'individuo.tipo_transporte.nombre', verbose_name = 'Transporte')
     tiempoViaje = tables.Column(verbose_name = 'Tiempo de viaje', empty_values = ())
+    llegaGeografico = tables.Column(verbose_name = 'Llega Geografico', empty_values = ())
     llega = tables.Column(verbose_name = 'Llega', empty_values = ())
-    def render_llega(self, record):
-        return checkLlega(record.individuo,record.centro,record.dia,record.hora,record.tiempoViaje,record.cantidad_pediatras)
+    def render_llegaGeografico(self, record):
+        return checkLlega(record.individuo,record.centro,record.dia,record.hora,record.tiempoViaje,record)
     def render_tiempoViaje(self, record):
         return calcTiempoDeViaje(record.individuo,record.centro,record.dia,record.hora)
+    def render_llega(self, record):
+        return checkIfPedAndMut(record.llegaGeografico, record.individuo,record.centro,record.cantidad_pediatras)
     class Meta:
         per_page = 200
         model = IndividuoTiempoCentro
         attrs = {"class": "paleblue"}
         exclude = ('id',)
-        sequence = ('individuo', 'prestador', 'centro','tipoTransporte','dia','hora','tiempoViaje','llega',)
+        sequence = ('individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','llega')
 class ResumenTable(ExportMixin,tables.Table):
     persona = tables.Column(accessor = 'persona.id',verbose_name='Individuo')
     centroOptimo = tables.Column(accessor='centroOptimo.id_centro',verbose_name='Centro Optimo')
@@ -54,8 +58,14 @@ class ResumenTable(ExportMixin,tables.Table):
                     'cantidadCentrosMiercoles' ,'cantidadCentrosJueves' , 'cantidadCentrosViernes' ,
                     'cantidadCentrosSabado' , 'cantidadTotalCentros' , 'centroOptimo')
         exclude = ('id',)
-
-def checkLlega(individuo,centro, dia,hora,tiempoViaje, cantidad_pediatras):
+def checkIfPedAndMut(llega,individuo,centro,cantidad_pediatras):
+    print("Individuo: "+str(individuo.id)+' Centro: '+str(centro.id_centro) + " LlegaGeo: "+llega)
+    if(llega == "Si"):
+        if(individuo.prestador.id == centro.prestador.id and cantidad_pediatras > 0):
+            return "Si"
+    return "No"
+def checkLlega(individuo,centro, dia,hora,tiempoViaje,record):
+    print("Llegue")
     tiempoViaje = calcTiempoDeViaje(individuo,centro,dia,hora)
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
@@ -64,7 +74,8 @@ def checkLlega(individuo,centro, dia,hora,tiempoViaje, cantidad_pediatras):
     hogar = individuo.hogar
     horaAcumulada = hora
     tiempos = IndividuoCentro.objects.get(individuo = individuo, centro = centro)
-    if(tiempoViaje > tiempoMaximo or tiempoViaje == -1 or individuo.prestador.id == centro.prestador.id):
+    if(tiempoViaje > tiempoMaximo or tiempoViaje == -1):
+        record.llegaGeografico = "No"
         return "No"
     if(trabajo and dia in getListOfDays(trabajo.dias)):
         if(hora < trabajo.hora_inicio):
@@ -75,15 +86,18 @@ def checkLlega(individuo,centro, dia,hora,tiempoViaje, cantidad_pediatras):
                     if(horaAcumulada <= jardin.hora_inicio):
                         horaAcumulada += tiempos.tJardinTrabajo
                         if(horaAcumulada <= trabajo.hora_inicio):
+                            record.llegaGeografico = "Si"
                             return "Si"
                 else:
                     if(jardin.hora_fin + tiempos.tJardinCentro <= hora):
                         horaAcumulada += tiempos.tCentroHogar + tiempos.tHogarTrabajo
                         if(horaAcumulada <= trabajo.hora_inicio):
+                            record.llegaGeografico = "Si"
                             return "Si"
             else:
                 horaAcumulada += tiempos.tCentroHogar + tiempos.tHogarTrabajo
                 if(horaAcumulada <= trabajo.hora_inicio):
+                    record.llegaGeografico = "Si"
                     return "Si"
         else:
             if(jardin and dia in getListOfDays(jardin.dias)):
@@ -91,12 +105,15 @@ def checkLlega(individuo,centro, dia,hora,tiempoViaje, cantidad_pediatras):
                     horaAcumulada += tiempoConsulta
                     horaAcumulada += tiempos.tCentroJardin
                     if(trabajo.hora_fin + tiempos.tTrabajoHogar + tiempos.tHogarCentro <= hora and tiempos.tTrabajoHogar+horaAcumulada <= jardin.hora_inicio):
+                        record.llegaGeografico = "Si"
                         return "Si"
                 else:
                     if(trabajo.hora_fin + tiempos.tTrabajoJardin <= jardin.hora_fin and jardin.hora_fin + tiempos.tJardinCentro <= hora):
+                        record.llegaGeografico = "Si"
                         return "Si"
             else:
                 if(trabajo.hora_fin+ tiempos.tTrabajoHogar+tiempos.tHogarCentro <= hora):
+                    record.llegaGeografico = "Si"
                     return "Si"
     else:
         if(jardin and dia in getListOfDays(jardin.dias)):
@@ -104,12 +121,16 @@ def checkLlega(individuo,centro, dia,hora,tiempoViaje, cantidad_pediatras):
                 horaAcumulada += tiempoConsulta
                 horaAcumulada += tiempos.tCentroJardin
                 if(horaAcumulada <= jardin.hora_inicio):
+                    record.llegaGeografico = "Si"
                     return "Si"
             else:
                 if(jardin.hora_fin + tiempos.tJardinCentro <= hora):
+                    record.llegaGeografico = "Si"
                     return "Si"
         else:
+            record.llegaGeografico = "Si"
             return "Si"
+    record.llegaGeografico = "No"
     return "No"
 def getListOfDays(stringDays):
     daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5}
