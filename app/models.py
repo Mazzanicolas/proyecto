@@ -105,6 +105,12 @@ class SectorTiempo(models.Model):
     class Meta:
         unique_together = (('sector_1', 'sector_2'),)
 
+class SectorTiempoOmnibus(models.Model):
+    sectorO_1 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
+    sectorO_2 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sectorO_2')
+    tiempo = models.FloatField()
+    class Meta:
+        unique_together = (('sectorO_1', 'sectorO_2'),)
 
 class TipoTransporte(models.Model):
     id = models.IntegerField(primary_key=True)

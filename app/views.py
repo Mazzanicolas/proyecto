@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen,SectorTiempoOmnibus
 from django.db.models import F
 import math
 from django_tables2.export.export import TableExport
@@ -29,8 +29,8 @@ global shapeAuto
 global shapeCaminando
 global horarios
 global nodos
-horarios = get_horarios('app/bus/horarios.csv')
-nodos = load('app/bus/test_nodos_cercanos.csv')
+#horarios = get_horarios('app/bus/horarios.csv')
+#nodos = load('app/bus/test_nodos_cercanos.csv')
 sf = shapefile.Reader('app/files/shapeAuto.shp')
 shapeAuto = sf.shapes()
 sf = shapefile.Reader('app/files/shapeCaminando.shp')
@@ -135,6 +135,8 @@ def index(request):
                 cargarTiempos(1,request)
             elif(radioMatrix == "option5"):
                 cargarCentroPediatras(request)
+            elif(radioMatrix == "option6"): # omnibus
+                cargarTiemposBus(request)
         if(tiempoMax):
             maxT = Settings.objects.get(setting = "tiempoMaximo")
             maxT.value = tiempoMax
@@ -314,6 +316,27 @@ def cargarTiempos(tipo,request):
     if(tiempos):
         guardar = SectorTiempo.objects.bulk_create(tiempos)
 
+def cargarTiemposBus(request):
+    csvfile = request.FILES['inputFile']
+    csvf = StringIO(csvfile.read().decode())
+    lineas = []
+    lineas.extend(csv.reader(csvf, delimiter=','))
+    SectorTiempoOmnibus.objects.all().delete()
+    id = 0
+    print(id)
+    tiempos = []
+    for i in range(len(lineas)):
+        for j in range(len(lineas[i])):
+            tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = float(lineas[i][j]))
+            tiempos.append(tiempo)
+            id +=1
+            if(id % 100000 == 0):
+                guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
+                tiempos = []
+    if(tiempos != list()):
+        print("A")
+        guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
+    print("B")
 def cargarCentroPediatras(request):
     Pediatra.objects.all().delete()
     Centro.objects.all()
@@ -432,7 +455,7 @@ def newCalcTimes():
 def newCalcularTiempos(anclas,transporte):
     tiempoViaje = 0
     hora = 0
-    if(True):#not (transporte == "bus" or transporte == 2 or transporte == 3)):
+    if not (transporte == "bus" or transporte == 2 or transporte == 3):
         for i in range(0,len(anclas)-1):
             if(anclas[i] is None or anclas[i+1] is None):
                 return -7000#-1/60
@@ -445,18 +468,21 @@ def newCalcularTiempos(anclas,transporte):
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = sector1, sector_2 = sector2).tiempo)
             return tiempoViaje
     else:
-        print(anclas)
-        for i in range(0,len(anclas)-1):
+        for i in range(len(anclas)-1):
             if(anclas[i] is None or anclas[i+1] is None):
-                return -7000#-1/60
-            print(nodos)
-            print(get_parada(nodos,anclas[i]))
-            print(get_parada(nodos,anclas[i+1]))
-            parada_origen = get_parada(nodos,anclas[i])
-            parada_destino = get_parada(nodos,anclas[i+1])
-            #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
-            tiempoViaje += busqueda(parada_origen,parada_origen.coords,parada_destino,parada_destino.coords,nodos,horarios,hora)
+                return -7000
+            tiempoViaje += (SectorTiempoOmnibus.objects.get(sectorO_1 = anclas[i], sectorO_2 = anclas[i+1])).tiempo
             return tiempoViaje
+        #     print(anclas)
+        # for i in range(0,len(anclas)-1):
+        #     if(anclas[i] is None or anclas[i+1] is None):
+        #         return -7000#-1/60
+        #     parada_origen = get_parada(nodos,anclas[i])
+        #     parada_destino = get_parada(nodos,anclas[i+1])
+        #     #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
+        #     tiempoViaje += busqueda(parada_origen,parada_origen.coords,parada_destino,parada_destino.coords,nodos,horarios,hora)
+        #     return tiempoViaje
+
 def newGetSector(lugar, transporte):
     #print(transporte):
     if(lugar is None):

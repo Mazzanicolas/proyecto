@@ -9,8 +9,21 @@ import time
 global VELOCIDAD_CAMINANDO
 VELOCIDAD_CAMINANDO = 5/3600 # 5km/h en segundos
 
+global newVELOCIDAD_CAMINANDO
+newVELOCIDAD_CAMINANDO = 5000/60 # 5000 metros en 60 minutos
+
 global TIEMPO_ESPERA
 TIEMPO_ESPERA = 5*60 # 5 minutos en segundos
+
+global TIEMPO_VIAJE
+TIEMPO_VIAJE = 45 # 45 segundos entre paradas
+
+global RADIO_CERCANO
+RADIO_CERCANO = 500 # distancia maxima en metros para que dos paradas se consideren cercanas
+
+global TIEMPO_CAMBIO_PARADA
+TIEMPO_CAMBIO_PARADA = (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
+                                                                          # con los valores por defecto es 3 minutos.
 
 def translate(easting, northing, zone = 21, northernHemisphere=False):
     if not northernHemisphere:
@@ -50,26 +63,15 @@ def translate(easting, northing, zone = 21, northernHemisphere=False):
 
 def get_tiempo(cod_linea,cod_variante,origen,destino,horarios,hora=0):
     #tiempo entre 2 paradas cercanas o conectadas en omnibus
-    t = float('inf')
+    t = list()
     if [cod_linea,cod_variante] in [x[:2] for x in origen.lineas]:
         ord_origen = int(list(filter(
             lambda x: x[0]==cod_linea and x[1]==cod_variante,origen.lineas))[0][2])
         ord_destino = int(list(filter(
             lambda x: x[0]==cod_linea and x[1]==cod_variante,destino.lineas))[0][2])
         if ord_origen < ord_destino:
-            t_viaje = tiempo_viaje_linea(cod_linea,cod_variante,horarios)
-            #incializo el tiempo con la espera en la parada
-            t_omnibus = TIEMPO_ESPERA + (ord_destino - ord_origen)*t_viaje
-            t = min(t,t_omnibus) #me quedo con el menor tiempo
+            t = [1,ord_destino - ord_origen,0]
     return t
-
-'''
-devuelve el tiempo de viaje del par (cod_linea,cod_variante)
-'''
-def tiempo_viaje_linea(cod_linea,cod_variante,horarios):
-    for h in horarios:
-        if h[0] == cod_linea and h[1] == cod_variante:
-            return int(h[2])
 
 '''
 tiempo caminando desde el origen hasta el destino, a partir de coordenadas x,y
@@ -144,13 +146,13 @@ class Nodo:
         origen = translate(self.coords[0],self.coords[1])
         for nodo in lista_nodos:
             destino = translate(nodo.coords[0],nodo.coords[1])
-            if vincenty(origen,destino).meters <= 500:
+            if vincenty(origen,destino).meters <= RADIO_CERCANO:
                 cercanos.append(nodo)
         self.cercanos = cercanos
 
 def busqueda(nodo_origen, coords_origen, nodo_destino, coords_destino, nodos,horarios,hora):
     if nodo_origen is nodo_destino:
-        return 0 #Si las paradas origen y destino son la misma, no hay tiempo de viaje
+        return -2 #Si las paradas origen y destino son la misma, no hay tiempo de viaje
     # t = float('inf')
     # parada_origen = nodo_origen
     # print(len(nodo_origen.cercanos))
@@ -164,12 +166,17 @@ def busqueda(nodo_origen, coords_origen, nodo_destino, coords_destino, nodos,hor
     #         parada_origen = parada
     #         t = aux
     t = bfs_search(nodos,nodo_origen,nodo_destino,horarios,hora)
-    if t < 0 :
-        return t
-    elif t == float('inf'):
-        print("????",nodo_origen,nodo_destino)
+    # return t
+    if t == list():
         return -1
-    return t/60
+    else:
+        return t[0]*TIEMPO_ESPERA + t[1]*TIEMPO_VIAJE + t[2]*TIEMPO_CAMBIO_PARADA
+    # if t < 0 :
+    #     return t
+    # elif t == float('inf'):
+    #     print("????",nodo_origen,nodo_destino)
+    #     return -1
+    # return t/60
 
 def heuristic(nodo_o, nodo_d,linea,came_from):
     origen = translate(nodo_o.coords[0],nodo_o.coords[1])
@@ -180,7 +187,7 @@ def heuristic(nodo_o, nodo_d,linea,came_from):
     return dist
 
 def cost(cost_so_far,linea,came_from,horarios):
-    c = cost_so_far + tiempo_viaje_linea(linea[0],linea[1],horarios)
+    c = cost_so_far + TIEMPO_VIAJE
     if linea != came_from:
         c += TIEMPO_ESPERA
     return c
@@ -212,7 +219,11 @@ def a_star_search(start, goal, nodos, horarios):
 
 def bfs(lista_nodos,start,goal,horarios):
     def intersect_lineas(tiempo,nodo_actual,nodo_siguiente,lineas,tiempos,horarios,resultado=False):
-        # tiempo = Tiempo que demora el viaje hasta el nodo actual, en segundos.
+        # tiempo = [esperas_omnibus,tiempos_viaje,cambios_parada] es la lista a partir de la cual se
+        #    calcula el tiempo de viaje. Cada numero corresponde a una variable global configurable
+        #    esperas_omnibus -> TIEMPO_ESPERA
+        #    tiempos_viaje -> TIEMPO_VIAJE
+        #    cambios_parada -> TIEMPO_CAMBIO_PARADA
         # nodo_actual = <-
         # nodo_siguiente = <-
         # lineas = lista de lineas con las que se puede haber llegado hasta el nodo actual.
@@ -233,33 +244,34 @@ def bfs(lista_nodos,start,goal,horarios):
         #     se devuelve el tiempo de viaje sin cambiar, con las nuevas listas de lineas y tiempos.
         #     Basicamente se prefiere seguir en omnibus que caminar siempre que sea posible.
         #
-        # Devuelve una tupla (tiempo,lista_lineas,lista_tiempos)
+        # Devuelve una tupla ([esperas_omnibus,tiempos_viaje,cambios_parada],lista_lineas,lista_tiempos)
         res_lineas = list()
         tiempos_omnibus = list()
-        tiempos_caminando = list()
+        caminando = False
         lineas_sin_ord = [x[:2] for x in lineas]
         for linea in nodo_siguiente.lineas:
             if linea[:2] in lineas_sin_ord:
                 i = lineas_sin_ord.index(linea[:2])
                 if linea[2] > lineas[i][2]:
                     res_lineas.append(linea)
-                    tiempos_omnibus.append(tiempos[i] + tiempo_viaje_linea(linea[0],linea[1],horarios)) # Cambiar al tiempo de viaje de la linea
+                    tiempos_omnibus.append(tiempos[i] + 1) #TIEMPO_VIAJE)
                 else:
-                    tiempos_caminando.append(tiempo_caminando(nodo_actual.coords,nodo_siguiente.coords))
+                    caminando = True
             else:
-                tiempos_caminando.append(tiempo_caminando(nodo_actual.coords,nodo_siguiente.coords))
+                caminando = True
         if res_lineas == list() or resultado:
-            new_t = t + min(tiempos_caminando,default = 0) + min(tiempos, default = 0) # El nuevo tiempo es el tiempo anterior mas el tiempo de caminar hasta la proxima parada y el tiempo que paso en el omnibus
+            #new_t = tiempo + (TIEMPO_CAMBIO_PARADA * caminando) + min(tiempos, default = 0) # El nuevo tiempo es el tiempo anterior mas el tiempo de caminar hasta la proxima parada y el tiempo que paso en el omnibus
+            new_t = [tiempo[0],tiempo[1]+min(tiempos,default=0),tiempo[2] + (caminando & 1)]
             return (new_t,list(),list()) # si res_lineas == [] entonces tiempos_omnibus == []
         else:
-            return (t,res_lineas,tiempos_omnibus)
+            return (tiempo,res_lineas,tiempos_omnibus)
 
     visited = set()
-    queue = [(nodo,[nodo],0,list(),list()) for nodo in start.cercanos]
+    queue = [(nodo,[nodo],[0,0,0],list(),list()) for nodo in start.cercanos]
     while queue != list():
         (nodo,path,t,lineas,tiempos) = queue.pop(0)
         if lineas == list():
-            t += TIEMPO_ESPERA
+            t[0] += 1
             lineas = nodo.lineas
             tiempos = [0 for _ in range(len(lineas))]
         if nodo not in visited:
@@ -281,15 +293,15 @@ def bfs_search(lista_nodos,start,goal,horarios,hora):
     lineas_origen = [x[:2] for x in start.lineas]
     lineas = intersect(lineas_origen,[x[:2] for x in goal.lineas])
     if lineas != list():
-        t = float('inf')
+        t = list()
         for l in lineas:
             t = min(t,get_tiempo(l[0],l[1],start,goal,horarios,hora))
-        if t != float('inf'):
+        if t != list():
             return t
-    path = bfs(lista_nodos,start,goal,horarios) #a_star_search(start,goal,lista_nodos,horarios)
+    t = bfs(lista_nodos,start,goal,horarios) #a_star_search(start,goal,lista_nodos,horarios)
     # print(path)
     # return path_to_time(path,lista_nodos,horarios)
-    return path
+    return t
 
 def path_to_time(path,nodos,horarios, hora=0):
     intersect = lambda l1,l2: [inner_list for inner_list in l1 if inner_list in l2]
@@ -421,8 +433,8 @@ if __name__ == '__main__':
     t1 = time.time()
     print(t1-t0)
     #save(nodos,'test_nodos_cercanos.csv')
-    index_0 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == "1931"][0] #3999 . 4836 . 1931
-    index_1 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == "4012"][0] #4568 . 3183 . 4012
+    index_0 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == "3607"][0] #3999 . 4836 . 1931
+    index_1 = [nodos.index(nodo) for nodo in nodos if nodo.cod_parada == "4416"][0] #4568 . 3183 . 4012
     # print(bfs_search(nodos,nodos[index_0],nodos[index_1],horarios,15))
     t0 = time.time()
     a = busqueda(nodos[index_0],nodos[index_0].coords,nodos[index_1],nodos[index_1].coords,nodos,horarios,15)
