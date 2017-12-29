@@ -278,7 +278,7 @@ def getSectorForPoint(ancal,tipo):
         if(ancal.x_coord == polygon.centroid.wkt):
             print("Same x")
         if(point.within(polygon)):
-            return Sector.objects.get(id = len(shapeAuto)+i)#, tipo_sector = tipo)
+            return Sector.objects.get(id = i)#len(shapeAuto)+i)#, tipo_sector = tipo)
     if(tipo == "Auto"):
         print(point.wkt)
 
@@ -334,49 +334,47 @@ def cargarTiemposBus(request):
                 guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
                 tiempos = []
     if(tiempos != list()):
-        print("A")
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
-    print("B")
+
 def cargarCentroPediatras(request):
+    print("A")
     Pediatra.objects.all().delete()
-    Centro.objects.all()
+    Centro.objects.all().delete()
+    print("B")
+    p = list(Prestador.objects.all()) # Traigo todos los prestadores
+    dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
+
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     l = csv.reader(csvf, delimiter=',')
     lineas=[]
     lineas.extend(l)
     lineas = lineas[1:]
-    inti = 0
-    horas = ["6.0","7.0","8.0","9.0","10.0","11.0","12.0","13.0","14.0","15.0","16.0","17.0","18.0","19.0","20.0","21.0"]
-    id = 0
+    horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
     for caso in lineas:
-    ## Centro
-    #Id, Coordenada X, Coordenada Y, Sector, Direccion, Prestador
-        if(caso[2]!=""):
-            #int(caso[3] id para cuando sean unicas
-            centro = Centro(inti,float(caso[9]),float(caso[10]),None,None,caso[7],int(caso[2]))
-            centro.sector_auto = getSectorForPoint(centro,"Auto")
-            centro.sector_caminando = getSectorForPoint(centro,"Caminando")
-            centro.parada = parada_mas_cercana(float(caso[9]),float(caso[10]),nodos)
-            centro.save()
+        ## Centro
+        #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
+        id_centro = int(caso[0])
+        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,dict_prestadores.get(caso[1],1000))
+        centro.sector_auto = getSectorForPoint(centro,"Auto")
+        centro.sector_caminando = getSectorForPoint(centro,"Caminando")
+        centro.save()
         ## Pediatra
         #Centro, Dia, Hora, Cantidad de pediatras
-        #dias = ["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO"]
-            contador_dias = 11
-            for i in range(6):
-                for j in horas:
-                    if(contador_dias > 106): ##Arreglar
-                        break
-                    if ((caso[contador_dias]) == ''):
-                        caso[contador_dias]=0
-                        pediatra = Pediatra (centro_id = inti,dia = i, hora = parsear_hora(j), cantidad_pediatras = int(caso[contador_dias]))
-                        pediatra.save()
-                        contador_dias +=1
-                    else:
-                        pediatra = Pediatra (centro_id = inti,dia = i, hora = parsear_hora(j), cantidad_pediatras = int(caso[contador_dias]))
-                        contador_dias +=1
-                        pediatra.save()
-            inti +=1
+        contador_dias = 5
+        pediatras = list()
+        for i in range(6):
+            for j in horas:
+                if(contador_dias > len(caso)): # Nunca deberia pasar, pero supongo?
+                    break
+                if ((caso[contador_dias]) == ''):
+                    cantPediatras = 0
+                else:
+                    cantPediatras = int(caso[contador_dias].rstrip('0').replace('.','')) # "10.0" -> "10." -> "10" -> 10
+                pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = parsear_hora(j), cantidad_pediatras = cantPediatras))
+                contador_dias +=1
+        Pediatra.objects.bulk_create(pediatras)
+
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     print("XDDDDDD")
     tiempoInicio = time.time()
@@ -386,11 +384,11 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
         indQuery = Individuo.objects.all()
         #size = math.ceil(len(indQuery)/8)
         #individuos = [[indQuery[i:i + size]] for i in range(0, len(indQuery), size)]
-        individuos = [[i.id] for i in indQuery]
+        individuos = [[i.id] for i in indQuery][0:4]
         #print(len(individuos))
         #individuos = ([1],[2],[3]) #list(Individuo.objects.values_list('id')[0:3])
     resultList = []
-    job = suzuki.chunks(individuos,25).group()
+    job = suzuki.chunks(individuos,1).group()
     result = job.apply_async()
     resumenObjectList = result.join()
     resumenObjectList = sum(sum(resumenObjectList,[]), [])
@@ -466,6 +464,7 @@ def newCalcularTiempos(anclas,transporte):
             else:
                 sector1 = anclas[i+1]
                 sector2 = anclas[i]
+            print(sector1.id,sector2.id)
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = sector1, sector_2 = sector2).tiempo)
             return tiempoViaje
     else:
@@ -474,15 +473,6 @@ def newCalcularTiempos(anclas,transporte):
                 return -7000
             tiempoViaje += (SectorTiempoOmnibus.objects.get(sectorO_1 = anclas[i], sectorO_2 = anclas[i+1])).tiempo
             return tiempoViaje
-        #     print(anclas)
-        # for i in range(0,len(anclas)-1):
-        #     if(anclas[i] is None or anclas[i+1] is None):
-        #         return -7000#-1/60
-        #     parada_origen = get_parada(nodos,anclas[i])
-        #     parada_destino = get_parada(nodos,anclas[i+1])
-        #     #print("*******************Coords origen: "+str(coords_origen)+" Coords destino: "+str(coords_destino))
-        #     tiempoViaje += busqueda(parada_origen,parada_origen.coords,parada_destino,parada_destino.coords,nodos,horarios,hora)
-        #     return tiempoViaje
 
 def newGetSector(lugar, transporte):
     #print(transporte):

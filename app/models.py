@@ -19,9 +19,7 @@ class Centro(models.Model):
     y_coord = models.FloatField()
     sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_auto')
     sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_caminando')
-    direccion = models.CharField(max_length=100, blank=True, null=True)
     prestador = models.ForeignKey('Prestador', models.CASCADE)
-    parada = models.IntegerField(blank=True, null=True)
 
     class Meta:
         ordering = ['id_centro']
