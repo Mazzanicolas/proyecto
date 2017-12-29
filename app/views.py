@@ -386,11 +386,11 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
         indQuery = Individuo.objects.all()
         #size = math.ceil(len(indQuery)/8)
         #individuos = [[indQuery[i:i + size]] for i in range(0, len(indQuery), size)]
-        individuos = [[i.id] for i in indQuery][0:4]
+        individuos = [[i.id] for i in indQuery]
         #print(len(individuos))
         #individuos = ([1],[2],[3]) #list(Individuo.objects.values_list('id')[0:3])
     resultList = []
-    job = suzuki.chunks(individuos,1).group()
+    job = suzuki.chunks(individuos,25).group()
     result = job.apply_async()
     resumenObjectList = result.join()
     resumenObjectList = sum(sum(resumenObjectList,[]), [])

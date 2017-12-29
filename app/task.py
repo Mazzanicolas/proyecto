@@ -25,8 +25,6 @@ def suzuki(individuos):
             tiemposViaje = IndividuoCentro.objects.get(individuo = individuo,centro = centro)
             samePrest = individuo.prestador.id == centro.prestador.id
             centroId = centro.id_centro
-            print("ddddddd")
-            print(centro)
             for tiempo in tiempos:
                 count += 1
                 tiempoCero =time.time()
@@ -48,6 +46,9 @@ def suzuki(individuos):
         totalConsultas = getTotalFromDict(dictConsultasPorDia)
         totalCentros = len(centros)
         centroOptimo = getCentroOptimo(centros)
+        if(len(Centro.objects.filter(id_centro = centroOptimo)) == 0):
+            print("El Individuo: que no llegua a ningun lado es el: "+str(individuo.id))
+        centroOptimo = Centro.objects.get(id_centro = centroOptimo) if(centroOptimo) else centroOptimo
         leResumen = MedidasDeResumen(persona = individuo, cantidadTotalHoras = totalHoras,cantidadHorasLunes = len(dictHorasPorDia[0]),
                     cantidadHorasMartes = len(dictHorasPorDia[1]),cantidadHorasMiercoles = len(dictHorasPorDia[2]), cantidadHorasJueves = len(dictHorasPorDia[3]),
                     cantidadHorasViernes = len(dictHorasPorDia[4]),cantidadHorasSabado = len(dictHorasPorDia[5]), cantidadMaximaHoras = getMaximoDict(dictHorasPorDia),
@@ -55,7 +56,7 @@ def suzuki(individuos):
                     cantidadConsultasJueves = dictConsultasPorDia[3], cantidadConsultasViernes = dictConsultasPorDia[4],cantidadConsultasSabado = dictConsultasPorDia[5],
                     cantidadTotalConsultas = totalConsultas, cantidadCentrosLunes = len(dictCentrosPorDia[0]), cantidadCentrosMartes = len(dictCentrosPorDia[1]),
                     cantidadCentrosMiercoles = len(dictCentrosPorDia[2]),cantidadCentrosJueves = len(dictCentrosPorDia[3]), cantidadCentrosViernes = len(dictCentrosPorDia[4]),
-                    cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = Centro.objects.get(id_centro = centroOptimo))
+                    cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = centroOptimo)
         resultList.append(leResumen)
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
     return resultList
