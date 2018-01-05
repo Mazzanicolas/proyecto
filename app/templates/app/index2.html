@@ -297,8 +297,8 @@
            <p>Seleccione los datos a cargar</p>
            <div class="form-check">
              <label class="form-check-label">
-               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1" checked>
-               Conjunto de datos para mutualistas
+               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1">
+               Conjunto de datos de prestadores
              </label>
            </div>
            <div class="form-check">
@@ -308,7 +308,7 @@
              </label>
              <div class="form-check">
                <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option3" checked>
+                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option3">
                  Matriz transporte privado
                </label>
              </div>
@@ -320,17 +320,23 @@
              </div>
              <div class="form-check">
                <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5" value="option5" checked>
+                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5" value="option5">
                  Conjunto de datos para centros
                </label>
              </div>
              <div class="form-check">
-             <label class="form-check-label">
+               <label class="form-check-label">
                  <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios6" value="option6">
                  Matriz omnibus
+             </label>
+             <div class="form-check">
+               <label class="form-check-label">
+                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios7" value="option7">
+                 Tipos de transporte
                </label>
              </div>
            </div>
+         </div>
          </fieldset>
          <div class="form-group">
            <label for="inputFile">Seleccione un archivo</label>
@@ -362,7 +368,7 @@
             <p>Seleccione los datos a respaldar</p>
           </fieldset>
           <div class="panel-footer">
-            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked> Conjunto de datos de mutualistas </label>
+            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked> Conjunto de datos de prestadores </label>
             <label class="checkbox-inline"><input type="checkbox" id="downlaodBox" value="download_personas" checked> Conjunto de datos de personas </label></br>
           </div>
         </form>
@@ -559,7 +565,7 @@
       [-34.802381163799545,-56.12136366987247],[-34.788198336290826,-56.1279899204364],[-34.797867465131866,-56.14886058680188],[-34.82623588088439,-56.13236061953023],[-34.75702752663112,-56.11011431944802],[-34.83192960040328,-56.219397550325596],[-34.82240069757118,-56.231114739690135],[-34.7877069212733,-56.23316253966531],
       [-34.79841494448431,-56.22825358994971],[-34.84363561364284,-56.19290550999112],[-34.807863782733875,-56.214863950168244],[-34.81419020878629,-56.21325737052464],[-34.839948317792974,-56.192551489437],[-34.797028491126085,-56.24891251016661],[[]-34.82675142877273,-56.22711810980732],[-34.83577597287922,-56.22986383005261]]
 
-      
+
       //alert(centros)
       points = [];
       for(var i =0;i<centros.length;i++){

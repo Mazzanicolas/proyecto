@@ -137,6 +137,8 @@ def index(request):
                 cargarCentroPediatras(request)
             elif(radioMatrix == "option6"): # omnibus
                 cargarTiemposBus(request)
+            elif(radioMatrix == "option7"):
+                cargarTiposTransporte(request)
         if(tiempoMax):
             maxT = Settings.objects.get(setting = "tiempoMaximo")
             maxT.value = tiempoMax
@@ -149,46 +151,32 @@ def index(request):
     consT = Settings.objects.get(setting = "tiempoConsulta").value
     context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT}
     return render(request, 'app/index2.html',context)
-def cargarMutualistas(archivo):
-        Prestador.objects.all().delete()
-        p = Prestador(11,"MEDICA URUGUAYA")
-        p.save()
-        p = Prestador(2,"ASOCIACION ESPANOLA")
-        p.save()
-        t =TipoTransporte(1,"Auto")
-        t.save()
-        t = TipoTransporte(0,"Caminando")
-        t.save()
-        t = TipoTransporte(2,"bus")
-        t.save()
-        t = TipoTransporte(3,"bus")
-        t.save()
-        p = Prestador(1,"ASSE")
-        p.save()
-        p = Prestador(3,"CASA DE GALICIA")
-        p.save()
-        p = Prestador(4,"CASMU")
-        p.save()
-        p = Prestador(5,"CIRCULO CATOLICO")
-        p.save()
-        p = Prestador(6,"COSEM")
-        p.save()
-        p = Prestador(7,"CUDAM")
-        p.save()
-        p = Prestador(8,"GREMCA")
-        p.save()
-        p = Prestador(9,"HOSPITAL BRITANICO")
-        p.save()
-        p = Prestador(10,"HOSPITAL EVANGELICO")
-        p.save()
-        p = Prestador(12,"MP")
-        p.save()
-        p = Prestador(13,"SMI")
-        p.save()
-        p = Prestador(14,"UNIVERSAL")
-        p.save()
-        p = Prestador(15,"NOEXISTE")
-        p.save()
+
+def cargarMutualistas(request):
+    Prestador.objects.all().delete()
+    csvfile = request.FILES['inputFile']
+    csvf = StringIO(csvfile.read().decode())
+    l = csv.reader(csvf, delimiter=',', quotechar='"')
+    lineas=[]
+    lineas.extend(l)
+    prestadores = list()
+    for linea in lineas:
+        p = Prestador(int(linea[0]),linea[1])
+        prestadores.append(p)
+    Prestador.objects.bulk_create(prestadores)
+
+def cargarTiposTransporte(request):
+    TipoTransporte.objects.all().delete()
+    csvfile = request.FILES['inputFile']
+    csvf = StringIO(csvfile.read().decode())
+    l = csv.reader(csvf, delimiter=',', quotechar='"')
+    lineas=[]
+    lineas.extend(l)
+    tipos = list()
+    for linea in lineas:
+        t = TipoTransporte(int(linea[0]),linea[1])
+        tipos.append(t)
+    TipoTransporte.objects.bulk_create(tipos)
 
 def guardarArchivo(nombre, archivo):
     with default_storage.open('tmp/'+nombre, 'wb+') as destination:
@@ -283,7 +271,6 @@ def getSectorForPoint(ancal,tipo):
         print(point.wkt)
 
 def cargarTiempos(tipo,request):
-    print(request.FILES)
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     if(tipo == 0):
@@ -337,13 +324,10 @@ def cargarTiemposBus(request):
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
 
 def cargarCentroPediatras(request):
-    print("A")
     Pediatra.objects.all().delete()
     Centro.objects.all().delete()
-    print("B")
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
-
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     l = csv.reader(csvf, delimiter=',')
@@ -352,6 +336,7 @@ def cargarCentroPediatras(request):
     lineas = lineas[1:]
     horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
     for caso in lineas:
+
         ## Centro
         #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
         id_centro = int(caso[0])
