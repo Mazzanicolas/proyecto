@@ -19,15 +19,14 @@
     <!--NavBar-->
     <nav class="navbar navbar-default">
       <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><a class="navbar-brand" href="#">Proyecto 2017</a>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><a class="navbar-brand" href="#">Proyecto 2017-2018</a>
           <ul class="nav navbar-nav">
           <!--1-->
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Opciones <span class="caret"></span></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cargar<span class="caret"></span></a>
               <ul class="dropdown-menu">
                 <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos</a></li>
-                <li><a href="#" data-toggle="modal" data-target="#respaldar_datos">Respaldar Datos</a></li>
-                <li role="separator" class="divider"></li>
+                <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes</a></li>
               </ul>
             </li>
           <!--1-->
@@ -76,6 +75,14 @@
             </div>
           </div>
           <!--Tiempo consulta-->
+          <!--Template Otro-->
+          <div class="panel-body">
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">Nombre otro</span>
+              <input type="text" name = tiempoConsulta class="form-control" placeholder="{{tiempoConsulta}} minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
+            </div>
+          </div>
+          <!--Template Otro-->
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary" >Guardar</button>
@@ -168,87 +175,15 @@
           <h4 class="modal-title">Ejecutar</h4>
         </div>
         <div class="modal-body">
-          <!--Transporte-->
-          <div class="panel panel-default">
-            <div class="panel-body"><input type="checkbox" id="cbf" name="checkBf" value="default" checked> Prestadores a mostrar</div>
-              <div class="panel-footer">
-                <div id="mutualistasContainerFiltros"  hidden="true">
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="ASSE" checked> ASSE </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="ASOCIACION ESPANOLA" checked> As. Española </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CASA DE GALICIA" checked> Casa de Galicia </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CASMU" checked> CASMU </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CIRCULO CATOLICO" checked> Circulo Catolico </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="COSEM" checked> Cosem </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="CUDAM" checked> Cudam </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="GREMCA" checked> Gremca </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="HOSPITAL BRITANICO" checked> H. Britanico </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="HOSPITAL EVANGELICO" checked> H. Evangelico </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="MEDICA URUGUAYA" checked> Medica Uruguaya </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="MP" checked> MP </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="SMI" checked> SMI </label>
-              <label class="checkbox-inline"><input type="checkbox" name="prestador" id="inlineChk" value="UNIVERSAL" checked> Universal </label>
+          <div class="progress">
+            <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
+            aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
+              50% Completado
             </div>
           </div>
-        </div>
-        <div class="panel panel-default">
-          <div class="panel-body"><input type="checkbox" id="cbf2" name="checkBf2" value="default" checked> Medios de transporte a mostrar</div>
-            <div class="panel-footer">
-              <div id="transporteContainerFiltros"  hidden="true">
-                  <label class="checkbox-inline"><input type="checkbox" name="tipoTransporte" id="inlineChk2" value="1" checked> Auto </label>
-                  <label class="checkbox-inline"><input type="checkbox" name="tipoTransporte" id="inlineChk2" value="2" checked> Omnibus </label>
-                  <label class="checkbox-inline"><input type="checkbox" name="tipoTransporte" id="inlineChk2" value="0" checked> Caminando </label>
-                </div>
-              </div>
-            </div>
-            <div class="panel panel-default">
-              <div class="panel-body"><input type="checkbox" id="cbf3" name="checkBf3" value="default" checked> Dias a mostrar</div>
-                <div class="panel-footer">
-                  <div id="diasContainerFiltros"  hidden="true">
-                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="0" checked> Lunes </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="1" checked> Martes </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="2" checked> Miercoles </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="3" checked> Jueves </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="4" checked> Viernes </label>
-                    <label class="checkbox-inline"><input type="checkbox" name="dia" id="inlineChk3" value="5" checked> Sabado </label>
-                  </div>
-              </div>
-            </div>
-            <div class="panel panel-default">
-            <div class="panel-body"><input type="checkbox" id="cbf3" name="checkBf4" value="default" checked> Horas a mostrar</div>
-            <div class="panel-footer">
-              <div id="horasContainerFiltros"  hidden="true">
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro0" id="inlineChk4" value="000" checked> 0 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro1" id="inlineChk4" value="100" checked> 1 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro2" id="inlineChk4" value="200" checked> 2 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro3" id="inlineChk4" value="300" checked> 3 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro4" id="inlineChk4" value="400" checked> 4 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro5" id="inlineChk4" value="500" checked> 5 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro6" id="inlineChk4" value="600" checked> 6 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro7" id="inlineChk4" value="700" checked> 7 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro8" id="inlineChk4" value="800" checked> 8 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro9" id="inlineChk4" value="900" checked> 9 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro10" id="inlineChk4" value="1000" checked> 10 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro11" id="inlineChk4" value="1100" checked> 11 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro12" id="inlineChk4" value="1200" checked> 12 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro13" id="inlineChk4" value="1300" checked> 13 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro14" id="inlineChk4" value="1400" checked> 14 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro15" id="inlineChk4" value="1500" checked> 15 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro16" id="inlineChk4" value="1600" checked> 16 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro17" id="inlineChk4" value="1700" checked> 17 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro18" id="inlineChk4" value="1800" checked> 18 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro19" id="inlineChk4" value="1900" checked> 19 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro20" id="inlineChk4" value="2000" checked> 20 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro21" id="inlineChk4" value="2100" checked> 21 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro22" id="inlineChk4" value="2200" checked> 22 </label>
-                <label class="checkbox-inline"><input type="checkbox" name="horasFiltro23" id="inlineChk4" value="2300" checked> 23 </label>
-              </div>
-          </div>
-          </div>
-          <!--Mutualistas-->
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Calcular</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
     </form>
@@ -266,9 +201,41 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h4 class="modal-title">Resumen</h4>
         </div>
+        <div class="modal-body">
+          <div class="panel panel-default">
+            <div class="panel-body">
+              Rango de ID
+            </div>
+           <div class="form-group row"><div class="col-xs-3"><input  class="form-control" placeholder="ID individuo" name= "fromRange" id="fromRange"><input  class="form-control" placeholder="ID individuo" name="toRange" id="toRange"></div></div></div>
+           <div class="panel panel-default">
+             <div class="panel-body">
+               Tipo transporte
+             </div>
+             <div id="transportesContainerResumenes">
+               <label class="checkbox-inline"><input type="checkbox" id="autoResumenes" checked> Auto</label>
+               <label class="checkbox-inline"><input type="checkbox" id="caminandoResumenes"  checked> Caminado</label>
+               <label class="checkbox-inline"><input type="checkbox" id="omnibusResumenes"  checked> Omnibus</label>
+             </div>
+            </div>
+            <div class="panel panel-default">
+              <div class="panel-body">
+                Trabaja
+              </div>
+           <div>
+            <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> No </label>
+           </div>
+           </div>
+           <div class="panel panel-default">
+             <div class="panel-body">
+               Asiste Jardin
+             </div>
+           <div>
+            <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> No </label>
+           </div>
+           </div>
+        </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Calcular</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          <button type="submit" id="calcularResumen" class="btn btn-primary">Calcular</button>
         </div>
       </div>
     </form>
@@ -508,6 +475,23 @@
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+
+  $(document).ready(function(){
+  $('input[name="fromRange"]').change(function(){
+        if(parseFloat(document.getElementById('fromRange').value) > parseFloat(document.getElementById('toRange').value))
+          $('#calcularResumen').hide();
+      else
+          $('#calcularResumen').show();
+      });
+  });
+  $(document).ready(function(){
+  $('input[name="toRange"]').change(function(){
+      if(parseFloat(document.getElementById('fromRange').value) > parseFloat(document.getElementById('toRange').value))
+          $('#calcularResumen').hide();
+      else
+          $('#calcularResumen').show();
+      });
+  });
   //Cargar Mapa
     var map, heatmap;
     var markers = [];
