@@ -7,6 +7,15 @@
        height: 750px;
        background-color: grey;
      }
+     .btn-circle-micro {
+      width: 15px;
+      height: 15px;
+      text-align: center;
+      padding: 1px 0;
+      font-size: 10px;
+      line-height: 0.1;
+      border-radius: 30px;
+    }
     </style>
 		<meta charset="UTF-8">
 		<title>Proyecto 2017</title>
@@ -25,22 +34,26 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cargar<span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos</a></li>
-                <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes</a></li>
+                <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar datos tooltip" disabled>i</button></a></li>
+                <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar shapes tooltip" disabled>i</button></a></li>
               </ul>
             </li>
           <!--1-->
           <!--2-->
           <li><a href="#" data-toggle="modal" data-target="#config">Configuración</a></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Configuración tooltip" disabled>i</button></li>
           <!--2-->
           <!--3-->
           <li><a href="#" data-toggle="modal" data-target="#sim">Simular</a></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Simular tooltip" disabled>i</button></li>
           <!--3-->
           <!--4-->
           <li><a href="#" data-toggle="modal" data-target="#fil">Ejecutar</a></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Ejecutar tooltip" disabled>i</button></li>
           <!--4-->
           <!--5-->
           <li><a href="#" data-toggle="modal" data-target="#rsm">Resumen</a></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Resumen tooltip" disabled>i</button></li>
           <!--5-->
           </ul>
         </div>
@@ -58,11 +71,13 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h4 class="modal-title">Configuración</h4>
         </div>
-        <div class="modal-body">
+        <div class="modal-body"><div class="alert alert-warning">
+          <strong>¡Advertencia!</strong> Algunas opciones implican un recalculo de los resultados.
+        </div>
           <!--Tiempo transporte-->
           <div class="panel-body">
             <div class="input-group">
-              <span class="input-group-addon" id="sizing-addon2">Tiempo Maximo de Transporte</span>
+              <span class="input-group-addon" id="sizing-addon2">Tiempo Maximo de Transporte &nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Limite de tiempo para considerar si una persona llega" disabled>i</button></span>
               <input type="text" name = tiempoTransporte class="form-control" placeholder="{{tiempoMaximo}} minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
             </div>
           </div>
@@ -70,7 +85,7 @@
           <!--Tiempo consulta-->
           <div class="panel-body">
             <div class="input-group">
-              <span class="input-group-addon" id="sizing-addon2">Tiempo de Consulta</span>
+              <span class="input-group-addon" id="sizing-addon2">Tiempo de Consulta &nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Tiempo que demora la consulta" disabled>i</button></span>
               <input type="text" name = tiempoConsulta class="form-control" placeholder="{{tiempoConsulta}} minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
             </div>
           </div>
@@ -78,7 +93,7 @@
           <!--Template Otro-->
           <div class="panel-body">
             <div class="input-group">
-              <span class="input-group-addon" id="sizing-addon2">Nombre otro</span>
+              <span class="input-group-addon" id="sizing-addon2">Nombre otro  &nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Nombre otro tooltip" disabled>i</button></span>
               <input type="text" name = tiempoConsulta class="form-control" placeholder="{{tiempoConsulta}} minutos" aria-describedby="sizing-addon2"><!--###El place holder deberia de ser cargado con el tiempo en la bd-->
             </div>
           </div>
@@ -105,6 +120,9 @@
           <h4 class="modal-title">Simular</h4>
         </div>
         <div class="modal-body">
+          <div class="alert alert-warning">
+            <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
+          </div>
           <!--Transporte-->
           <div class="panel panel-default">
             <div class="panel-body">
@@ -175,6 +193,9 @@
           <h4 class="modal-title">Ejecutar</h4>
         </div>
         <div class="modal-body">
+          <div class="alert alert-warning">
+            <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
+          </div>
           <div class="progress">
             <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
             aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
@@ -202,35 +223,50 @@
           <h4 class="modal-title">Resumen</h4>
         </div>
         <div class="modal-body">
+          <div class="alert alert-warning">
+            <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
+          </div>
           <div class="panel panel-default">
-            <div class="panel-body">
-              Rango de ID
+            <div class="panel-heading">
+              <h3 class="panel-title">Rango de ID</h3>
             </div>
-           <div class="form-group row"><div class="col-xs-3"><input  class="form-control" placeholder="ID individuo" name= "fromRange" id="fromRange"><input  class="form-control" placeholder="ID individuo" name="toRange" id="toRange"></div></div></div>
+              <div class="panel-body">
+              <div class="form-group row"><div class="col-xs-6">
+                Desde: <input  class="form-control" placeholder="ID individuo" name= "fromRange" id="fromRange"><br>
+                Hasta: <input  class="form-control" placeholder="ID individuo" name="toRange" id="toRange"></div>
+              </div>
+            </div>
+          </div>
            <div class="panel panel-default">
-             <div class="panel-body">
-               Tipo transporte
+             <div class="panel-heading">
+               <h3 class="panel-title">Tipo transporte</h3>
              </div>
+             <div class="panel-body">
              <div id="transportesContainerResumenes">
                <label class="checkbox-inline"><input type="checkbox" id="autoResumenes" checked> Auto</label>
                <label class="checkbox-inline"><input type="checkbox" id="caminandoResumenes"  checked> Caminado</label>
                <label class="checkbox-inline"><input type="checkbox" id="omnibusResumenes"  checked> Omnibus</label>
              </div>
+             </div>
             </div>
             <div class="panel panel-default">
-              <div class="panel-body">
-                Trabaja
+              <div class="panel-heading">
+                <h3 class="panel-title">Trabaja</h3>
               </div>
-           <div>
-            <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> No </label>
-           </div>
+              <div class="panel-body">
+              <div>
+             <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> No </label>
+            </div>
+            </div>
            </div>
            <div class="panel panel-default">
-             <div class="panel-body">
-               Asiste Jardin
+             <div class="panel-heading">
+               <h3 class="panel-title">Asiste jardin</h3>
              </div>
+             <div class="panel-body">
            <div>
             <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> No </label>
+           </div>
            </div>
            </div>
         </div>
@@ -262,46 +298,52 @@
          {% csrf_token %}
          <fieldset class="form-group">
            <p>Seleccione los datos a cargar</p>
+           <div class="panel-body">
+               <div class="form-check">
+                 <label class="form-check-label">
+                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option3">
+                   Matriz transporte privado &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Matriz transporte privado tooltip" disabled>i</button>
+                 </label>
+               </div>
+               <div class="form-check">
+               <label class="form-check-label">
+                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios4" value="option4">
+                   Matriz caminando &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Matriz caminando tooltip" disabled>i</button>
+                 </label>
+               </div>
+               <div class="form-check">
+                 <label class="form-check-label">
+                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios6" value="option6">
+                   Matriz omnibus &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Matriz omnibus tooltip" disabled>i</button>
+                 </label>
+               </div>
+             </div>
+             <div class="panel-body">
+               <div class="form-check">
+                 <label class="form-check-label">
+                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios7" value="option7">
+                   Tipos de transporte &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Tipos de transporte tooltip" disabled>i</button>
+                 </label>
+               </div>
+             </div>
+           <div class="panel-body">
            <div class="form-check">
              <label class="form-check-label">
                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1">
-               Conjunto de datos de prestadores
+               Conjunto de datos de prestadores &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Conjunto de datos de prestadores tooltip" disabled>i</button>
              </label>
            </div>
            <div class="form-check">
            <label class="form-check-label">
                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
-               Conjunto de datos para personas
+               Conjunto de datos para personas  &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Conjunto de datos para personas tooltip" disabled>i</button>
              </label>
-             <div class="form-check">
-               <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option3">
-                 Matriz transporte privado
-               </label>
-             </div>
-             <div class="form-check">
+           </div>
+           <div class="form-check">
              <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios4" value="option4">
-                 Matriz caminando
-               </label>
-             </div>
-             <div class="form-check">
-               <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5" value="option5">
-                 Conjunto de datos para centros
-               </label>
-             </div>
-             <div class="form-check">
-               <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios6" value="option6">
-                 Matriz omnibus
+               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5" value="option5">
+               Conjunto de datos para centros &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="conjunto de datos para centros tooltip" disabled>i</button>
              </label>
-             <div class="form-check">
-               <label class="form-check-label">
-                 <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios7" value="option7">
-                 Tipos de transporte
-               </label>
-             </div>
            </div>
          </div>
          </fieldset>
@@ -320,34 +362,6 @@
    </div>
  </div>
   <!--1-Config-->
-  <!--1.2-Config-->
-  <div id="respaldar_datos" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-    <!-- Modal content-->
-      <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Respaldar Datos</h4>
-      </div>
-      <div class="modal-body">
-        <form>
-          <fieldset class="form-group">
-            <p>Seleccione los datos a respaldar</p>
-          </fieldset>
-          <div class="panel-footer">
-            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked> Conjunto de datos de prestadores </label>
-            <label class="checkbox-inline"><input type="checkbox" id="downlaodBox" value="download_personas" checked> Conjunto de datos de personas </label></br>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Descargar</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--1.2-Config-->
   <!--1.3-Config-->
     <div id="importar_matriz" class="modal fade" role="dialog">
       <div class="modal-dialog">
@@ -475,6 +489,10 @@
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  })
 
   $(document).ready(function(){
   $('input[name="fromRange"]').change(function(){
@@ -770,9 +788,9 @@
         $(document).ready(function(){
         $('input[name="checkM"]').change(function(){
             if(this.checked)
-                $('#transportesContainer').show();
+              $('#transportesContainer').hide();
             else
-                $('#transportesContainer').hide();
+              $('#transportesContainer').show();
             });
         });
         //Mostrar mutualustas filtros
