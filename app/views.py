@@ -12,7 +12,7 @@ from shapely.geometry import Polygon, Point
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTML
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTML,Field
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 import shapefile
 from django_tables2.export.views import ExportMixin
@@ -94,13 +94,6 @@ class FilteredPersonListView(ExportMixin,PagedFilteredTableView):
     paginate_by = 200
     filter_class = IndividuoTiempoCentroFilter
     formhelper_class = FooFilterFormHelper
-class TestFilteredPersonListView(SingleTableMixin, FilterView):
-    table_class = TestPersonTable
-    model = IndividuoTiempoCentro
-    template_name = 'app/filterTable.html'
-    paginate_by = 200
-    filterset_class = IndividuoTiempoCentroFilter
-    page = 2
 def printCentroids():
     for shape in shapeAuto:
         p = Polygon(shape.points)
@@ -366,10 +359,24 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     if(MedidasDeResumen.objects.all()):
         individuos = []
     else:
-        indQuery = Individuo.objects.all()
+        getData = request.GET
+        fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
+        toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
+        transportList = []
+        if(getData.get('autoResumenes', None)):
+            transportList.append(1)
+        if(getData.get('caminandoResumenes', None)):
+            transportList.append(2)
+        if(getData.get('omnibusResumenes', None)):
+            transportList.append(3)
+        trabaja = True if getData.get('trabajaResumenes', None) else False
+        jardin = True if getData.get('jardinResumenes', None) else False
+        indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo = trabaja,tieneJardin = jardin)
         #size = math.ceil(len(indQuery)/8)
         #individuos = [[indQuery[i:i + size]] for i in range(0, len(indQuery), size)]
-        individuos = [[i.id] for i in indQuery][0:4]
+        individuos = [[i.id] for i in indQuery]
+        print(individuos)
+        return
         #print(len(individuos))
         #individuos = ([1],[2],[3]) #list(Individuo.objects.values_list('id')[0:3])
     resultList = []

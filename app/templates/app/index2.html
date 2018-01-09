@@ -215,8 +215,8 @@
   <div id="rsm" class="modal fade" role="dialog">
     <div class="modal-dialog">
     <!-- Modal content-->
-    <form action='resumen/'  method="POST">
-    {% csrf_token %}
+    <form action='resumen/'  method="GET">
+      {% csrf_token %}
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -243,9 +243,9 @@
              </div>
              <div class="panel-body">
              <div id="transportesContainerResumenes">
-               <label class="checkbox-inline"><input type="checkbox" id="autoResumenes" checked> Auto</label>
-               <label class="checkbox-inline"><input type="checkbox" id="caminandoResumenes"  checked> Caminado</label>
-               <label class="checkbox-inline"><input type="checkbox" id="omnibusResumenes"  checked> Omnibus</label>
+               <label class="checkbox-inline"><input type="checkbox" id="autoResumenes" name="autoResumenes" checked value="1"> Auto</label>
+               <label class="checkbox-inline"><input type="checkbox" id="caminandoResumenes" name="caminandoResumenes" checked value="1"> Caminado</label>
+               <label class="checkbox-inline"><input type="checkbox" id="omnibusResumenes" name="omnibusResumenes" checked value="1"> Omnibus</label>
              </div>
              </div>
             </div>
@@ -255,7 +255,7 @@
               </div>
               <div class="panel-body">
               <div>
-             <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> No </label>
+             <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes"> No </label>
             </div>
             </div>
            </div>
@@ -265,7 +265,7 @@
              </div>
              <div class="panel-body">
            <div>
-            <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> No </label>
+            <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes"> No </label>
            </div>
            </div>
            </div>
