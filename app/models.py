@@ -115,6 +115,7 @@ class TipoTransporte(models.Model):
     nombre = models.CharField(max_length=100)
     def __str__(self):
         return u'{0}'.format(self.nombre)
+        
 class MedidasDeResumen(models.Model):
     persona = models.ForeignKey(Individuo, models.CASCADE)
     cantidadTotalHoras = models.IntegerField()

@@ -29,6 +29,10 @@ global shapeAuto
 global shapeCaminando
 global horarios
 global nodos
+
+global TIEMPO_ARBITRARIAMENTE_ALTO
+TIEMPO_ARBITRARIAMENTE_ALTO = 70
+
 #horarios = get_horarios('app/bus/horarios.csv')
 #nodos = load('app/bus/test_nodos_cercanos.csv')
 sf = shapefile.Reader('app/files/shapeAuto.shp')
@@ -307,7 +311,13 @@ def cargarTiemposBus(request):
     tiempos = []
     for i in range(len(lineas)):
         for j in range(len(lineas[i])):
-            tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = float(lineas[i][j]))
+            if i == j:
+                t = SectorTiempo.objects.get(sector_1 = i, sector_2 = j).tiempo
+            else:
+                t = float(lineas[i][j])
+                if t < 0:
+                    t = TIEMPO_ARBITRARIAMENTE_ALTO
+            tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = t)
             tiempos.append(tiempo)
             id +=1
             if(id % 100000 == 0):
