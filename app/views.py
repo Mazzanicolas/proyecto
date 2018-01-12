@@ -268,6 +268,8 @@ def getSectorForPoint(ancal,tipo):
         print(point.wkt)
 
 def cargarTiempos(tipo,request):
+    errores = list()
+
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     if(tipo == 0):
@@ -284,21 +286,59 @@ def cargarTiempos(tipo,request):
     tiempos = []
     #sectores = Sector.objects.all()
     for caso in lineas:
+
+        caught = False
+
+        if len(caso) != 4:
+            errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(caso)))
+            continue
         if(tipo == 0):
-            sector1 = int(caso[0])
-            sector2 = int(caso[1])
+            try:
+                sector1 = int(caso[0])
+            except ValueError:
+                errores.append("Error en el campo idOrigen de la linea {}".format(lineas.index(caso)))
+                caught = True
+            try:
+                sector2 = int(caso[1])
+            except ValueError:
+                errores.append("Error en el campo idDestino de la linea {}".format(lineas.index(caso)))
+                caught = True
         else:
-            sector1 = int(caso[0]) + len(shapeAuto)
-            sector2 = int(caso[1]) + len(shapeAuto)
-        tiempo = SectorTiempo(id = id , sector_1_id = sector1, sector_2_id = sector2,tiempo = float(caso[2]), distancia = float(caso[3]))
-        tiempos.append(tiempo)
-        id +=1
-        if(id % 100000 == 0):
-            print(id)
-            guardar = SectorTiempo.objects.bulk_create(tiempos)
-            tiempos = []
+            try:
+                sector1 = int(caso[0]) + len(shapeAuto)
+            except ValueError:
+                errores.append("Error en el campo idOrigen de la linea {}".format(lineas.index(caso)))
+                caught = True
+            try:
+                sector2 = int(caso[1]) + len(shapeAuto)
+            except ValueError:
+                errores.append("Error en el campo idDestino de la linea {}".format(lineas.index(caso)))
+                caught = True
+
+        try:
+            t = float(caso[2])
+        except ValueError:
+            errores.append("Error en el campo tiempo de la linea {}".format(lineas.index(caso)))
+            caught = True
+        try:
+            dist = float(caso[3])
+        except ValueError:
+            errores.append("Error en el campo tiempo de la linea {}".format(lineas.index(caso)))
+            caught = True
+
+        if not caught: #Guarda igual, capaz que tendria que hacer que solo guarde si no encuentra ningun error en todo el archivo
+            tiempo = SectorTiempo(id = id , sector_1_id = sector1, sector_2_id = sector2,tiempo = float(caso[2]), distancia = float(caso[3]))
+            tiempos.append(tiempo)
+            id +=1
+            if(id % 100000 == 0):
+                print(id)
+                guardar = SectorTiempo.objects.bulk_create(tiempos)
+                tiempos = []
     if(tiempos):
         guardar = SectorTiempo.objects.bulk_create(tiempos)
+
+    if(errores != list()):
+        print('\n'.join(errores))
 
 def cargarTiemposBus(request):
     csvfile = request.FILES['inputFile']
