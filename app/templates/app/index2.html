@@ -123,17 +123,18 @@
           <div class="alert alert-warning">
             <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
           </div>
+          <div hidden><label class="checkbox-inline"><input type="checkbox" name = simular id="simul" value="1" checked> Simular </label></div>
           <!--Transporte-->
           <div class="panel panel-default">
             <div class="panel-body">
               Transporte
             </div>
             <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="default" checked> Utilizar predeterminadas</label></br>
+              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="-1" checked> Utilizar predeterminadas</label></br>
               <div id="transportesContainer" hidden="true">
                 <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio1" value="1"> Auto </label>
                 <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio2" value="0"> Caminando </label>
-                <label class="radio-inline disabled"><input type="radio" name="tipoTransporte" id="inlineRadio3" value="2" disabled> Omnibus </label></br>
+                <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio3" value="2"> Omnibus </label></br>
               </div>
             </div>
           <!--Transporte-->
@@ -142,8 +143,8 @@
           <div class="panel panel-default">
             <div class="panel-body"> Anclas Temporales </div>
             <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="trabajo" checked> Trabajo </label>
-              <label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="jardin" checked> Jardin </label></br>
+              <label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="1" checked> Trabajo </label>
+              <label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="1" checked> Jardin </label></br>
             </div>
           </div>
           <!--Anclas-->
@@ -151,27 +152,54 @@
           <div class="panel panel-default">
           <div class="panel-body"> Mutualistas </div>
           <div class="panel-footer">
-            <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkB" value="default" checked> Utilizar predeterminadas</label></br>
+            <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkB" value="-1" checked> Utilizar predeterminadas</label></br>
               <div id="mutualistasContainer"  hidden="true">
-                <!--label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="ignorar"> Por defecto </label-->
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="ASSE"> ASSE </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="ASOCIACION ESPANOLA"> As. Española </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CASA DE GALICIA"> Casa de Galicia </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CASMU"> CASMU </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CIRCULO CATOLICO"> Circulo Catolico </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="COSEM"> Cosem </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="CUDAM"> Cudam </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="GREMCA"> Gremca </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="HOSPITAL BRITANICO"> H. Britanico </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="HOSPITAL EVANGELICO"> H. Evangelico </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="MEDICA URUGUAYA"> Medica Uruguaya </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="MP"> MP </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="SMI"> SMI </label>
-                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="UNIVERSAL"> Universal </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="-2"> Ignorar </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="1"> ASSE </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="2"> As. Española </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="3"> Casa de Galicia </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="4"> CASMU </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="5"> Circulo Catolico </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="6"> Cosem </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="7"> Cudam </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="8"> Gremca </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="9"> H. Britanico </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="10"> H. Evangelico </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="11"> Medica Uruguaya </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="12"> MP </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="13"> SMI </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="14"> Universal </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="15"> IMM </label>
+                <label class="radio-inline"><input type="radio" name="prestador" id="inlineRadio" value="16"> BPS </label>
               </div>
             </div>
           </div>
           <!--Mutualistas-->
+          <!--Anclas-->
+          <div class="panel panel-default">
+            <div class="panel-body"> ¿Como quiere el resultado? </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="cbCSV" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
+            </div>
+          </div>
+          <div id="rangoIDresult" class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango id tooltip" disabled>i</button></h3>
+            </div>
+              <div class="panel-body">
+              <div class="form-group row"><div class="col-xs-6">
+                Desde: <input  class="form-control" placeholder="ID individuo" name= "fromRange" id="fromRange"><br>
+                Hasta: <input  class="form-control" placeholder="ID individuo" name="toRange" id="toRange"></div>
+              </div>
+            </div>
+          </div>
+          <!--Anclas-->
+          <div class="panel panel-default">
+            <div class="panel-body"> Generar resumen </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="checkRes" name="checkRes" value="1"> Si</label></br>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Calcular</button>
@@ -216,7 +244,6 @@
     <div class="modal-dialog">
     <!-- Modal content-->
     <form action='resumen/'  method="GET">
-      {% csrf_token %}
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -757,6 +784,26 @@
             $('#mutualistasContainer').show();
         });
     });
+    //Mostrar rango de id
+      $(document).ready(function(){
+      $('input[name="checkRango"]').change(function(){
+          if(this.checked)
+              $('#rangoIDresult').show();
+          else
+              $('#rangoIDresult').hide();
+          });
+      });
+      //Mostrar resumen
+        $(document).ready(function(){
+        $('input[name="checkRes"]').change(function(){
+            if(this.checked){
+              document.getElementById("cbCSV").disabled = true;
+              document.getElementById("cbCSV").checked = true;
+            }
+            else
+              document.getElementById("cbCSV").disabled = false;
+            });
+        });
     //Mostrar transportes
       $(document).ready(function(){
       $('input[name="checkM"]').change(function(){
