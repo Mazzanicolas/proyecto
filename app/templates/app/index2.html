@@ -224,6 +224,49 @@
           <div class="alert alert-warning">
             <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
           </div>
+          <!--Transporte-->
+          <div class="panel panel-default">
+            <div class="panel-body">
+              Transporte
+            </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM2" value="-1" checked> Utilizar predeterminadas</label></br>
+              <div id="transportesContainer2" hidden="true">
+                <label class="radio-inline"><input type="checkbox" name="tipoTransporte" id="inlineRadio1" value="1" checked> Auto </label>
+                <label class="radio-inline"><input type="checkbox" name="tipoTransporte" id="inlineRadio2" value="0" checked> Caminando </label>
+                <label class="radio-inline"><input type="checkbox" name="tipoTransporte" id="inlineRadio3" value="2" checked> Omnibus </label></br>
+              </div>
+            </div>
+          <!--Transporte-->
+          </div>
+          <!--Anclas-->
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Trabaja&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Trabaja tooltip" disabled>i</button></h3>
+            </div>
+            <div class="panel-body">
+            <div>
+           <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="0"> Por defecto </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes"> No </label>
+          </div>
+          </div>
+         </div>
+         <div class="panel panel-default">
+           <div class="panel-heading">
+             <h3 class="panel-title">Asiste jardin&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Asiste jardin tooltip" disabled>i</button></h3>
+           </div>
+           <div class="panel-body">
+         <div>
+          <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="0"> Por defecto </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes"> No </label>
+         </div>
+         </div>
+         </div> 
+          <div class="panel panel-default">
+            <div class="panel-body"> ¿Como quiere el resultado? </div>
+            <div class="panel-footer">
+              <label class="checkbox-inline"><input type="checkbox" id="cbCSV" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
+            </div>
+          </div>
+          <!--Anclas-->
           <div class="progress">
             <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
             aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
@@ -292,7 +335,7 @@
              </div>
              <div class="panel-body">
            <div>
-            <label class="radio-inline"><input type="radio" name="trabajaResumenes" id="trabajaResumenes" value="0"> Por defecto </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes"> No </label>
+            <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="0"> Por defecto </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes"> No </label>
            </div>
            </div>
            </div>
@@ -813,6 +856,15 @@
               $('#transportesContainer').show();
           });
       });
+      //Mostrar transportes2
+        $(document).ready(function(){
+        $('input[name="checkM2"]').change(function(){
+            if(this.checked)
+                $('#transportesContainer2').hide();
+            else
+                $('#transportesContainer2').show();
+            });
+        });
       //Show Hide alert
       function showAlert() {
         var x = document.getElementById('implementar');
