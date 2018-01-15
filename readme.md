@@ -97,3 +97,9 @@ python manage.py runserver
 3. Cargar `Matriz de transporte caminando`
 4. Cargar `Centros`
 5. Cargar `Personas`
+
+## Generar matrices usando OSRM
+
+1. Descargar el modulo de [OSRM SV](https://drive.google.com/open?id=0B9_PBnYXKWkBVzBjdExNQnQ3Nm8)
+2. Entrar a [Geofabrik](http://download.geofabrik.de/), [BBBIKE](http://download.bbbike.org/osm/) o [Open Street Map](https://www.openstreetmap.org/export) y descargar el mapa
+
