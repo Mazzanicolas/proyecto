@@ -6,7 +6,7 @@ from django.db.models import F
 import math
 from django_tables2.export.export import TableExport
 from app.filters import IndividuoTiempoCentroFilter
-from app.tables import PersonTable,ResumenTable,TestPersonTable
+from app.tables import PersonTable,ResumenTable,TestPersonTable, SimPersonTable
 from django_tables2 import RequestConfig
 from shapely.geometry import Polygon, Point
 from django_filters.views import FilterView
@@ -24,7 +24,7 @@ import csv
 from django.shortcuts import redirect
 from django_tables2 import SingleTableView
 from celery import group
-from app.task import suzuki
+from app.task import suzuki, calculateIndividual
 global shapeAuto
 global shapeCaminando
 global horarios
@@ -45,11 +45,49 @@ def test(request):
     if(len(IndividuoCentro.objects.all()) == 0):
         print("******************************************************************************************************************")
         newCalcTimes()
+    getReq = request.GET
+    if(getReq.get('checkRango','0') == '-1'):
+        return consultaToCSV(request)
     response = redirect('consultaConFiltro')
+    return response
+def redirectSim(request):
+    if(len(IndividuoCentro.objects.all()) == 0):
+        print("******************************************************************************************************************")
+        newCalcTimes()
+    getReq = request.GET
+    if(getReq.get('checkRes','0') == '1'):
+        return resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request)
+    if(getReq.get('checkRango','0') == '-1'):
+        return consultaToCSV(request)
+    response = redirect('Simulacion')
+    print(getReq.get('checkRango','0'))
+    if(getReq.get('checkB',0) == '-1'):
+        response.set_cookie(key='mutualista',value='-1')
+    else:
+        print("wow")
+        response.set_cookie(key='mutualista',value=int(getReq.get('prestador','-1')))
+    if(getReq.get('checkM','0') == '-1'):
+        response.set_cookie(key='tipoTransporte',value='-1')
+    else:
+        response.set_cookie(key='tipoTransporte',value=int(getReq.get('tipoTransporte','-1')))
+    response.set_cookie(key='trabaja', value=int(getReq.get('anclaTra','0')))
+    response.set_cookie(key='jardin', value=int(getReq.get('anclaJar','0')))
     response['Location'] += '?individuo=87'
-    print("WeW")
     return response
 
+def generateParamDict(getReq):
+    res = dict()
+    if(getReq.get('checkB',0) == '-1'):
+        res['mutualista'] ='-1'
+    else:
+        res['mutualista'] = getReq.get('prestador','-1')
+    if(getReq.get('checkM','0') == '-1'):
+        res['tipoTransporte'] ='-1'
+    else:
+        res['tipoTransporte'] = getReq.get('tipoTransporte','-1')
+    res['trabaja']= getReq.get('anclaTra','0')
+    res['jardin']= getReq.get('anclaJar','0')
+    return res
 class PagedFilteredTableView(SingleTableView):
     filter_class = None
     formhelper_class = None
@@ -96,6 +134,12 @@ class FilteredPersonListView(ExportMixin,PagedFilteredTableView):
     table_class = TestPersonTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
+    filter_class = IndividuoTiempoCentroFilter
+    formhelper_class = FooFilterFormHelper
+class SimPersonView(ExportMixin,PagedFilteredTableView):
+    table_class = SimPersonTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 20
     filter_class = IndividuoTiempoCentroFilter
     formhelper_class = FooFilterFormHelper
 def printCentroids():
@@ -222,7 +266,7 @@ def cargarIndividuoAnclas(requestf):
             anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,parsear_hora(caso[7]) ,parsear_hora(caso[8]) ,caso[6] ,None,None)
             anclaJardin.sector_auto = getSectorForPoint(anclaJardin,"Auto")
             anclaJardin.sector_caminando = getSectorForPoint(anclaJardin,"Caminando")
-            anclaJardin.parada = parada_mas_cercana(float(caso[10]),float(caso[11]),nodos)
+            anclaJardin.parada = 0#parada_mas_cercana(float(caso[10]),float(caso[11]),nodos)
             anclaJardin.save()
             idAncla +=1
             tieneJardin = True
@@ -233,7 +277,7 @@ def cargarIndividuoAnclas(requestf):
             anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",parsear_hora(caso[17]),parsear_hora(caso[18]),caso[16],None,None)
             anclaTrabajo.sector_auto = getSectorForPoint(anclaTrabajo,"Auto")
             anclaTrabajo.sector_caminando = getSectorForPoint(anclaTrabajo,"Caminando")
-            anclaTrabajo.parada = parada_mas_cercana(float(caso[14]),float(caso[15]),nodos)
+            anclaTrabajo.parada = 0#parada_mas_cercana(float(caso[14]),float(caso[15]),nodos)
             anclaTrabajo.save()
             idAncla +=1
             tieneTrabajo = True
@@ -243,7 +287,7 @@ def cargarIndividuoAnclas(requestf):
         anclaHogar   = AnclaTemporal(idAncla,float(caso[22]),float(caso[23]),"hogar",None,None,"L-D",None,None)
         anclaHogar.sector_auto = getSectorForPoint(anclaHogar,"Auto")
         anclaHogar.sector_caminando = getSectorForPoint(anclaHogar,"Caminando")
-        anclaHogar.parada = parada_mas_cercana(float(caso[22]),float(caso[23]),nodos)
+        anclaHogar.parada = 0#parada_mas_cercana(float(caso[22]),float(caso[23]),nodos)
         anclaHogar.save()
         idAncla +=1
         ## Individuo
@@ -255,7 +299,9 @@ def cargarIndividuoAnclas(requestf):
 def getSectorForPoint(ancal,tipo):
     if(tipo == "Auto" or tipo == 1 ):
         shapes = shapeAuto
+        tipo = "Auto"
     else:
+        tipo = "Caminando"
         shapes = shapeCaminando
     point = Point(ancal.x_coord,ancal.y_coord)
     for i in range(len(shapes)):
@@ -263,32 +309,30 @@ def getSectorForPoint(ancal,tipo):
         if(ancal.x_coord == polygon.centroid.wkt):
             print("Same x")
         if(point.within(polygon)):
-            return Sector.objects.get(id = i)#len(shapeAuto)+i)#, tipo_sector = tipo)
+            return Sector.objects.get(shape = i,tipo_sector = tipo)#len(shapeAuto)+i)#, tipo_sector = tipo)
     if(tipo == "Auto"):
         print(point.wkt)
 
 def cargarTiempos(tipo,request):
     errores = list()
-
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     if(tipo == 0):
-        SectorTiempo.objects.filter(id__lt = len(shapeAuto)**2).delete()
+        SectorTiempo.objects.filter(sector_1_id__id__lt = len(shapeAuto)).delete()
         l = csv.reader(csvf, delimiter=',')
         id = 0
     else:
-        SectorTiempo.objects.filter(id__gte = len(shapeAuto)**2).delete()
+        SectorTiempo.objects.filter(sector_1_id__id__gte = len(shapeAuto)).delete()
         l = csv.reader(csvf, delimiter=';')
-        id = len(shapeAuto)**2
+        id = SectorTiempo.objects.latest('id').id + 1
+        print(id)
     lineas=[]
     lineas.extend(l)
     lineas = lineas[1:]
     tiempos = []
     #sectores = Sector.objects.all()
     for caso in lineas:
-
         caught = False
-
         if len(caso) != 4:
             errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(caso)))
             continue
@@ -383,6 +427,7 @@ def cargarCentroPediatras(request):
         ## Centro
         #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
         id_centro = int(caso[0])
+        print(caso[1])
         centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,dict_prestadores.get(caso[1],1000))
         centro.sector_auto = getSectorForPoint(centro,"Auto")
         centro.sector_caminando = getSectorForPoint(centro,"Caminando")
@@ -404,7 +449,6 @@ def cargarCentroPediatras(request):
         Pediatra.objects.bulk_create(pediatras)
 
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
-    print("XDDDDDD")
     tiempoInicio = time.time()
     if(MedidasDeResumen.objects.all()):
         individuos = []
@@ -412,21 +456,32 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
         getData = request.GET
         fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
         toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
-        transportList = []
-        if(getData.get('autoResumenes', None)):
-            transportList.append(1)
-        if(getData.get('caminandoResumenes', None)):
-            transportList.append(2)
-        if(getData.get('omnibusResumenes', None)):
-            transportList.append(3)
-        trabaja = True if getData.get('trabajaResumenes', None) else False
-        jardin = True if getData.get('jardinResumenes', None) else False
-        indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo = trabaja,tieneJardin = jardin)
+        if(getData.get("simular",'0') == '1' ):
+            indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
+            #indQuery = IndividuoTiempoCentro.objects.filter(individuo__in = individuos).values_list('id', flat=True):
+            dictParam = generateParamDict(getData)
+        else:
+            transportList = []
+            if(getData.get('autoResumenes', None)):
+                transportList.append(1)
+            if(getData.get('caminandoResumenes', None)):
+                transportList.append(2)
+            if(getData.get('omnibusResumenes', None)):
+                transportList.append(3)
+            trabajaReq = getData.get('trabajaResumenes', None)
+            jardinReq =  getData.get('jardinResumenes', None)
+            trabaja = [True] if trabajaReq else [False]
+            jardin = [True] if jardinReq else [False]
+            if(jardinReq == '0'):
+                jardin.append(False)
+            if(trabajaReq == '0'):
+                trabaja.append(False)
+            indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+            dictParam = None
         #size = math.ceil(len(indQuery)/8)
-        #individuos = [[indQuery[i:i + size]] for i in range(0, len(indQuery), size)]
-        individuos = [[i.id] for i in indQuery]
+        individuos = [[[x.id for x in indQuery[i:i + 25]],None] for i in range(0, len(indQuery), 25)]
+        #individuos = [[i.id,None] for i in indQuery]
         print(individuos)
-        return
         #print(len(individuos))
         #individuos = ([1],[2],[3]) #list(Individuo.objects.values_list('id')[0:3])
     resultList = []
@@ -443,6 +498,47 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     context = {"table":table}
     return render(request, 'app/calcAll2.html', context)
 
+def consultaToCSV(request):
+    tiempoInicio = time.time()
+    getData = request.GET
+    fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
+    toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
+    if(getData.get("simular",'0') == '1' ):
+        indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
+        #indQuery = IndividuoTiempoCentro.objects.filter(individuo__in = individuos).values_list('id', flat=True):
+        dictParam = generateParamDict(getData)
+        print(dictParam)
+        print(indQuery)
+    else:
+        print(getData)
+        transportList = [int(x) for x in getData.get('tipoTransporte', [])]
+        trabajaReq = getData.get('trabajaResumenes', None)
+        jardinReq =  getData.get('jardinResumenes', None)
+        trabaja = [True] if trabajaReq else [False]
+        jardin = [True] if jardinReq else [False]
+        if(jardinReq == '0'):
+            jardin.append(False)
+        if(trabajaReq == '0'):
+            trabaja.append(False)
+        print(trabaja,jardin)
+        indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+        dictParam = None
+    individuos = [[indQuery[i:i + 25],None] for i in range(0, len(indQuery), 25)]
+    resultList = []
+    job = calculateIndividual.chunks(individuos,1).group()
+    result = job.apply_async()
+    resumenObjectList = result.join()
+    resumenObjectList = sum(sum(resumenObjectList,[]), [])
+    table  = PersonTable(resumenObjectList)
+    print("Time in seconds = "+str(time.time() - tiempoInicio))
+    timeinit = time.time()
+    RequestConfig(request).configure(table)
+    exporter = TableExport('csv', table)
+    print(time.time()-timeinit)
+    return exporter.response('table.{}'.format('csv'))
+    print(resumenObjectList)
+    context = {"table":table}
+    return render(request, 'app/calcAll2.html', context)
 def newCalcTimes():
     print("Lllegue")
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
@@ -459,33 +555,78 @@ def newCalcTimes():
         transporte = individuo.tipo_transporte.id
         trabajo    = individuo.trabajo
         jardin     = individuo.jardin
-        secHogar   = newGetSector(individuo.hogar,transporte)
-        secTrabajo = newGetSector(trabajo,transporte)
-        secJardin  = newGetSector(jardin,transporte)
-        tHogarTrabajo = newCalcularTiempos([secHogar, secTrabajo],transporte)
-        tHogarJardin =  newCalcularTiempos([secHogar, secJardin],transporte)
-        tJardinTrabajo =newCalcularTiempos([secJardin, secTrabajo],transporte)
-        tTrabajoJardin = newCalcularTiempos([secJardin, secHogar],transporte)
-        tTrabajoHogar = newCalcularTiempos([secTrabajo, secHogar],transporte)
+        secHogarAuto   = newGetSector(individuo.hogar,1)
+        secTrabajoAuto = newGetSector(trabajo,1)
+        secJardinAuto  = newGetSector(jardin,1)
+        ######
+        secHogarCaminando   = newGetSector(individuo.hogar,0)
+        secTrabajoCaminando = newGetSector(trabajo,0)
+        secJardinCaminando  = newGetSector(jardin,0)
+        #####
+        secHogarBus   = newGetSector(individuo.hogar,1)
+        secTrabajoBus = newGetSector(trabajo,1)
+        secJardinBus = newGetSector(jardin,1)
+        ####
+        tHogarTrabajoAuto = newCalcularTiempos([secHogarAuto, secTrabajoAuto],1)
+        tHogarJardinAuto =  newCalcularTiempos([secHogarAuto, secJardinAuto],1)
+        tJardinTrabajoAuto =newCalcularTiempos([secJardinAuto, secTrabajoAuto],1)
+        tTrabajoJardinAuto = newCalcularTiempos([secJardinAuto, secHogarAuto],1)
+        tTrabajoHogarAuto = newCalcularTiempos([secTrabajoAuto, secHogarAuto],1)
+#######################
+        tHogarTrabajoCaminando = newCalcularTiempos([secHogarCaminando, secTrabajoCaminando],0)
+        tHogarJardinCaminando =  newCalcularTiempos([secHogarCaminando, secJardinCaminando],0)
+        tJardinTrabajoCaminando =newCalcularTiempos([secJardinCaminando, secTrabajoCaminando],0)
+        tTrabajoJardinCaminando = newCalcularTiempos([secJardinCaminando, secHogarCaminando],0)
+        tTrabajoHogarCaminando = newCalcularTiempos([secTrabajoCaminando, secHogarCaminando],0)
+#######################
+        tHogarTrabajoBus = newCalcularTiempos([secHogarBus, secTrabajoBus],2)
+        tHogarJardinBus =  newCalcularTiempos([secHogarBus, secJardinBus],2)
+        tJardinTrabajoBus =newCalcularTiempos([secJardinBus, secTrabajoBus],2)
+        tTrabajoJardinBus = newCalcularTiempos([secJardinBus, secHogarBus],2)
+        tTrabajoHogarBus = newCalcularTiempos([secTrabajoBus, secHogarBus],2)
+
         tiempoRestante += time.time() - tiempoInicio
         loopTime = 0
         tiemposCentros = []
         for centro in centros:
             aux = time.time()
-            secCentro = newGetSector(centro,transporte)
+            secCentroAuto = newGetSector(centro,1)
+            secCentroCaminando = newGetSector(centro,0)
+            secCentroBus = newGetSector(centro,1)
             horas     = Pediatra.objects.filter(centro = centro)
-            tHogarCentro = newCalcularTiempos([secHogar, secCentro],transporte)
-            tJardinCentro= newCalcularTiempos([secJardin, secCentro],transporte)
-            tCentroHogar =newCalcularTiempos([secCentro, secHogar],transporte)
-            tCentroJardin =newCalcularTiempos([secCentro, secJardin],transporte)
+            tHogarCentroAuto = newCalcularTiempos([secHogarAuto, secCentroAuto],1)
+            tJardinCentroAuto= newCalcularTiempos([secJardinAuto, secCentroAuto],1)
+            tCentroHogarAuto =newCalcularTiempos([secCentroAuto, secHogarAuto],1)
+            tCentroJardinAuto =newCalcularTiempos([secCentroAuto, secJardinAuto],1)
+####################
+            tHogarCentroCaminando = newCalcularTiempos([secHogarCaminando, secCentroCaminando],0)
+            tJardinCentroCaminando= newCalcularTiempos([secJardinCaminando, secCentroCaminando],0)
+            tCentroHogarCaminando =newCalcularTiempos([secCentroCaminando, secHogarCaminando],0)
+            tCentroJardinCaminando =newCalcularTiempos([secCentroCaminando, secJardinCaminando],0)
+#########################
+            tHogarCentroBus = newCalcularTiempos([secHogarBus, secCentroBus],2)
+            tJardinCentroBus= newCalcularTiempos([secJardinBus, secCentroBus],2)
+            tCentroHogarBus =newCalcularTiempos([secCentroBus, secHogarBus],2)
+            tCentroJardinBus =newCalcularTiempos([secCentroBus, secJardinBus],2)
+
             listaHoras = []
             tiempoRestante += time.time()-aux
             ini = time.time()
-            q = IndividuoCentro(individuo = individuo , centro = centro, tHogarTrabajo = tHogarTrabajo/60,
-                                tHogarJardin = tHogarJardin/60,tJardinTrabajo = tJardinTrabajo/60,
-                                tTrabajoJardin = tTrabajoJardin/60,tTrabajoHogar = tTrabajoHogar/60,
-                                tHogarCentro = tHogarCentro/60,tJardinCentro = tJardinCentro/60,
-                                tCentroHogar = tCentroHogar/60,tCentroJardin = tCentroJardin/60)
+            q = IndividuoCentro(individuo = individuo , centro = centro, tHogarTrabajoAuto = tHogarTrabajoAuto/60,
+                                tHogarJardinAuto = tHogarJardinAuto/60,tJardinTrabajoAuto = tJardinTrabajoAuto/60,
+                                tTrabajoJardinAuto = tTrabajoJardinAuto/60,tTrabajoHogarAuto = tTrabajoHogarAuto/60,
+                                tHogarCentroAuto = tHogarCentroAuto/60,tJardinCentroAuto = tJardinCentroAuto/60,
+                                tCentroHogarAuto = tCentroHogarAuto/60,tCentroJardinAuto = tCentroJardinAuto/60,
+            tHogarTrabajoCaminando = tHogarTrabajoCaminando/60,
+                                tHogarJardinCaminando = tHogarJardinCaminando/60,tJardinTrabajoCaminando = tJardinTrabajoCaminando/60,
+                                tTrabajoJardinCaminando = tTrabajoJardinCaminando/60,tTrabajoHogarCaminando = tTrabajoHogarCaminando/60,
+                                tHogarCentroCaminando = tHogarCentroCaminando/60,tJardinCentroCaminando = tJardinCentroCaminando/60,
+                                tCentroHogarCaminando = tCentroHogarCaminando/60,tCentroJardinCaminando = tCentroJardinCaminando/60,
+            tHogarTrabajoBus = tHogarTrabajoBus/60,
+                                tHogarJardinBus = tHogarJardinBus/60,tJardinTrabajoBus = tJardinTrabajoBus/60,
+                                tTrabajoJardinBus = tTrabajoJardinBus/60,tTrabajoHogarBus = tTrabajoHogarBus/60,
+                                tHogarCentroBus = tHogarCentroBus/60,tJardinCentroBus = tJardinCentroBus/60,
+                                tCentroHogarBus = tCentroHogarBus/60,tCentroJardinBus = tCentroJardinBus/60)
             tiemposCentros.append(q)
             loopTime += time.time()-ini    #q.save()
         IndividuoCentro.objects.bulk_create(tiemposCentros)
@@ -500,19 +641,27 @@ def newCalcularTiempos(anclas,transporte):
         for i in range(0,len(anclas)-1):
             if(anclas[i] is None or anclas[i+1] is None):
                 return -7000#-1/60
-            if(anclas[i].id <= anclas[i+1].id):
+            if(transporte == 0):
+                if(anclas[i].id <= anclas[i+1].id):
+                    sector1 = anclas[i]
+                    sector2 = anclas[i+1]
+                else:
+                    sector1 = anclas[i+1]
+                    sector2 = anclas[i]
+            else:
                 sector1 = anclas[i]
                 sector2 = anclas[i+1]
-            else:
-                sector1 = anclas[i+1]
-                sector2 = anclas[i]
-            print(sector1.id,sector2.id)
+            #print(sector1.id,sector2.id)
             tiempoViaje += (SectorTiempo.objects.get(sector_1 = sector1, sector_2 = sector2).tiempo)
+            if(sector1.id == 114 and sector2.id == 8):
+                print(tiempoViaje)
             return tiempoViaje
     else:
         for i in range(len(anclas)-1):
             if(anclas[i] is None or anclas[i+1] is None):
                 return -7000
+            #print(anclas[i].id)
+            #print(anclas[i+1].id)
             tiempoViaje += (SectorTiempoOmnibus.objects.get(sectorO_1 = anclas[i], sectorO_2 = anclas[i+1])).tiempo
             return tiempoViaje
 
@@ -526,7 +675,7 @@ def newGetSector(lugar, transporte):
         return lugar.sector_caminando
     else:
         return lugar.sector_auto
-        return lugar
+
 def init():
     if(IndividuoTiempoCentro.objects.count() == 0 and Centro.objects.count() > 0 and Individuo.objects.count() > 0):
         individuos = Individuo.objects.all()
