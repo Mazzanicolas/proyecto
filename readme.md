@@ -98,8 +98,35 @@ python manage.py runserver
 4. Cargar `Centros`
 5. Cargar `Personas`
 
-## Generar matrices usando OSRM
+# Generar matrices usando OSRM
+
+## Levantar el Server OSRM (Forma 1)
+
+1. Clonar el repositorio de [OSRM](https://github.com/Project-OSRM/osrm-backend)
+2. Seguir las instrucciones de OSRM
+
+## Levantar el Server OSRM (Forma 2)
 
 1. Descargar el modulo de [OSRM SV](https://drive.google.com/open?id=0B9_PBnYXKWkBVzBjdExNQnQ3Nm8)
-2. Entrar a [Geofabrik](http://download.geofabrik.de/), [BBBIKE](http://download.bbbike.org/osm/) o [Open Street Map](https://www.openstreetmap.org/export) y descargar el mapa
+2. Entrar a [Geofabrik](http://download.geofabrik.de/), [BBBIKE](http://download.bbbike.org/osm/) o [Open Street Map](https://www.openstreetmap.org/export) y descargar el mapa a utilizar. Nota: debe ser en formato `.osm.bpf`
+3. Si no existe un directorio `temp` en `C:\` crearlo.
+4. Moverse en la consola de comandos hasta donde se descargo el `OSRM SV` y ejecutar los siguientes comandos:
+```
+osrm-extract NOMBRE.osm.pbf -p TIPO.lua
+```
+* En `NOMBRE.osm.pbf` usar el nombre del archivo descargado y especificar el directorio de ser necesario.
+* En `TIPO.lua` el tipo de grafo a generar, estos valores pueden ser `foot`, `car` o `bike`.
+```
+osrm-contract NOMBRE.osrm
+```
+```
+osrm-routed NOMBRE.osrm
+```
+5. El servidor quedara esuchando en 127.0.0.1 puerto 5000 
 
+## Levantar el Server OSRM (Forma 3)
+
+1. Descargar el modulo de [OSRM SV](https://drive.google.com/open?id=0B9_PBnYXKWkBVzBjdExNQnQ3Nm8)
+2. Entrar a [Geofabrik](http://download.geofabrik.de/), [BBBIKE](http://download.bbbike.org/osm/) o [Open Street Map](https://www.openstreetmap.org/export) y descargar el mapa a utilizar. Nota: debe ser en formato `.osm.bpf`
+3. Ejecutar `RUNSERVER.bat`
+4. El servidor quedara esuchando en 127.0.0.1 puerto 5000 
