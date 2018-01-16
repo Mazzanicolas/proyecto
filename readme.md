@@ -129,4 +129,6 @@ osrm-routed NOMBRE.osrm
 1. Descargar el modulo de [OSRM SV](https://drive.google.com/open?id=0B9_PBnYXKWkBVzBjdExNQnQ3Nm8)
 2. Entrar a [Geofabrik](http://download.geofabrik.de/), [BBBIKE](http://download.bbbike.org/osm/) o [Open Street Map](https://www.openstreetmap.org/export) y descargar el mapa a utilizar. Nota: debe ser en formato `.osm.bpf`
 3. Ejecutar `RUNSERVER.bat`
-4. El servidor quedara esuchando en 127.0.0.1 puerto 5000 
+4. El servidor quedara esuchando en 127.0.0.1 puerto 5000
+
+Para mas información sobre OSRM consultar la [documentación](https://github.com/Project-OSRM/osrm-backend/blob/master/docs/http.md)
