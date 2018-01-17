@@ -11,7 +11,6 @@ class AnclaTemporal(models.Model):
     dias = models.CharField(max_length = 20)
     sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_auto')
     sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_caminando')
-    parada = models.IntegerField(blank=True, null=True)
 
 class Centro(models.Model):
     id_centro = models.IntegerField(primary_key = True)
@@ -134,7 +133,7 @@ class TipoTransporte(models.Model):
     nombre = models.CharField(max_length=100)
     def __str__(self):
         return u'{0}'.format(self.nombre)
-        
+
 class MedidasDeResumen(models.Model):
     persona = models.ForeignKey(Individuo, models.CASCADE)
     cantidadTotalHoras = models.IntegerField()

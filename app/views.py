@@ -24,6 +24,7 @@ import csv
 from django.shortcuts import redirect
 from django_tables2 import SingleTableView
 from celery import group
+from app.checkeo_errores import *
 from app.task import suzuki, calculateIndividual
 global shapeAuto
 global shapeCaminando
@@ -41,7 +42,7 @@ sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
 def test(request):
-    print("Ke wea")
+    #print("Ke wea")
     if(len(IndividuoCentro.objects.all()) == 0):
         print("******************************************************************************************************************")
         newCalcTimes()
@@ -194,12 +195,10 @@ def index(request):
     return render(request, 'app/index2.html',context)
 
 def cargarMutualistas(request):
+    lineas = checkMutualistas(request)
+    if lineas is None: #Devuelve las lineas del archivo si la lista de errores esta vacia, None si no.
+        return None
     Prestador.objects.all().delete()
-    csvfile = request.FILES['inputFile']
-    csvf = StringIO(csvfile.read().decode())
-    l = csv.reader(csvf, delimiter=',', quotechar='"')
-    lineas=[]
-    lineas.extend(l)
     prestadores = list()
     for linea in lineas:
         p = Prestador(int(linea[0]),linea[1])
@@ -207,12 +206,10 @@ def cargarMutualistas(request):
     Prestador.objects.bulk_create(prestadores)
 
 def cargarTiposTransporte(request):
+    lineas = checkTiposTransporte(request)
+    if lineas is None:
+        return None
     TipoTransporte.objects.all().delete()
-    csvfile = request.FILES['inputFile']
-    csvf = StringIO(csvfile.read().decode())
-    l = csv.reader(csvf, delimiter=',', quotechar='"')
-    lineas=[]
-    lineas.extend(l)
     tipos = list()
     for linea in lineas:
         t = TipoTransporte(int(linea[0]),linea[1])
@@ -235,6 +232,7 @@ def cargarSectores():
         centroide = centroid(shapeCaminando[i])
         sector = Sector(i+len(shapeAuto),centroide.x,centroide.y,"Caminando",i)
         sector.save()
+
 def centroid(shape):
     poligono = Polygon(shape.points)
     if poligono.is_valid:
@@ -243,19 +241,18 @@ def centroid(shape):
         return poligono.centroid
 def parsear_hora(hora):
     if(not "." in hora):
-        str(float(hora))
+        return int(hora)
     h,m = hora.split('.')
     return int(h.zfill(2) + m.zfill(2))
 
 def cargarIndividuoAnclas(requestf):
+    prestadores = [x.id for x in Prestador.objects.all()]
+    tipos_transporte = [x.id for x in TipoTransporte.objects.all()]
+    lineas = checkIndividuoAnclas(requestf,prestadores,tipos_transporte)
+    if lineas is None:
+        return None
     Individuo.objects.all().delete()
     AnclaTemporal.objects.all().delete()
-    csvfile = requestf.FILES['inputFile']
-    csvf = StringIO(csvfile.read().decode())
-    l = csv.reader(csvf, delimiter=',', quotechar='"')
-    lineas=[]
-    lineas.extend(l)
-    lineas = lineas[1:]
     idAncla = 0
     for caso in lineas:
         print("Individuo "+caso[0])
@@ -266,7 +263,6 @@ def cargarIndividuoAnclas(requestf):
             anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,parsear_hora(caso[7]) ,parsear_hora(caso[8]) ,caso[6] ,None,None)
             anclaJardin.sector_auto = getSectorForPoint(anclaJardin,"Auto")
             anclaJardin.sector_caminando = getSectorForPoint(anclaJardin,"Caminando")
-            anclaJardin.parada = 0#parada_mas_cercana(float(caso[10]),float(caso[11]),nodos)
             anclaJardin.save()
             idAncla +=1
             tieneJardin = True
@@ -277,7 +273,6 @@ def cargarIndividuoAnclas(requestf):
             anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",parsear_hora(caso[17]),parsear_hora(caso[18]),caso[16],None,None)
             anclaTrabajo.sector_auto = getSectorForPoint(anclaTrabajo,"Auto")
             anclaTrabajo.sector_caminando = getSectorForPoint(anclaTrabajo,"Caminando")
-            anclaTrabajo.parada = 0#parada_mas_cercana(float(caso[14]),float(caso[15]),nodos)
             anclaTrabajo.save()
             idAncla +=1
             tieneTrabajo = True
@@ -287,7 +282,6 @@ def cargarIndividuoAnclas(requestf):
         anclaHogar   = AnclaTemporal(idAncla,float(caso[22]),float(caso[23]),"hogar",None,None,"L-D",None,None)
         anclaHogar.sector_auto = getSectorForPoint(anclaHogar,"Auto")
         anclaHogar.sector_caminando = getSectorForPoint(anclaHogar,"Caminando")
-        anclaHogar.parada = 0#parada_mas_cercana(float(caso[22]),float(caso[23]),nodos)
         anclaHogar.save()
         idAncla +=1
         ## Individuo
@@ -314,84 +308,43 @@ def getSectorForPoint(ancal,tipo):
         print(point.wkt)
 
 def cargarTiempos(tipo,request):
-    errores = list()
-    csvfile = request.FILES['inputFile']
-    csvf = StringIO(csvfile.read().decode())
+    lineas = checkTiempos(tipo,request)
+    if (lineas is None): #Devuelve las lineas del archivo si la lista de errores esta vacia, None si no.
+        return None
     if(tipo == 0):
         SectorTiempo.objects.filter(sector_1_id__id__lt = len(shapeAuto)).delete()
         l = csv.reader(csvf, delimiter=',')
         id = 0
     else:
         SectorTiempo.objects.filter(sector_1_id__id__gte = len(shapeAuto)).delete()
-        l = csv.reader(csvf, delimiter=';')
         id = SectorTiempo.objects.latest('id').id + 1
         print(id)
-    lineas=[]
-    lineas.extend(l)
-    lineas = lineas[1:]
     tiempos = []
-    #sectores = Sector.objects.all()
     for caso in lineas:
-        caught = False
-        if len(caso) != 4:
-            errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(caso)))
-            continue
         if(tipo == 0):
-            try:
-                sector1 = int(caso[0])
-            except ValueError:
-                errores.append("Error en el campo idOrigen de la linea {}".format(lineas.index(caso)))
-                caught = True
-            try:
-                sector2 = int(caso[1])
-            except ValueError:
-                errores.append("Error en el campo idDestino de la linea {}".format(lineas.index(caso)))
-                caught = True
+            sector1 = int(caso[0])
+            sector2 = int(caso[1])
         else:
-            try:
-                sector1 = int(caso[0]) + len(shapeAuto)
-            except ValueError:
-                errores.append("Error en el campo idOrigen de la linea {}".format(lineas.index(caso)))
-                caught = True
-            try:
-                sector2 = int(caso[1]) + len(shapeAuto)
-            except ValueError:
-                errores.append("Error en el campo idDestino de la linea {}".format(lineas.index(caso)))
-                caught = True
-
-        try:
-            t = float(caso[2])
-        except ValueError:
-            errores.append("Error en el campo tiempo de la linea {}".format(lineas.index(caso)))
-            caught = True
-        try:
-            dist = float(caso[3])
-        except ValueError:
-            errores.append("Error en el campo tiempo de la linea {}".format(lineas.index(caso)))
-            caught = True
-
-        if not caught: #Guarda igual, capaz que tendria que hacer que solo guarde si no encuentra ningun error en todo el archivo
-            tiempo = SectorTiempo(id = id , sector_1_id = sector1, sector_2_id = sector2,tiempo = float(caso[2]), distancia = float(caso[3]))
-            tiempos.append(tiempo)
-            id +=1
-            if(id % 100000 == 0):
-                print(id)
-                guardar = SectorTiempo.objects.bulk_create(tiempos)
-                tiempos = []
+            sector1 = int(caso[0]) + len(shapeAuto)
+            sector2 = int(caso[1]) + len(shapeAuto)
+        t = float(caso[2])
+        dist = float(caso[3])
+        tiempo = SectorTiempo(id = id , sector_1_id = sector1, sector_2_id = sector2,tiempo = float(caso[2]), distancia = float(caso[3]))
+        tiempos.append(tiempo)
+        id +=1
+        if(id % 100000 == 0):
+            print(id)
+            guardar = SectorTiempo.objects.bulk_create(tiempos)
+            tiempos = []
     if(tiempos):
         guardar = SectorTiempo.objects.bulk_create(tiempos)
 
-    if(errores != list()):
-        print('\n'.join(errores))
-
 def cargarTiemposBus(request):
-    csvfile = request.FILES['inputFile']
-    csvf = StringIO(csvfile.read().decode())
-    lineas = []
-    lineas.extend(csv.reader(csvf, delimiter=','))
+    lineas = checkTiemposBus(request)
+    if (lineas is None): #Devuelve las lineas del archivo si la lista de errores esta vacia, None si no.
+        return None
     SectorTiempoOmnibus.objects.all().delete()
     id = 0
-    print(id)
     tiempos = []
     for i in range(len(lineas)):
         for j in range(len(lineas[i])):
@@ -411,24 +364,20 @@ def cargarTiemposBus(request):
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
 
 def cargarCentroPediatras(request):
-    Pediatra.objects.all().delete()
-    Centro.objects.all().delete()
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
-    csvfile = request.FILES['inputFile']
-    csvf = StringIO(csvfile.read().decode())
-    l = csv.reader(csvf, delimiter=',')
-    lineas=[]
-    lineas.extend(l)
-    lineas = lineas[1:]
+    lineas = checkCentroPediatras(request,dict_prestadores)
+    if lineas is None:
+        return None
+    Pediatra.objects.all().delete()
+    Centro.objects.all().delete()
     horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
     for caso in lineas:
-
         ## Centro
         #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
         id_centro = int(caso[0])
-        print(caso[1])
-        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,dict_prestadores.get(caso[1],1000))
+        prestador = dict_prestadores.get(caso[1],1000)
+        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,prestador)
         centro.sector_auto = getSectorForPoint(centro,"Auto")
         centro.sector_caminando = getSectorForPoint(centro,"Caminando")
         centro.save()
@@ -440,10 +389,14 @@ def cargarCentroPediatras(request):
             for j in horas:
                 if(contador_dias > len(caso)): # Nunca deberia pasar, pero supongo?
                     break
-                if ((caso[contador_dias]) == ''):
-                    cantPediatras = 0
-                else:
-                    cantPediatras = int(caso[contador_dias].rstrip('0').replace('.','')) # "10.0" -> "10." -> "10" -> 10
+                try:
+                    if ((caso[contador_dias]) == '0' or caso[contador_dias] == ''):
+                        cantPediatras = 0
+                    else:
+                        cantPediatras = int(caso[contador_dias].rstrip('0').replace('.','')) # "10.0" -> "10." -> "10" -> 10
+                except:
+                    print(caso[contador_dias])
+                    print(caso)
                 pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = parsear_hora(j), cantidad_pediatras = cantPediatras))
                 contador_dias +=1
         Pediatra.objects.bulk_create(pediatras)
