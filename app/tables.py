@@ -6,7 +6,8 @@ from django_tables2.views import SingleTableMixin
 from django_tables2.export.views import ExportMixin
 from crequest.middleware import CrequestMiddleware
 
-
+def getPrestadores():
+    return {str(x.id):x.nombre for x in Prestador.objects.all()}
 
 class PersonTable(tables.Table):
     individuo = tables.Column(accessor = 'individuo.id',verbose_name='Individuo')
@@ -54,9 +55,10 @@ class SimPersonTable(TestPersonTable):
     trabaja = True
     jardin = True
     mutualista = '-1'
-    dict_prestadores = {str(x.id):x.nombre for x in Prestador.objects.all()}
+    dict_prestadores = getPrestadores()
     prestadorIndividuo = tables.Column(empty_values = (), verbose_name = 'Prestador del Individuo')
     tipoTransporte = tables.Column(empty_values = (), verbose_name = 'Transporte')
+
     def render_prestadorIndividuo(self, record):
         if(not self.init):
             self.init = True
@@ -101,6 +103,7 @@ class SimPersonTable(TestPersonTable):
         attrs = {"class": "paleblue"}
         exclude = ('id',)
         sequence = ('individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','llega')
+
 def setParams(self,cookies):
     print(cookies)
     if(not cookies.get('trabaja','1') == '1'):

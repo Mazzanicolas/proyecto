@@ -249,7 +249,8 @@ def parsear_hora(hora):
 
 def cargarIndividuoAnclas(requestf):
     prestadores = [x.id for x in Prestador.objects.all()]
-    tipos_transporte = [x.id for x in TipoTransporte.objects.all()]
+    tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
+    dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
     lineas = checkIndividuoAnclas(requestf,prestadores,tipos_transporte)
     if lineas is None:
         return None
@@ -288,7 +289,7 @@ def cargarIndividuoAnclas(requestf):
         idAncla +=1
         ## Individuo
         #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
-        individuo  = Individuo(id = int(caso[0]),tipo_transporte = TipoTransporte.objects.get(id =int(caso[19])),prestador = Prestador.objects.get(id =int(caso[1])),
+        individuo  = Individuo(id = int(caso[0]),tipo_transporte = dicc_transporte.get(caso[19]),prestador = Prestador.objects.get(id =int(caso[1])),
                     hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
         individuo.save()
     print("Se cargo correctamente el archivo")
