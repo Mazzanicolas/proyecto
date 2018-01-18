@@ -16,7 +16,6 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTM
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 import shapefile
 from django_tables2.export.views import ExportMixin
-
 from io import StringIO
 import time
 from app.bus.omnibus import get_horarios, load, busqueda, parada_mas_cercana, get_parada
@@ -26,6 +25,7 @@ from django_tables2 import SingleTableView
 from celery import group
 from app.checkeo_errores import *
 from app.task import suzuki, calculateIndividual
+from django.http import StreamingHttpResponse
 global shapeAuto
 global shapeCaminando
 global horarios
@@ -450,7 +450,13 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     print(resumenObjectList)
     context = {"table":table}
     return render(request, 'app/calcAll2.html', context)
-
+class Echo:
+    """An object that implements just the write method of the file-like
+    interface.
+    """
+    def write(self, value):
+        """Write the value by returning it, instead of storing in a buffer."""
+        return value
 def consultaToCSV(request):
     tiempoInicio = time.time()
     getData = request.GET
@@ -463,8 +469,7 @@ def consultaToCSV(request):
         print(dictParam)
         print(indQuery)
     else:
-        print(getData)
-        transportList = [int(x) for x in getData.get('tipoTransporte', [])]
+        transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
         trabajaReq = getData.get('trabajaResumenes', None)
         jardinReq =  getData.get('jardinResumenes', None)
         trabaja = [True] if trabajaReq else [False]
@@ -473,8 +478,9 @@ def consultaToCSV(request):
             jardin.append(False)
         if(trabajaReq == '0'):
             trabaja.append(False)
-        print(trabaja,jardin)
+        print(trabaja,jardin,fromRange,toRange,transportList)
         indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+        print("Individuos a calcular: "+str(len(indQuery)))
         dictParam = None
     individuos = [[indQuery[i:i + 25],None] for i in range(0, len(indQuery), 25)]
     resultList = []
@@ -482,16 +488,26 @@ def consultaToCSV(request):
     result = job.apply_async()
     resumenObjectList = result.join()
     resumenObjectList = sum(sum(resumenObjectList,[]), [])
-    table  = PersonTable(resumenObjectList)
+    #table  = PersonTable(resumenObjectList)
     print("Time in seconds = "+str(time.time() - tiempoInicio))
     timeinit = time.time()
-    RequestConfig(request).configure(table)
-    exporter = TableExport('csv', table)
+    #RequestConfig(request).configure(table)
+    #exporter = TableExport('csv', table)
+    pseudo_buffer = Echo()
+    writer = csv.writer(pseudo_buffer)
+    response = StreamingHttpResponse((writer.writerow(row) for row in resumenObjectList),
+                                     content_type="text/csv")
+    response['Content-Disposition'] = 'attachment; filename="resultado.csv"'
+    return response
+    buffer = StringIO()
+    wr = csv.writer(buffer, quoting=csv.QUOTE_ALL)
+    wr.writerows(resumenObjectList)
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=resultado.csv'
     print(time.time()-timeinit)
+    return response
     return exporter.response('table.{}'.format('csv'))
-    print(resumenObjectList)
-    context = {"table":table}
-    return render(request, 'app/calcAll2.html', context)
 def newCalcTimes():
     print("Lllegue")
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)

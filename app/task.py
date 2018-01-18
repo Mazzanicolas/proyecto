@@ -32,20 +32,22 @@ def calculateIndividual(individuos,simParam):
             tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo, centro = centro)
             tiemposViaje = getTiempos(individuo = individuo,centro = centro,tipoTrans = tipoTrans.id)
             if(prestador == -2):
-                prestador = centro.prestador
+                prestador = centro.prestador.id
             samePrest = prestador == centro.prestador.id
             #individuo.prestador = prestador
             #individuo.tipoTransporte = tipoTrans
             centroId = centro.id_centro
+            aux =[]
             for tiempo in tiempos:
                 count += 1
                 tiempoCero =time.time()
                 tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin)
                 tiempoInCheck += time.time() - tiempoCero
-                tiempo.tiempoViaje = tiempoViaje
-                tiempo.llega = llega
-                tiempo.llegaGeografico = llegaG
-            result = result + list(tiempos)
+                #tiempo.tiempoViaje = tiempoViaje
+                #tiempo.llega = llega
+                #tiempo.llegaGeografico = llegaG
+                result.append([individuo.id,prestador,centroId,centro.prestador.id,tipoTrans.nombre,tiempo.dia,tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
+            #result = result + list(tiempos)
         print("In calcTiempoDeViaje = "+str(tiempoInCheck))
         print("Mean of time in calcTiempoDeViaje = "+str(tiempoInCheck/count) + " En: "+str(count))
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
