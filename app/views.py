@@ -313,6 +313,8 @@ def cargarTiempos(tipo,request):
         return None
     if(tipo == 0):
         SectorTiempo.objects.filter(sector_1_id__id__lt = len(shapeAuto)).delete()
+        csvfile = request.FILES['inputFile']
+        csvf = StringIO(csvfile.read().decode())
         l = csv.reader(csvf, delimiter=',')
         id = 0
     else:
