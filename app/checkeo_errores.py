@@ -17,17 +17,11 @@ def checkTiempos(tipo,request):
             errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(caso)))
             continue
         try:
-            if tipo == 0:
-                sector1 = int(caso[0])
-            else:
-                sector1 = int(caso[0]) + len(shapeAuto)
+            sector1 = int(caso[0])
         except ValueError:
             errores.append("Error en el campo idOrigen de la linea {}".format(lineas.index(caso)))
         try:
-            if tipo == 0:
-                sector2 = int(caso[1])
-            else:
-                sector2 = int(caso[1]) + len(shapeAuto)
+            sector2 = int(caso[1])
         except ValueError:
             errores.append("Error en el campo idDestino de la linea {}".format(lineas.index(caso)))
         try:

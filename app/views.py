@@ -204,6 +204,7 @@ def cargarMutualistas(request):
         p = Prestador(int(linea[0]),linea[1])
         prestadores.append(p)
     Prestador.objects.bulk_create(prestadores)
+    print("Se cargo correctamente el archivo")
 
 def cargarTiposTransporte(request):
     lineas = checkTiposTransporte(request)
@@ -215,6 +216,7 @@ def cargarTiposTransporte(request):
         t = TipoTransporte(int(linea[0]),linea[1])
         tipos.append(t)
     TipoTransporte.objects.bulk_create(tipos)
+    print("Se cargo correctamente el archivo")
 
 def guardarArchivo(nombre, archivo):
     with default_storage.open('tmp/'+nombre, 'wb+') as destination:
@@ -289,7 +291,9 @@ def cargarIndividuoAnclas(requestf):
         individuo  = Individuo(id = int(caso[0]),tipo_transporte = TipoTransporte.objects.get(id =int(caso[19])),prestador = Prestador.objects.get(id =int(caso[1])),
                     hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
         individuo.save()
+    print("Se cargo correctamente el archivo")
     init()
+
 def getSectorForPoint(ancal,tipo):
     if(tipo == "Auto" or tipo == 1 ):
         shapes = shapeAuto
@@ -313,9 +317,6 @@ def cargarTiempos(tipo,request):
         return None
     if(tipo == 0):
         SectorTiempo.objects.filter(sector_1_id__id__lt = len(shapeAuto)).delete()
-        csvfile = request.FILES['inputFile']
-        csvf = StringIO(csvfile.read().decode())
-        l = csv.reader(csvf, delimiter=',')
         id = 0
     else:
         SectorTiempo.objects.filter(sector_1_id__id__gte = len(shapeAuto)).delete()
@@ -340,6 +341,7 @@ def cargarTiempos(tipo,request):
             tiempos = []
     if(tiempos):
         guardar = SectorTiempo.objects.bulk_create(tiempos)
+    print("Se cargo correctamente el archivo")
 
 def cargarTiemposBus(request):
     lineas = checkTiemposBus(request)
@@ -364,6 +366,7 @@ def cargarTiemposBus(request):
                 tiempos = []
     if(tiempos != list()):
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
+    print("Se cargo correctamente el archivo")
 
 def cargarCentroPediatras(request):
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
@@ -402,6 +405,7 @@ def cargarCentroPediatras(request):
                 pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = parsear_hora(j), cantidad_pediatras = cantPediatras))
                 contador_dias +=1
         Pediatra.objects.bulk_create(pediatras)
+    print("Se cargo correctamente el archivo")
 
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     tiempoInicio = time.time()
