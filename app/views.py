@@ -123,9 +123,9 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
             if(getData.get('autoResumenes', None)):
                 transportList.append(1)
             if(getData.get('caminandoResumenes', None)):
-                transportList.append(2)
+                transportList.append(0)
             if(getData.get('omnibusResumenes', None)):
-                transportList.append(3)
+                transportList.append(2)
             trabajaReq = getData.get('trabajaResumenes', None)
             jardinReq =  getData.get('jardinResumenes', None)
             trabaja = [True] if trabajaReq else [False]
@@ -137,6 +137,7 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
             indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
             dictParam = None
         individuos = [[[x.id for x in indQuery[i:i + 5]],None] for i in range(0, len(indQuery), 5)]
+    print("Individuos a calcular: "+str(len(indQuery)))
     resultList = []
     job = suzuki.chunks(individuos,1).group()
     result = job.apply_async()
