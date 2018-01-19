@@ -1,15 +1,18 @@
 import app.utils as utils
 from app.models import *
 from app.checkeo_errores import *
+import app.utils
+import csv
+from django.http import HttpResponse, StreamingHttpResponse
 
 global TIEMPO_ARBITRARIAMENTE_ALTO
 TIEMPO_ARBITRARIAMENTE_ALTO = 70
 def cargarCentroPediatras(request,shapeAuto, shapeCaminando):
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
-    lineas = checkCentroPediatras(request,dict_prestadores)
-    if lineas is None:
-        return None
+    res, lineas = checkCentroPediatras(request,dict_prestadores)
+    if not res:
+        return lineas
     Pediatra.objects.all().delete()
     Centro.objects.all().delete()
     horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
@@ -42,10 +45,11 @@ def cargarCentroPediatras(request,shapeAuto, shapeCaminando):
                 contador_dias +=1
         Pediatra.objects.bulk_create(pediatras)
     print("Se cargo correctamente el archivo")
+
 def cargarMutualistas(request):
-    lineas = checkMutualistas(request)
-    if lineas is None: #Devuelve las lineas del archivo si la lista de errores esta vacia, None si no.
-        return None
+    res, lineas = checkMutualistas(request)
+    if not res:
+        return lineas
     Prestador.objects.all().delete()
     prestadores = list()
     for linea in lineas:
@@ -55,9 +59,9 @@ def cargarMutualistas(request):
     print("Se cargo correctamente el archivo")
 
 def cargarTiposTransporte(request):
-    lineas = checkTiposTransporte(request)
-    if lineas is None:
-        return None
+    res, lineas = checkTiposTransporte(request)
+    if not res:
+        return lineas
     TipoTransporte.objects.all().delete()
     tipos = list()
     for linea in lineas:
@@ -80,9 +84,9 @@ def cargarIndividuoAnclas(requestf,shapeAuto, shapeCaminando):
     prestadores = [x.id for x in Prestador.objects.all()]
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
     dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
-    lineas = checkIndividuoAnclas(requestf,prestadores,tipos_transporte)
-    if lineas is None:
-        return None
+    res, lineas = checkIndividuoAnclas(requestf,prestadores,tipos_transporte)
+    if not res:
+        return lineas
     Individuo.objects.all().delete()
     AnclaTemporal.objects.all().delete()
     idAncla = 0
@@ -127,9 +131,9 @@ def cargarIndividuoAnclas(requestf,shapeAuto, shapeCaminando):
     print("Matriz Carteasiana generada")
 
 def cargarTiempos(tipo,request,shapeAuto, shapeCaminando):
-    lineas = checkTiempos(tipo,request)
-    if (lineas is None): #Devuelve las lineas del archivo si la lista de errores esta vacia, None si no.
-        return None
+    res, lineas = checkTiempos(tipo,request)
+    if not res:
+        return lineas
     if(tipo == 0):
         SectorTiempo.objects.filter(sector_1_id__id__lt = len(shapeAuto)).delete()
         id = 0
@@ -158,9 +162,9 @@ def cargarTiempos(tipo,request,shapeAuto, shapeCaminando):
     print("Se cargo correctamente el archivo")
 
 def cargarTiemposBus(request):
-    lineas = checkTiemposBus(request)
-    if (lineas is None): #Devuelve las lineas del archivo si la lista de errores esta vacia, None si no.
-        return None
+    res, lineas = checkTiemposBus(request)
+    if not res:
+        return lineas
     SectorTiempoOmnibus.objects.all().delete()
     id = 0
     tiempos = []
@@ -181,6 +185,7 @@ def cargarTiemposBus(request):
     if(tiempos != list()):
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
     print("Se cargo correctamente el archivo")
+
 def init():
     if(IndividuoTiempoCentro.objects.count() == 0 and Centro.objects.count() > 0 and Individuo.objects.count() > 0):
         individuos = Individuo.objects.all()

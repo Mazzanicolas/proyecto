@@ -73,19 +73,26 @@ def index(request):
         radioMatrix =  radioCargado
         if(radioCargado):
             if(radioCargado == "option1"):
-                load.cargarMutualistas(request)
+                lineas = load.cargarMutualistas(request)
             elif(radioCargado == "option2"):
-                load.cargarIndividuoAnclas(request,shapeAuto, shapeCaminando)
+                lineas = load.cargarIndividuoAnclas(request,shapeAuto, shapeCaminando)
             elif(radioMatrix == "option3"):
-                load.cargarTiempos(0,request,shapeAuto, shapeCaminando)
+                lineas = load.cargarTiempos(0,request,shapeAuto, shapeCaminando)
             elif(radioMatrix == "option4"):
-                load.cargarTiempos(1,request,shapeAuto, shapeCaminando)
+                lineas = load.cargarTiempos(1,request,shapeAuto, shapeCaminando)
             elif(radioMatrix == "option5"):
-                load.cargarCentroPediatras(request,shapeAuto, shapeCaminando)
+                lineas = load.cargarCentroPediatras(request,shapeAuto, shapeCaminando)
             elif(radioMatrix == "option6"): # omnibus
-                load.cargarTiemposBus(request)
+                lineas = load.cargarTiemposBus(request)
             elif(radioMatrix == "option7"):
-                load.cargarTiposTransporte(request)
+                lineas = load.cargarTiposTransporte(request)
+            if lineas is not None:
+                pseudo_buffer = utils.Echo()
+                writer = csv.writer(pseudo_buffer)
+                response = StreamingHttpResponse((writer.writerow(row) for row in lineas),
+                                                 content_type="text/csv")
+                response['Content-Disposition'] = 'attachment; filename="errores.csv"'
+                return response
         if(tiempoMax):
             maxT = Settings.objects.get(setting = "tiempoMaximo")
             maxT.value = tiempoMax

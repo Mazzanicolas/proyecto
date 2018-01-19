@@ -1,5 +1,6 @@
 from io import StringIO
 import csv
+
 def checkTiempos(tipo,request):
     errores = list()
     csvfile = request.FILES['inputFile']
@@ -32,10 +33,10 @@ def checkTiempos(tipo,request):
         except ValueError:
             errores.append("Error en el campo distancia de la linea {}".format(lineas.index(caso)))
     if errores == list():
-        return lineas
+        return True,lineas
     else:
         print('\n'.join(errores))
-        return None
+        return False,[[x] for x in errores]
 
 def checkMutualistas(request):
     errores = list()
@@ -57,10 +58,10 @@ def checkMutualistas(request):
         except:
             errores.append("Error en el campo nombre de la linea {}".format(lineas.index(linea)))
     if errores == list():
-        return lineas
+        return True,lineas
     else:
         print('\n'.join(errores))
-        return None
+        return False,[[x] for x in errores]
 
 def checkTiemposBus(request):
     errores = list()
@@ -80,10 +81,10 @@ def checkTiemposBus(request):
                 except ValueError:
                     errores.append("Error en el campo {} de la linea {}".format(j,lineas.index(linea)))
     if errores == list():
-        return lineas
+        return True,lineas
     else:
         print('\n'.join(errores))
-        return None
+        return False,[[x] for x in errores]
 
 def checkTiposTransporte(request):
     errores = list()
@@ -105,10 +106,10 @@ def checkTiposTransporte(request):
         except:
             errores.append("Error en el campo nombre de la linea {}".format(lineas.index(linea)))
     if errores == list():
-        return lineas
+        return True,lineas
     else:
         print('\n'.join(errores))
-        return None
+        return False,[[x] for x in errores]
 
 def checkCentroPediatras(request,dict_prestadores):
     errores = list()
@@ -157,10 +158,10 @@ def checkCentroPediatras(request,dict_prestadores):
                     errores.append("Error en el campo {} de la linea {}".format(contador_dias,lineas.index(caso)))
                 contador_dias +=1
     if errores == list():
-        return lineas
+        return True,lineas
     else:
         print('\n'.join(errores))
-        return None
+        return False,[[x] for x in errores]
 
 def checkIndividuoAnclas(requestf,prestadores,tipos_transporte):
     errores = list()
@@ -230,7 +231,7 @@ def checkIndividuoAnclas(requestf,prestadores,tipos_transporte):
         except ValueError:
             errores.append("Error en el campo id de la linea {}".format(lienas.index(caso)))
         try:
-            tipo = caso[19]
+            tipo = int(caso[19])
             if tipo not in tipos_transporte:
                 errores.append("El tipo de transpote en la linea {} es invalido".format(lineas.index(caso)))
         except ValueError:
@@ -242,10 +243,10 @@ def checkIndividuoAnclas(requestf,prestadores,tipos_transporte):
         except ValueError:
             errores.append("Error en el campo prestador de la linea {}".format(lineas.index(caso)))
     if errores == list():
-        return lineas
+        return True,lineas
     else:
         print('\n'.join(errores))
-        return None
+        return False,[[x] for x in errores]
 
 def parsear_hora(hora):
     if(not "." in hora):
