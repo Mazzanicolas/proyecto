@@ -61,6 +61,10 @@ pip install redis
 ```
 pip install django_celery_results
 ```
+* `Django CRequest 2016.3.16`
+```
+pip install django-crequest
+```
 En caso de tener problema con alguna libreria descargar los [.whl](https://www.lfd.uci.edu/~gohlke/pythonlibs/)
 ## Build
 
@@ -71,7 +75,7 @@ Para los siguientes pasos Python debe estar en las variables de entorno. En caso
 2. Clonar el repositorio y moverse en un terminal al directorio de trabajo.
 
 ```
-python manage.py makemigrations
+python manage.py makemigrations app
 ```
 * Esto crea las instruciones para crear la base de datos
 
