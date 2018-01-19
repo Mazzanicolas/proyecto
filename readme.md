@@ -61,6 +61,10 @@ pip install redis
 ```
 pip install django_celery_results
 ```
+* `Django CRequest 2016.3.16`
+```
+pip install django-crequest
+```
 En caso de tener problema con alguna libreria descargar los [.whl](https://www.lfd.uci.edu/~gohlke/pythonlibs/)
 ## Build
 
