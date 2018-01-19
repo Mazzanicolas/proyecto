@@ -75,7 +75,7 @@ Para los siguientes pasos Python debe estar en las variables de entorno. En caso
 2. Clonar el repositorio y moverse en un terminal al directorio de trabajo.
 
 ```
-python manage.py makemigrations
+python manage.py makemigrations app
 ```
 * Esto crea las instruciones para crear la base de datos
 
