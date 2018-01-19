@@ -1,6 +1,5 @@
 from io import StringIO
 import csv
-
 def checkTiempos(tipo,request):
     errores = list()
     csvfile = request.FILES['inputFile']
