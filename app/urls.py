@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^test/$', views.test, name='test'),
     url(r'^redirectSim/$', views.redirectSim, name='redirectSim'),
     url(r'^leTest/$', views.consultaToCSV, name='leTest'),
+    url(r'^progress/$', views.progress, name='progress'),
 ]

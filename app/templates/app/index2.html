@@ -36,6 +36,7 @@
               <ul class="dropdown-menu">
                 <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar datos tooltip" disabled>i</button></a></li>
                 <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar shapes tooltip" disabled>i</button></a></li>
+                <li><button onclick="ask();">Julio</button></li>
               </ul>
             </li>
           <!--1-->
@@ -59,6 +60,13 @@
         </div>
       </div>
     </nav>
+    <div class="container" style="width:100%">
+      <!--h2>Calculando</h2-->
+      <div class="progress">
+        <div id="progressB" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:0%">
+        </div>
+      </div>
+    </div>
     <!--NavBar-->
     <!--2-Config-->
     <div id="config" class="modal fade" role="dialog">
@@ -258,7 +266,7 @@
           <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="0"> Por defecto </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes"> No </label>
          </div>
          </div>
-         </div> 
+         </div>
           <div class="panel panel-default">
             <div class="panel-body"> ¿Como quiere el resultado? </div>
             <div class="panel-footer">
@@ -266,10 +274,11 @@
             </div>
           </div>
           <!--Anclas-->
-          <div class="progress">
-            <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar"
-            aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width:50%">
-              50% Completado
+          <div class="container" style="width:100%">
+            <h2>Calculando</h2>
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:40%">
+              </div>
             </div>
           </div>
         </div>
@@ -558,6 +567,29 @@
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+
+  function ask2() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        console.log("Entro")
+        var obj = JSON.parse(this.responseText);
+        var crrnt = (parseFloat(obj['Done'])/parseFloat(obj['Total']))*100
+        document.getElementById("progressB").style. width = crrnt.toString()+"%";
+        alert(crrnt);
+        if(crrnt>99){
+          clearInterval(progressLoop);
+        }
+      }
+    };
+    xhttp.open("GET", "progress/", true);
+    xhttp.send();
+  }
+
+  function ask(){
+      var progressLoop = setInterval(function() { ask2(); }, 5000);
+  }
+  //Loading bar ¨¨¨
 
   $(function () {
     $('[data-toggle="tooltip"]').tooltip()

@@ -16,6 +16,7 @@ from app.checkeo_errores import *
 from app.task import suzuki, calculateIndividual
 import app.utils as utils
 import app.load as load
+from django.http import JsonResponse
 global shapeAuto
 global shapeCaminando
 
@@ -33,6 +34,12 @@ def test(request):
         return consultaToCSV(request)
     response = redirect('consultaConFiltro')
     return response
+
+def progress(request):
+    print("PROGRESS")
+    data = {"Done":3,"Total":10}
+    return JsonResponse(data)
+
 def redirectSim(request):
     if(len(IndividuoCentro.objects.all()) == 0):
         print("******************************************************************************************************************")
