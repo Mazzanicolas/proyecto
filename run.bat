@@ -1,3 +1,3 @@
 @echo off
-git pull
+git pull origin prod
 python manage.py runserver
