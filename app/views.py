@@ -11,7 +11,8 @@ import shapefile
 import time
 import csv
 from django.shortcuts import redirect
-from celery import group
+from celery import group, result
+from proyecto.celery import app
 from app.checkeo_errores import *
 from app.task import suzuki, calculateIndividual
 import app.utils as utils
@@ -37,7 +38,14 @@ def test(request):
 
 def progress(request):
     print("PROGRESS")
-    data = {"Done":3,"Total":10}
+    groupId = request.session.get('groupId', None)
+    if(groupId):
+        resultado = app.GroupResult.restore(groupId)
+        done = resultado.completed_count()
+    else:
+        done = 0
+    total = request.session.get('total', 100)
+    data = {"Done":done,"Total":total}
     return JsonResponse(data)
 
 def redirectSim(request):
@@ -150,17 +158,20 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
                 trabaja.append(False)
             indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
             dictParam = None
-        individuos = [[[x.id for x in indQuery[i:i + 5]],None] for i in range(0, len(indQuery), 5)]
+    numberPerGroup = math.ceil(len(indQuery)/8)
+    numberPerGroup = max(3,numberPerGroup)
+    numberPerGroup = 2
+    individuos = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam] for i in range(0, len(indQuery), numberPerGroup)]
+    request.session['total'] = len(individuos)
     print("Individuos a calcular: "+str(len(indQuery)))
     resultList = []
     job = suzuki.chunks(individuos,1).group()
     result = job.apply_async()
-    resumenObjectList = result.join()
-    resumenObjectList = sum(sum(resumenObjectList,[]), [])
-    table  = ResumenTable(resumenObjectList)
-    RequestConfig(request).configure(table)
-    exporter = TableExport('csv', table)
-    return exporter.response('table.{}'.format('csv'))
+    result.save()
+    request.session['groupId'] = result.id
+    request.session['resultType'] = 'resumen'
+    response = redirect('index')
+    return response
 
 def consultaToCSV(request):
     tiempoInicio = time.time()
@@ -183,20 +194,42 @@ def consultaToCSV(request):
         indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
         print("Individuos a calcular: "+str(len(indQuery)))
         dictParam = None
-    individuos = [[indQuery[i:i + 5],None] for i in range(0, len(indQuery), 5)]
+    numberPerGroup = math.ceil(len(indQuery)/8)
+    numberPerGroup = max(3,numberPerGroup)
+    individuos = [[indQuery[i:i + numberPerGroup],None] for i in range(0, len(indQuery), numberPerGroup)]
+    request.session['total'] = len(individuos)
     resultList = []
     job = calculateIndividual.chunks(individuos,1).group()
     result = job.apply_async()
-    resumenObjectList = result.join()
-    resumenObjectList = sum(sum(resumenObjectList,[]), [])
-    print("Time in seconds = "+str(time.time() - tiempoInicio))
-    pseudo_buffer = utils.Echo()
-    writer = csv.writer(pseudo_buffer)
-    response = StreamingHttpResponse((writer.writerow(row) for row in resumenObjectList),
-                                     content_type="text/csv")
-    response['Content-Disposition'] = 'attachment; filename="resultado.csv"'
+    result.save()
+    request.session['groupId'] = result.id
+    request.session['resultType'] = 'individual'
+    response = redirect('index')
     return response
 
+def downloadFile(request):
+    groupId = request.session.get('groupId', None)
+    resultType = request.session.get('resultType', None)
+    if(groupId and resultType):
+        resultado = app.GroupResult.restore(groupId)
+        if(resultType == 'individual'):
+            resumenObjectList = resultado.join()
+            resumenObjectList = sum(sum(resumenObjectList,[]), [])
+            pseudo_buffer = utils.Echo()
+            writer = csv.writer(pseudo_buffer)
+            response = StreamingHttpResponse((writer.writerow(row) for row in resumenObjectList),
+                                             content_type="text/csv")
+            response['Content-Disposition'] = 'attachment; filename="resultado.csv"'
+            return response
+        else:
+            resumenObjectList = result.join()
+            resumenObjectList = sum(sum(resumenObjectList,[]), [])
+            table  = ResumenTable(resumenObjectList)
+            RequestConfig(request).configure(table)
+            exporter = TableExport('csv', table)
+            return exporter.response('table.{}'.format('csv'))
+    response = redirect('index')
+    return response
 def newCalcTimes():
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)

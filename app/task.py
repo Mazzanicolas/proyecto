@@ -4,6 +4,8 @@ from celery import shared_task
 import time
 from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 import app.utils as utils
+
+
 @shared_task
 def calculateIndividual(individuos,simParam):
     #individuos = Individuo.objects.filter(id__in = individuos)
