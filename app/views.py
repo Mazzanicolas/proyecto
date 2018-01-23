@@ -140,6 +140,7 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
             indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
             #indQuery = IndividuoTiempoCentro.objects.filter(individuo__in = individuos).values_list('id', flat=True):
             dictParam = utils.generateParamDict(getData)
+            print(dictParam)
         else:
             transportList = []
             if(getData.get('autoResumenes', None)):
@@ -196,7 +197,7 @@ def consultaToCSV(request):
         dictParam = None
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = max(3,numberPerGroup)
-    individuos = [[indQuery[i:i + numberPerGroup],None] for i in range(0, len(indQuery), numberPerGroup)]
+    individuos = [[indQuery[i:i + numberPerGroup],dictParam] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     resultList = []
     job = calculateIndividual.chunks(individuos,1).group()
@@ -222,7 +223,7 @@ def downloadFile(request):
             response['Content-Disposition'] = 'attachment; filename="resultado.csv"'
             return response
         else:
-            resumenObjectList = result.join()
+            resumenObjectList = resultado.join()
             resumenObjectList = sum(sum(resumenObjectList,[]), [])
             table  = ResumenTable(resumenObjectList)
             RequestConfig(request).configure(table)

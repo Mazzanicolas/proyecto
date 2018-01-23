@@ -11,4 +11,6 @@ urlpatterns = [
     url(r'^redirectSim/$', views.redirectSim, name='redirectSim'),
     url(r'^leTest/$', views.consultaToCSV, name='leTest'),
     url(r'^progress/$', views.progress, name='progress'),
+    url(r'^descargar/$', views.downloadFile, name='descargar'),
+
 ]

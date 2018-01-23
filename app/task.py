@@ -51,16 +51,18 @@ def suzuki(individuos,simParam):
         print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
         if(simParam):
-            tipoTrans = simParam.get('tipoTrans',1) if(simParam.get('tipoTrans',1) != -1) else individuo.tipo_transporte.id
-            tieneTrabajo = individuo.tieneTrabajo and (simParam.get('trabaja',1) == 1)
-            tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',1) == 1)
-            prestadorId = simParam.get('mutualista',1) if(simParam.get('mutualista',1) != -1) else individuo.prestador.id
+            tipoTrans = simParam.get('tipoTrans',"1") if(simParam.get('tipoTrans',"1") != "-1") else individuo.tipo_transporte.id
+            tieneTrabajo = individuo.tieneTrabajo and (simParam.get('trabaja',"0") == "1")
+            tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',"0") == "1")
+            prestadorId = simParam.get('mutualista',"1") if(simParam.get('mutualista',"1") != "-1") else individuo.prestador.id
         else:
             tipoTrans = individuo.tipo_transporte.id
             tieneTrabajo = individuo.tieneTrabajo
             tieneJardin = individuo.tieneJardin
             prestadorId = individuo.prestador.id
         #, centro__prestador__id = individuo.prestador.id)
+        print("***********************************************")
+        print(tipoTrans,tieneTrabajo,tieneJardin,prestadorId)
         dictConsultasPorDia = {0:0,1:0,2:0,3:0,4:0,5:0}
         dictHorasPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         dictCentrosPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
