@@ -65,6 +65,15 @@ pip install django_celery_results
 ```
 pip install django-crequest
 ```
+* `mpld3`
+```
+pip install mpld3
+```
+
+* `Jinja2 2.10`
+```
+pip install jinja2
+```
 En caso de tener problema con alguna libreria descargar los [.whl](https://www.lfd.uci.edu/~gohlke/pythonlibs/)
 ## Build
 
