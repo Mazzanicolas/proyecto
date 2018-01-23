@@ -56,11 +56,12 @@
           <li><a href="#" data-toggle="modal" data-target="#rsm">Resumen</a></li>
           <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Resumen tooltip" disabled>i</button></li>
           <!--5-->
+          <li><a id="descargar" href="descargar/" target="_blank">Descargar</a></li>
           </ul>
         </div>
       </div>
     </nav>
-    <div class="container" style="width:100%">
+    <div class="container" style="width:100%" id="progressBBy">
       <!--h2>Calculando</h2-->
       <div class="progress">
         <div id="progressB" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:0%">
@@ -274,13 +275,6 @@
             </div>
           </div>
           <!--Anclas-->
-          <div class="container" style="width:100%">
-            <h2>Calculando</h2>
-            <div class="progress">
-              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:40%">
-              </div>
-            </div>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Calcular</button>
@@ -567,17 +561,20 @@
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+  window.onload = document.getElementById('descargar').style.visibility = 'hidden'
+  window.onload = ask();
 
-  function ask2() {
+  function ask2(progressLoop) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
-        console.log("Entro")
         var obj = JSON.parse(this.responseText);
         var crrnt = (parseFloat(obj['Done'])/parseFloat(obj['Total']))*100
         document.getElementById("progressB").style. width = crrnt.toString()+"%";
-        alert(crrnt);
+        console.log(this);
         if(crrnt>99){
+          document.getElementById('descargar').style.visibility = 'visible';
+          document.getElementById('progressBBy').style.visibility = 'hidden';
           clearInterval(progressLoop);
         }
       }
@@ -587,9 +584,11 @@
   }
 
   function ask(){
-      var progressLoop = setInterval(function() { ask2(); }, 5000);
+      var progressLoop = setInterval(function() { ask2(progressLoop); }, 5000);
   }
+
   //Loading bar ¨¨¨
+
 
   $(function () {
     $('[data-toggle="tooltip"]').tooltip()
