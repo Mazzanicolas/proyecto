@@ -36,7 +36,7 @@
               <ul class="dropdown-menu">
                 <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar datos tooltip" disabled>i</button></a></li>
                 <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar shapes tooltip" disabled>i</button></a></li>
-                <li><button onclick="ask();">Julio</button></li>
+                <li><button onclick="load_home();">Julio</button></li>
               </ul>
             </li>
           <!--1-->
@@ -553,7 +553,7 @@
       </div>
     </nav>
     <div class="panel-body">
-      <div  id="map"></div>
+      <div id="map"></div>
     </div>
   </div>
   </body>
@@ -562,6 +562,12 @@
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
+
+  function load_home() {
+     document.getElementById("map").innerHTML='<object style="height:100%; width:100%; background:#FFFFFF;" type="text/html" data="plot/" ></object>';
+   }
+
+  //Task
   window.onload = document.getElementById('descargar').style.visibility = 'hidden'
   window.onload = ask();
 

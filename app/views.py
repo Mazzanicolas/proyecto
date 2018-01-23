@@ -231,6 +231,10 @@ def downloadFile(request):
             return exporter.response('table.{}'.format('csv'))
     response = redirect('index')
     return response
+
+def plot(request):
+    return render(request,'app/plot.html')
+
 def newCalcTimes():
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
