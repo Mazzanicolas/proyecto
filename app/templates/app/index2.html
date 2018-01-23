@@ -65,6 +65,7 @@
       <!--h2>Calculando</h2-->
       <div class="progress">
         <div id="progressB" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:0%">
+          <div id="prog">0%</div>
         </div>
       </div>
     </div>
@@ -571,6 +572,7 @@
         var obj = JSON.parse(this.responseText);
         var crrnt = (parseFloat(obj['Done'])/parseFloat(obj['Total']))*100
         document.getElementById("progressB").style. width = crrnt.toString()+"%";
+        document.getElementById('prog').innerHTML = crrnt.toString()+"%";
         console.log(this);
         if(crrnt>99){
           document.getElementById('descargar').style.visibility = 'visible';
