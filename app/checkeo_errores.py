@@ -231,7 +231,7 @@ def checkIndividuoAnclas(requestf,prestadores,tipos_transporte):
         except ValueError:
             errores.append("Error en el campo id de la linea {}".format(lienas.index(caso)))
         try:
-            tipo = int(caso[19])
+            tipo = caso[19]
             if tipo not in tipos_transporte:
                 errores.append("El tipo de transpote en la linea {} es invalido".format(lineas.index(caso)))
         except ValueError:
