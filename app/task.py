@@ -21,7 +21,7 @@ def calculateIndividual(individuos,simParam):
             tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',0) == '1')
             prestador = int(simParam.get('mutualista','-1'))
             if(prestador != -2):
-                prestador = Prestador.objects.get(id=prestador) if(prestador!= -1) else individuo.prestador.id
+                prestador = Prestador.objects.get(id=prestador).id if(prestador!= -1) else individuo.prestador.id
         else:
             tipoTrans = individuo.tipo_transporte
             tieneTrabajo = individuo.tieneTrabajo
@@ -61,8 +61,8 @@ def suzuki(individuos,simParam):
             tieneJardin = individuo.tieneJardin
             prestadorId = individuo.prestador.id
         #, centro__prestador__id = individuo.prestador.id)
-        print("***********************************************")
-        print(tipoTrans,tieneTrabajo,tieneJardin,prestadorId)
+        #print("***********************************************")
+        #print(tipoTrans,tieneTrabajo,tieneJardin,prestadorId)
         dictConsultasPorDia = {0:0,1:0,2:0,3:0,4:0,5:0}
         dictHorasPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         dictCentrosPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
@@ -106,7 +106,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
-    hasPed = pediatras>=0
+    hasPed = pediatras >0
     if(tieneTrabajo and hora in range(trabajo.hora_inicio,trabajo.hora_fin) or tieneJardin and hora in range(jardin.hora_inicio,jardin.hora_fin) or pediatras < 1 or not samePrest):
         return -1,"No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
@@ -164,7 +164,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
-    hasPed = pediatras>=0
+    hasPed = pediatras>0
     if(tieneTrabajo and hora in range(trabajo.hora_inicio,trabajo.hora_fin) or tieneJardin and hora in range(jardin.hora_inicio,jardin.hora_fin)):
         return -1,"No","No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
