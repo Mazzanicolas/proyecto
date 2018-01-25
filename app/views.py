@@ -41,9 +41,12 @@ def progress(request):
     groupId = request.session.get('groupId', None)
     if(groupId):
         resultado = app.GroupResult.restore(groupId)
-        done = resultado.completed_count()
+        if(resultado):
+            done = resultado.completed_count()
+        else:
+            done = -1
     else:
-        done = 0
+        done = -1
     total = request.session.get('total', 100)
     data = {"Done":done,"Total":total}
     return JsonResponse(data)
