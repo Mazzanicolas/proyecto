@@ -5,8 +5,21 @@ import app.utils
 import csv
 from django.http import HttpResponse, StreamingHttpResponse
 
+#Habria que sacar todos estos tiempos a settings, pero no es urgente
 global TIEMPO_ARBITRARIAMENTE_ALTO
 TIEMPO_ARBITRARIAMENTE_ALTO = 70
+global newVELOCIDAD_CAMINANDO
+newVELOCIDAD_CAMINANDO = 5000/60 # 5000 metros en 60 minutos
+global TIEMPO_ESPERA
+TIEMPO_ESPERA = 5*60 # 5 minutos en segundos
+global TIEMPO_VIAJE
+TIEMPO_VIAJE = 45 # 45 segundos entre paradas
+global RADIO_CERCANO
+RADIO_CERCANO = 500 # distancia maxima en metros para que dos paradas se consideren cercanas
+global TIEMPO_CAMBIO_PARADA
+TIEMPO_CAMBIO_PARADA = (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
+                                                                          # con los valores por defecto es 3 minutos.
+
 def cargarCentroPediatras(request,shapeAuto, shapeCaminando):
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
@@ -173,7 +186,9 @@ def cargarTiemposBus(request):
             if i == j:
                 t = SectorTiempo.objects.get(sector_1 = i, sector_2 = j).tiempo
             else:
-                t = float(lineas[i][j])
+                #t = float(lineas[i][j])
+                l = list(map(lambda x: float(x),lineas[i][j].split(';')))
+                t = l[0]*TIEMPO_ESPERA + l[1]*TIEMPO_VIAJE + l[2]*TIEMPO_CAMBIO_PARADA
                 if t < 0:
                     t = TIEMPO_ARBITRARIAMENTE_ALTO
             tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = t)

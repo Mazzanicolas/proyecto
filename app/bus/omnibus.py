@@ -11,16 +11,12 @@ VELOCIDAD_CAMINANDO = 5/3600 # 5km/h en segundos
 
 global newVELOCIDAD_CAMINANDO
 newVELOCIDAD_CAMINANDO = 5000/60 # 5000 metros en 60 minutos
-
 global TIEMPO_ESPERA
 TIEMPO_ESPERA = 5*60 # 5 minutos en segundos
-
 global TIEMPO_VIAJE
 TIEMPO_VIAJE = 45 # 45 segundos entre paradas
-
 global RADIO_CERCANO
 RADIO_CERCANO = 500 # distancia maxima en metros para que dos paradas se consideren cercanas
-
 global TIEMPO_CAMBIO_PARADA
 TIEMPO_CAMBIO_PARADA = (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
                                                                           # con los valores por defecto es 3 minutos.
@@ -152,7 +148,7 @@ class Nodo:
 
 def busqueda(nodo_origen, coords_origen, nodo_destino, coords_destino, nodos,horarios,hora):
     if nodo_origen is nodo_destino:
-        return -2 #Si las paradas origen y destino son la misma, no hay tiempo de viaje
+        return -2,-2,-2 #Si las paradas origen y destino son la misma, no hay tiempo de viaje
     # t = float('inf')
     # parada_origen = nodo_origen
     # print(len(nodo_origen.cercanos))
@@ -168,9 +164,9 @@ def busqueda(nodo_origen, coords_origen, nodo_destino, coords_destino, nodos,hor
     t = bfs_search(nodos,nodo_origen,nodo_destino,horarios,hora)
     # return t
     if t == list():
-        return -1
+        return -1,-1,-1
     else:
-        return t[0]*TIEMPO_ESPERA + t[1]*TIEMPO_VIAJE + t[2]*TIEMPO_CAMBIO_PARADA
+        return t[0],t[1],t[2]
     # if t < 0 :
     #     return t
     # elif t == float('inf'):
