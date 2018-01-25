@@ -27,7 +27,7 @@ sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
 def test(request):
-    if(IndividuoCentro.objects.count() <Individuo.objects.count()*Centro.objects.count() and Individuo.object.count() > 0 and Centro.objects.count()>0):
+    if(IndividuoCentro.objects.count() <Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and Centro.objects.count()>0):
         print("******************************************************************************************************************")
         newCalcTimes()
     getReq = request.GET
@@ -49,7 +49,7 @@ def progress(request):
     return JsonResponse(data)
 
 def redirectSim(request):
-    if(IndividuoCentro.objects.count() <Individuo.objects.count()*Centro.objects.count() and Individuo.object.count() > 0 and Centro.objects.count()>0):
+    if(IndividuoCentro.objects.count() <Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and Centro.objects.count()>0):
         print("******************************************************************************************************************")
         newCalcTimes()
     getReq = request.GET
