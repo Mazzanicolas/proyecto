@@ -110,10 +110,13 @@ python manage.py runserver
 ## Preparacion para la utilización
 
 1. Entrar desde el navegador a `127.0.0.1:8000/app/`
-2. Cargar `Matriz de transporte privado`
-3. Cargar `Matriz de transporte caminando`
-4. Cargar `Centros`
-5. Cargar `Personas`
+2. Cargar `Tipos de transporte`
+3. Cargar `Matriz de transporte privado`
+4. Cargar `Matriz de transporte caminando`
+5. Cargar `Matriz omnibus`
+6. Cargar `Prestadores`
+7. Cargar `Centros`
+8. Cargar `Personas`
 
 # Generar matrices usando OSRM
 
