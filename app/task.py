@@ -4,10 +4,13 @@ from celery import shared_task
 import time
 from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 import app.utils as utils
+from django.contrib.sessions.models import Session
+from django.contrib.sessions.backends.db import SessionStore
+
 
 
 @shared_task
-def calculateIndividual(individuos,simParam):
+def calculateIndividual(individuos,simParam,sessionKey):
     #individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
     result = []
@@ -41,9 +44,23 @@ def calculateIndividual(individuos,simParam):
                 tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin)
                 result.append([individuo.id,prestador,centroId,centro.prestador.id,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
+    s = SessionStore(session_key=sessionKey)
+    have_lock = False
+    my_lock = redis.Redis().lock(sessionKey)
+    try:
+        have_lock = my_lock.acquire(blocking=True)
+        if have_lock:
+            print("Got lock.")
+            s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
+            s.save()
+        else:
+            print("Did not acquire lock.")
+    finally:
+        if have_lock:
+            my_lock.release()
     return result
 @shared_task
-def suzuki(individuos,simParam):
+def suzuki(individuos,simParam,sessionKey):
     resultList = []
     individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
@@ -99,6 +116,20 @@ def suzuki(individuos,simParam):
                     cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = centroOptimo)
         resultList.append(leResumen)
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
+    s = SessionStore(session_key=sessionKey)
+    have_lock = False
+    my_lock = redis.Redis().lock(sessionKey)
+    try:
+        have_lock = my_lock.acquire(blocking=True)
+        if have_lock:
+            print("Got lock.")
+            s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
+            s.save()
+        else:
+            print("Did not acquire lock.")
+    finally:
+        if have_lock:
+            my_lock.release()
     return resultList
 def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin):
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)

@@ -17,7 +17,10 @@ from app.checkeo_errores import *
 from app.task import suzuki, calculateIndividual
 import app.utils as utils
 import app.load as load
+from django.contrib.sessions.models import Session
+from django.contrib.sessions.backends.db import SessionStore
 from django.http import JsonResponse
+import redis
 global shapeAuto
 global shapeCaminando
 
@@ -40,11 +43,9 @@ def progress(request):
     print("PROGRESS")
     groupId = request.session.get('groupId', None)
     if(groupId):
-        resultado = app.GroupResult.restore(groupId)
-        if(resultado):
-            done = resultado.completed_count()
-        else:
-            done = -1
+        #resultado = app.GroupResult.restore(groupId)
+        #done = resultado.completed_count()
+        done = request.session.get('current',-1)
     else:
         done = -1
     total = request.session.get('total', 100)
@@ -133,6 +134,7 @@ def guardarArchivo(nombre, archivo):
 
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     tiempoInicio = time.time()
+    sessionKey = request.session.session_key
     if(MedidasDeResumen.objects.all()):
         individuos = []
     else:
@@ -163,15 +165,17 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
             indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
             dictParam = None
     numberPerGroup = math.ceil(len(indQuery)/8)
-    numberPerGroup = max(3,numberPerGroup)
+    numberPerGroup = min(3,numberPerGroup)
     numberPerGroup = 2
-    individuos = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam] for i in range(0, len(indQuery), numberPerGroup)]
+    individuos = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     print("Individuos a calcular: "+str(len(indQuery)))
     resultList = []
     job = suzuki.chunks(individuos,1).group()
     result = job.apply_async()
     result.save()
+    request.session['lock'] = '1'
+    request.session['current'] = 0
     request.session['groupId'] = result.id
     request.session['resultType'] = 'resumen'
     response = redirect('index')
@@ -179,6 +183,7 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
 
 def consultaToCSV(request):
     tiempoInicio = time.time()
+    sessionKey = request.session.session_key
     getData = request.GET
     fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
     toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
@@ -199,13 +204,15 @@ def consultaToCSV(request):
         print("Individuos a calcular: "+str(len(indQuery)))
         dictParam = None
     numberPerGroup = math.ceil(len(indQuery)/8)
-    numberPerGroup = max(3,numberPerGroup)
-    individuos = [[indQuery[i:i + numberPerGroup],dictParam] for i in range(0, len(indQuery), numberPerGroup)]
+    numberPerGroup = min(3,numberPerGroup)
+    individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     resultList = []
     job = calculateIndividual.chunks(individuos,1).group()
     result = job.apply_async()
     result.save()
+    request.session['current'] = 0
+    request.session['lock'] = '1'
     request.session['groupId'] = result.id
     request.session['resultType'] = 'individual'
     response = redirect('index')

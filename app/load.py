@@ -166,7 +166,7 @@ def cargarTiempos(tipo,request,shapeAuto, shapeCaminando):
         tiempo = SectorTiempo(id = id , sector_1_id = sector1, sector_2_id = sector2,tiempo = float(caso[2]), distancia = float(caso[3]))
         tiempos.append(tiempo)
         id +=1
-        if(id % 100000 == 0):
+        if(id % 10000 == 0):
             print(id)
             guardar = SectorTiempo.objects.bulk_create(tiempos)
             tiempos = []
