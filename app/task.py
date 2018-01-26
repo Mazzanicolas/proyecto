@@ -6,7 +6,7 @@ from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Secto
 import app.utils as utils
 from django.contrib.sessions.models import Session
 from django.contrib.sessions.backends.db import SessionStore
-
+import redis
 
 
 @shared_task
