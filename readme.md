@@ -7,7 +7,7 @@ Aplicación para el cálculo de la zona de disponiblidad para mutualistas en Mon
 
 1. Descargar e instalar [PostgresSQL 9.6](https://www.openscg.com/bigsql/postgresql/installers.jsp/).
 2. Descargar e instalar [Python 3.5+](https://www.python.org). 
-3. Descargar e instalar [Redis 2.4.6](http://ruilopes.com/redis-setup/).
+3. Descargar e instalar [Redis 3](https://github.com/ServiceStack/redis-windows/raw/master/downloads/redis-latest.zip).
 4. Instalar las librerias de Python usando `pip install` o `pip3 install`
 * `Django 2.0`
 ```
@@ -64,6 +64,10 @@ pip install django_celery_results
 * `Django CRequest 2016.3.16`
 ```
 pip install django-crequest
+```
+* `Math Plot Lib`
+```
+pip install matplotlib
 ```
 * `mpld3`
 ```
