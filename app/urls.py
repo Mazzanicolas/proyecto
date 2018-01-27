@@ -13,5 +13,7 @@ urlpatterns = [
     url(r'^progress/$', views.progress, name='progress'),
     url(r'^descargar/$', views.downloadFile, name='descargar'),
     url(r'^plot/$', views.plot, name='plot'),
+    url(r'^generate_shape/$', views.genShape, name='genrate_shape'),
+
 
 ]
