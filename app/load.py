@@ -7,7 +7,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 
 #Habria que sacar todos estos tiempos a settings, pero no es urgente
 global TIEMPO_ARBITRARIAMENTE_ALTO
-TIEMPO_ARBITRARIAMENTE_ALTO = 70
+TIEMPO_ARBITRARIAMENTE_ALTO = 70 * 60
 global newVELOCIDAD_CAMINANDO
 newVELOCIDAD_CAMINANDO = 5000/60 # 5000 metros en 60 minutos
 global TIEMPO_ESPERA
