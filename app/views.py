@@ -35,10 +35,8 @@ sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
 def genShape(request):
-    values    = request.GET
-    filenames = generarShape(values,request.session.session_key)
-    #'app/files/shpOut/centrosDefecto'      +sfkey+'.shp', 'app/files/shpOut/centrosDefecto'+sfkey+'.shx', 'app/files/shpOut/centrosDefecto'+sfkey+'.dbf',
-    #'app/files/shpOut/hogarCentro'         +sfkey+'.shp', 'app/files/shpOut/hogarCentro'   +sfkey+'.shx', 'app/files/shpOut/hogarCentro'   +sfkey+'.dbf']
+    values       = request.GET
+    filenames    = generarShape(values,request.session.session_key)
     zip_subdir   = "Shapefiles"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
@@ -144,8 +142,8 @@ def index(request):
             consT = Settings.objects.get(setting = "tiempoConsulta")
             consT.value = tiempoCons
             consT.save()
-    maxT = Settings.objects.get(setting = "tiempoMaximo").value
-    consT = Settings.objects.get(setting = "tiempoConsulta").value
+    maxT    = Settings.objects.get(setting = "tiempoMaximo").value
+    consT   = Settings.objects.get(setting = "tiempoConsulta").value
     context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT}
     return render(request, 'app/index2.html',context)
 
@@ -179,19 +177,19 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
             if(getData.get('omnibusResumenes', None)):
                 transportList.append(2)
             trabajaReq = getData.get('trabajaResumenes', None)
-            jardinReq =  getData.get('jardinResumenes', None)
-            trabaja = [True] if trabajaReq else [False]
-            jardin = [True] if jardinReq else [False]
+            jardinReq  =  getData.get('jardinResumenes', None)
+            trabaja    = [True] if trabajaReq else [False]
+            jardin     = [True] if jardinReq else [False]
             if(jardinReq == '0'):
                 jardin.append(False)
             if(trabajaReq == '0'):
                 trabaja.append(False)
-            indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+            indQuery  = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
             dictParam = None
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     numberPerGroup = 2
-    individuos = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
+    individuos     = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     print("Individuos a calcular: "+str(len(indQuery)))
     resultList = []
@@ -207,19 +205,19 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
 
 def consultaToCSV(request):
     tiempoInicio = time.time()
-    sessionKey = request.session.session_key
-    getData = request.GET
-    fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
-    toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
+    sessionKey   = request.session.session_key
+    getData      = request.GET
+    fromRange    = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
+    toRange      = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
     if(getData.get("simular",'0') == '1' ):
-        indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
+        indQuery  = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
         dictParam = utils.generateParamDict(getData)
     else:
         transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
-        trabajaReq = getData.get('trabajaResumenes', None)
-        jardinReq =  getData.get('jardinResumenes', None)
-        trabaja = [True] if trabajaReq else [False]
-        jardin = [True] if jardinReq else [False]
+        trabajaReq    = getData.get('trabajaResumenes', None)
+        jardinReq     =  getData.get('jardinResumenes', None)
+        trabaja       = [True] if trabajaReq else [False]
+        jardin        = [True] if jardinReq else [False]
         if(jardinReq == '0'):
             jardin.append(False)
         if(trabajaReq == '0'):

@@ -43,11 +43,20 @@ def centroid(shape):
         return poligono.representative_point()
     else:
         return poligono.centroid
+
 def parsear_hora(hora):
-    if(not "." in hora):
+    if(not '.' in hora):
+        if(len(hora)>1):
+            hora = '{:<04d}'.format(int(hora))
+        else:
+            hora = '{:<03d}'.format(int(hora))
         return int(hora)
     h,m = hora.split('.')
-    return int(h.zfill(2) + m.zfill(2))
+    if(len(h)>1):
+        h = '{:<02d}'.format(int(h))
+    m = '{:<02d}'.format(int(m))
+    return int(h + m)
+
 def getSectorForPoint(ancal,tipo,shapeAuto, shapeCaminando):
     if(tipo == "Auto" or tipo == 1 ):
         shapes = shapeAuto

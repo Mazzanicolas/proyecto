@@ -1,12 +1,6 @@
 import shapefile
-from app.models import Individuo, IndividuoCentroOptimo, Centro
-from shapely import geometry
-
-def duplicated(cache,lst):
-    for _ in cache:
-        if(lst[0]==_[0] and lst[1]==_[1]):
-            return True
-    return False
+from   app.models import Individuo, IndividuoCentroOptimo, Centro
+from   shapely    import geometry
 
 def generarShape(values,idName):
     cache = []
@@ -24,6 +18,37 @@ def generarShape(values,idName):
         w.save('app/files/shpOut/hogares'+idName)
         w = shapefile.Writer(shapefile.POINT)
         files.extend(['app/files/shpOut/hogares'+idName+'.shp','app/files/shpOut/hogares'+idName+'.shx','app/files/shpOut/hogares'+idName+'.dbf'])
+    ###WIP VVV
+    #POINTS HOGARES
+    if('generar_jardines' in  values):
+        w = shapefile.Writer(shapefile.POINT)
+        #w.autoBalance = 1 //Descomentar en release
+        w.field('IDHogar')
+        w.field('HoraInicio')
+        w.field('HoraFin')
+        for individuo in Individuos:
+            if(individuo.tieneJardin):
+                x1,y1 = individuo.jardin.x_coord, individuo.jardin.y_coord
+                w.point(x1, y1)
+                w.record(individuo.id,individuo.jardin.hora_inicio,individuo.jardin.hora_fin)
+        w.save('app/files/shpOut/jardines'+idName)
+        w = shapefile.Writer(shapefile.POINT)
+        files.extend(['app/files/shpOut/jardines'+idName+'.shp','app/files/shpOut/jardines'+idName+'.shx','app/files/shpOut/jardines'+idName+'.dbf'])
+    if('generar_trabajos' in  values):
+        w = shapefile.Writer(shapefile.POINT)
+        #w.autoBalance = 1 //Descomentar en release
+        w.field('IDHogar')
+        w.field('HoraInicio')
+        w.field('HoraFin')
+        for individuo in Individuos:
+            if(individuo.tieneTrabajo):
+                x1,y1 = individuo.trabajo.x_coord, individuo.trabajo.y_coord
+                w.point(x1, y1)
+                w.record(individuo.id,individuo.trabajo.hora_inicio,individuo.trabajo.hora_fin)
+        w.save('app/files/shpOut/trabajos'+idName)
+        w = shapefile.Writer(shapefile.POINT)
+        files.extend(['app/files/shpOut/trabajos'+idName+'.shp','app/files/shpOut/trabajos'+idName+'.shx','app/files/shpOut/trabajos'+idName+'.dbf'])
+    ###WIP ^^^
     #POINTS CENTROS OPTIMOS AUTO
     if('generar_autos' in  values):
         w = shapefile.Writer(shapefile.POINT)
