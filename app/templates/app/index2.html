@@ -16,6 +16,48 @@
       line-height: 0.1;
       border-radius: 30px;
     }
+
+
+    .shapeButton {
+    	-moz-box-shadow:inset 0px 1px 0px 0px #fbafe3;
+    	-webkit-box-shadow:inset 0px 1px 0px 0px #fbafe3;
+    	box-shadow:inset 0px 1px 0px 0px #fbafe3;
+    	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ff5bb0), color-stop(1, #ef027d));
+    	background:-moz-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:-webkit-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:-o-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:-ms-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:linear-gradient(to bottom, #ff5bb0 5%, #ef027d 100%);
+    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5bb0', endColorstr='#ef027d',GradientType=0);
+    	background-color:#ff5bb0;
+    	-moz-border-radius:9px;
+    	-webkit-border-radius:9px;
+    	border-radius:9px;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#ffffff;
+    	font-family:Verdana;
+    	font-size:15px;
+    	padding:6px 15px;
+    	text-decoration:none;
+    	text-shadow:0px 1px 7px #c70067;
+    }
+    .shapeButton:hover {
+    	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ef027d), color-stop(1, #ff5bb0));
+    	background:-moz-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:-webkit-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:-o-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:-ms-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:linear-gradient(to bottom, #ef027d 5%, #ff5bb0 100%);
+    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ef027d', endColorstr='#ff5bb0',GradientType=0);
+    	background-color:#ef027d;
+    }
+    .shapeButton:active {
+    	position:relative;
+    	top:1px;
+    }
+
+
     </style>
 		<meta charset="UTF-8">
 		<title>Proyecto 2017</title>
@@ -456,10 +498,19 @@
             <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_omnibus">Generar Shape [Hogar - Centro Optimo Omnibus]</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_caminando">Generar Shape [Hogar - Centro Optimo Caminando]</label><br>
           </div>
+          <div class="panel-body">
+            <div class="panel-heading">
+              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango id tooltip" disabled>i</button></h3>
+            </div>
+          <div class="form-group row"><div class="col-xs-6  ">
+            Desde: <input  class="form-control" placeholder="ID individuo" name= "fromRangeShape"><br>
+            Hasta: <input  class="form-control" placeholder="ID individuo" name="toRangeShape"></div>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Calcular</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="shapeButton">Generar</button>
+        </div>
+        </div>
         </div>
       </form>
       </div>

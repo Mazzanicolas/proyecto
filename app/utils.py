@@ -112,7 +112,7 @@ def getListOfDays(stringDays):
             to = daysList[to]
             resDays = resDays + list(range(frm,to+1))
         else:
-            resDays.append(day)
+            resDays.append(daysList.get(day))
     return resDays
 def setParams(self,cookies):
     if(not cookies.get('trabaja','1') == '1'):

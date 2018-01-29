@@ -36,7 +36,9 @@ shapeCaminando = sf.shapes()
 
 def genShape(request):
     values       = request.GET
-    filenames    = generarShape(values,request.session.session_key)
+    fromRange    = int(values.get('fromRangeShape')) if(values.get('fromRangeShape',"") != "" ) else 0
+    toRange      = int(values.get('toRangeShape')) if(values.get('toRangeShape',"") != "" ) else Individuo.objects.last().id
+    filenames    = generarShape(values,[fromRange,toRange],request.session.session_key)
     zip_subdir   = "Shapefiles"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()

@@ -13,7 +13,7 @@ import redis
 def calculateIndividual(individuos,simParam,sessionKey):
     #individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
-    result = []
+    result = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
     for individuo in individuos:
         print("Individuo: "+str(individuo.id))
