@@ -558,8 +558,8 @@
           <a class="navbar-brand">Representación Gráfica</a>
         </div>
         <div class="navbar-form navbar-left">
-          <button href="#" data-toggle="modal" data-target="#generar_shape">DEBUGGING</button>
-          <button class="btn btn-default" href="#" data-toggle="modal" data-target="#generar_shape">UPDATE PLOT</button>
+          <button href="#" data-toggle="modal" data-target="#generar_shape">Shape Test</button>
+          <!--button class="btn btn-default" href="#" data-toggle="modal" data-target="#generar_shape">UPDATE PLOT</button-->
           <button type="button" class="btn btn-default btn-sm" id="rfsh">
             <img src="{% static 'app/img/rfsh.png' %}" />
           </button>
@@ -598,7 +598,7 @@
         document.getElementById("progressB").style. width = crrnt.toString()+"%";
         document.getElementById('prog').innerHTML = crrnt.toString()+"%";
         console.log(this);
-        progressLoop = setTimeout(function() { ask2(progressLoop); }, 30000);
+        progressLoop = setTimeout(function() { ask2(progressLoop); }, 60000);
         if(crrnt>99){
           document.getElementById('descargar').style.visibility = 'visible';
           document.getElementById('progressBBy').style.visibility = 'hidden';
