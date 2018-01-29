@@ -577,6 +577,8 @@
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
 
+///JavaScript
+
   function load_home() {
      document.getElementById("map").innerHTML='<object style="height:100%; width:100%; background:#FFFFFF;" type="text/html" data="plot/" ></object>';
    }
@@ -584,21 +586,27 @@
   //Task
   window.onload = document.getElementById('descargar').style.visibility = 'hidden'
   window.onload = load_home();
-  window.onload = ask2();
+  window.onload = ask();
 
-  function ask2(/*progressLoop*/) {
+  function ask2(progressLoop) {
     var xhttp = new XMLHttpRequest();
+    clearTimeout(progressLoop);
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
         var obj = JSON.parse(this.responseText);
-        var crrnt = (parseFloat(obj['Done'])/parseFloat(obj['Total']))*100
+        var crrnt = ((parseFloat(obj['Done'])/parseFloat(obj['Total']))*100).toFixed(1);
         document.getElementById("progressB").style. width = crrnt.toString()+"%";
         document.getElementById('prog').innerHTML = crrnt.toString()+"%";
         console.log(this);
+        progressLoop = setTimeout(function() { ask2(progressLoop); }, 30000);
         if(crrnt>99){
           document.getElementById('descargar').style.visibility = 'visible';
           document.getElementById('progressBBy').style.visibility = 'hidden';
-          //clearInterval(progressLoop);
+          clearTimeout(progressLoop);
+        }
+        if(crrnt<0){
+          document.getElementById('progressBBy').style.visibility = 'hidden';
+          clearTimeout(progressLoop);
         }
       }
     };
@@ -607,7 +615,7 @@
   }
 
   function ask(){
-      var progressLoop = setInterval(function() { ask2(progressLoop); }, 5000);
+      var progressLoop = setTimeout(function() { ask2(progressLoop); }, 100);
   }
 
   //Loading bar ¨¨¨
