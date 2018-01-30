@@ -1,3 +1,4 @@
 @echo off
-git pull origin prod
+python manage.py makemigrations app
+python manage.py migrate
 python manage.py runserver

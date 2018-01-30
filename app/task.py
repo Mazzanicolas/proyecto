@@ -4,11 +4,16 @@ from celery import shared_task
 import time
 from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 import app.utils as utils
+from django.contrib.sessions.models import Session
+from django.contrib.sessions.backends.db import SessionStore
+import redis
+
+
 @shared_task
-def calculateIndividual(individuos,simParam):
+def calculateIndividual(individuos,simParam,sessionKey):
     #individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
-    result = []
+    result = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
     for individuo in individuos:
         print("Individuo: "+str(individuo.id))
@@ -19,7 +24,7 @@ def calculateIndividual(individuos,simParam):
             tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',0) == '1')
             prestador = int(simParam.get('mutualista','-1'))
             if(prestador != -2):
-                prestador = Prestador.objects.get(id=prestador) if(prestador!= -1) else individuo.prestador.id
+                prestador = Prestador.objects.get(id=prestador).id if(prestador!= -1) else individuo.prestador.id
         else:
             tipoTrans = individuo.tipo_transporte
             tieneTrabajo = individuo.tieneTrabajo
@@ -39,9 +44,23 @@ def calculateIndividual(individuos,simParam):
                 tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin)
                 result.append([individuo.id,prestador,centroId,centro.prestador.id,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
+    s = SessionStore(session_key=sessionKey)
+    have_lock = False
+    my_lock = redis.Redis().lock(sessionKey)
+    try:
+        have_lock = my_lock.acquire(blocking=True)
+        if have_lock:
+            print("Got lock.")
+            s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
+            s.save()
+        else:
+            print("Did not acquire lock.")
+    finally:
+        if have_lock:
+            my_lock.release()
     return result
 @shared_task
-def suzuki(individuos,simParam):
+def suzuki(individuos,simParam,sessionKey):
     resultList = []
     individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
@@ -49,16 +68,18 @@ def suzuki(individuos,simParam):
         print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
         if(simParam):
-            tipoTrans = simParam.get('tipoTrans',1) if(simParam.get('tipoTrans',1) != -1) else individuo.tipo_transporte.id
-            tieneTrabajo = individuo.tieneTrabajo and (simParam.get('trabaja',1) == 1)
-            tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',1) == 1)
-            prestadorId = simParam.get('mutualista',1) if(simParam.get('mutualista',1) != -1) else individuo.prestador.id
+            tipoTrans = simParam.get('tipoTrans',"1") if(simParam.get('tipoTrans',"1") != "-1") else individuo.tipo_transporte.id
+            tieneTrabajo = individuo.tieneTrabajo and (simParam.get('trabaja',"0") == "1")
+            tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',"0") == "1")
+            prestadorId = simParam.get('mutualista',"1") if(simParam.get('mutualista',"1") != "-1") else individuo.prestador.id
         else:
             tipoTrans = individuo.tipo_transporte.id
             tieneTrabajo = individuo.tieneTrabajo
             tieneJardin = individuo.tieneJardin
             prestadorId = individuo.prestador.id
         #, centro__prestador__id = individuo.prestador.id)
+        #print("***********************************************")
+        #print(tipoTrans,tieneTrabajo,tieneJardin,prestadorId)
         dictConsultasPorDia = {0:0,1:0,2:0,3:0,4:0,5:0}
         dictHorasPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         dictCentrosPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
@@ -95,6 +116,20 @@ def suzuki(individuos,simParam):
                     cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = centroOptimo)
         resultList.append(leResumen)
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
+    s = SessionStore(session_key=sessionKey)
+    have_lock = False
+    my_lock = redis.Redis().lock(sessionKey)
+    try:
+        have_lock = my_lock.acquire(blocking=True)
+        if have_lock:
+            print("Got lock.")
+            s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
+            s.save()
+        else:
+            print("Did not acquire lock.")
+    finally:
+        if have_lock:
+            my_lock.release()
     return resultList
 def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin):
     tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
@@ -102,7 +137,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
-    hasPed = pediatras>=0
+    hasPed = pediatras >0
     if(tieneTrabajo and hora in range(trabajo.hora_inicio,trabajo.hora_fin) or tieneJardin and hora in range(jardin.hora_inicio,jardin.hora_fin) or pediatras < 1 or not samePrest):
         return -1,"No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
@@ -160,7 +195,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
-    hasPed = pediatras>=0
+    hasPed = pediatras>0
     if(tieneTrabajo and hora in range(trabajo.hora_inicio,trabajo.hora_fin) or tieneJardin and hora in range(jardin.hora_inicio,jardin.hora_fin)):
         return -1,"No","No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):

@@ -48,16 +48,17 @@ def buscar_duplicados(centroides_file):
     print(a)
 
 def calcular_tiempos(nodos,sectores,out_file,start=0,end=1063):
-    res = [[0 for _ in range(len(sectores))] for _ in range(start,end)]
-    for i in range(end - start):
-        nodo_origen = get_parada(nodos,sectores[i + start][-1])
+    res = [[(0,0,0) for _ in range(len(sectores))] for _ in range(len(sectores))]
+    for i in range(len(sectores)):
+        nodo_origen = get_parada(nodos,sectores[i][-1])
         for j in range(len(sectores)):
             if i != j:
                 nodo_destino = get_parada(nodos,sectores[j][-1])
                 res[i][j] = busqueda(nodo_origen,nodo_origen.coords,nodo_destino,nodo_destino.coords,nodos,0,0)
         print(i)
     with open(out_file,'w') as f:
-        f.write('\n'.join(list(map(lambda x: ','.join(list(map(lambda y: str(y),x))),res))))
+        #f.write('\n'.join(list(map(lambda x: ','.join(list(map(lambda y: str(y),x))),res))))
+        f.write('\n'.join(list(map(lambda x: ','.join(list(map(lambda y: "{};{};{}".format(*y),x))),res))))
 
 def main():
     # sf = shapefile.Reader('../app/files/shapeAuto.shp')
@@ -69,7 +70,7 @@ def main():
     sectores = list(map(lambda x: x.split(','),sectores))
     nodos = load('test_nodos_cercanos.csv')
     print("done loading")
-    calcular_tiempos(nodos,sectores,'matriz3.csv',795)
+    calcular_tiempos(nodos,sectores,'matrizOmnibus.csv')
 
 if __name__ == '__main__':
     main()

@@ -4,8 +4,8 @@
     <style>
      #map {
        width: 100%;
-       height: 750px;
-       background-color: grey;
+       height: 850px;
+       background-color: white;
      }
      .btn-circle-micro {
       width: 15px;
@@ -16,6 +16,48 @@
       line-height: 0.1;
       border-radius: 30px;
     }
+
+
+    .shapeButton {
+    	-moz-box-shadow:inset 0px 1px 0px 0px #fbafe3;
+    	-webkit-box-shadow:inset 0px 1px 0px 0px #fbafe3;
+    	box-shadow:inset 0px 1px 0px 0px #fbafe3;
+    	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ff5bb0), color-stop(1, #ef027d));
+    	background:-moz-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:-webkit-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:-o-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:-ms-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
+    	background:linear-gradient(to bottom, #ff5bb0 5%, #ef027d 100%);
+    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5bb0', endColorstr='#ef027d',GradientType=0);
+    	background-color:#ff5bb0;
+    	-moz-border-radius:9px;
+    	-webkit-border-radius:9px;
+    	border-radius:9px;
+    	display:inline-block;
+    	cursor:pointer;
+    	color:#ffffff;
+    	font-family:Verdana;
+    	font-size:15px;
+    	padding:6px 15px;
+    	text-decoration:none;
+    	text-shadow:0px 1px 7px #c70067;
+    }
+    .shapeButton:hover {
+    	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ef027d), color-stop(1, #ff5bb0));
+    	background:-moz-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:-webkit-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:-o-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:-ms-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
+    	background:linear-gradient(to bottom, #ef027d 5%, #ff5bb0 100%);
+    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ef027d', endColorstr='#ff5bb0',GradientType=0);
+    	background-color:#ef027d;
+    }
+    .shapeButton:active {
+    	position:relative;
+    	top:1px;
+    }
+
+
     </style>
 		<meta charset="UTF-8">
 		<title>Proyecto 2017</title>
@@ -36,34 +78,36 @@
               <ul class="dropdown-menu">
                 <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar datos tooltip" disabled>i</button></a></li>
                 <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar shapes tooltip" disabled>i</button></a></li>
-                <li><button onclick="ask();">Julio</button></li>
+                <!--li><button onclick="load_home();">Julio</button></li-->
               </ul>
             </li>
           <!--1-->
           <!--2-->
           <li><a href="#" data-toggle="modal" data-target="#config">Configuración</a></li>
-          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Configuración tooltip" disabled>i</button></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Permite cambiar los valores de ajustes del sistema." disabled>i</button></li>
           <!--2-->
           <!--3-->
           <li><a href="#" data-toggle="modal" data-target="#sim">Simular</a></li>
-          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Simular tooltip" disabled>i</button></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Realiza calculos inputando restricciones ficticias a los individuos." disabled>i</button></li>
           <!--3-->
           <!--4-->
           <li><a href="#" data-toggle="modal" data-target="#fil">Ejecutar</a></li>
-          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Ejecutar tooltip" disabled>i</button></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Realiza calculos a partir de los datos ingresados al sistema." disabled>i</button></li>
           <!--4-->
           <!--5-->
           <li><a href="#" data-toggle="modal" data-target="#rsm">Resumen</a></li>
-          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Resumen tooltip" disabled>i</button></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Calcula la matriz de resumen, a partir del resultado de una ejecucion previa." disabled>i</button></li>
           <!--5-->
+          <li><a id="descargar" href="descargar/" target="_blank">Descargar</a></li>
           </ul>
         </div>
       </div>
     </nav>
-    <div class="container" style="width:100%">
+    <div class="container" style="width:100%" id="progressBBy">
       <!--h2>Calculando</h2-->
       <div class="progress">
         <div id="progressB" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:0%">
+          <div id="prog">0%</div>
         </div>
       </div>
     </div>
@@ -191,7 +235,7 @@
           </div>
           <div id="rangoIDresult" class="panel panel-default">
             <div class="panel-heading">
-              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango id tooltip" disabled>i</button></h3>
+              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
             </div>
               <div class="panel-body">
               <div class="form-group row"><div class="col-xs-6">
@@ -249,7 +293,7 @@
           <!--Anclas-->
           <div class="panel panel-default">
             <div class="panel-heading">
-              <h3 class="panel-title">Trabaja&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Trabaja tooltip" disabled>i</button></h3>
+              <h3 class="panel-title">Trabaja&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por trabajo." disabled>i</button></h3>
             </div>
             <div class="panel-body">
             <div>
@@ -259,7 +303,7 @@
          </div>
          <div class="panel panel-default">
            <div class="panel-heading">
-             <h3 class="panel-title">Asiste jardin&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Asiste jardin tooltip" disabled>i</button></h3>
+             <h3 class="panel-title">Asiste jardin&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por si asiste a jardin." disabled>i</button></h3>
            </div>
            <div class="panel-body">
          <div>
@@ -274,13 +318,6 @@
             </div>
           </div>
           <!--Anclas-->
-          <div class="container" style="width:100%">
-            <h2>Calculando</h2>
-            <div class="progress">
-              <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:40%">
-              </div>
-            </div>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Calcular</button>
@@ -306,7 +343,7 @@
           </div>
           <div class="panel panel-default">
             <div class="panel-heading">
-              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango id tooltip" disabled>i</button></h3>
+              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
             </div>
               <div class="panel-body">
               <div class="form-group row"><div class="col-xs-6">
@@ -317,7 +354,7 @@
           </div>
            <div class="panel panel-default">
              <div class="panel-heading">
-               <h3 class="panel-title">Tipo transporte&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Tipo transporte tooltip" disabled>i</button></h3>
+               <h3 class="panel-title">Tipo transporte&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por tipo de transporte." disabled>i</button></h3>
              </div>
              <div class="panel-body">
              <div id="transportesContainerResumenes">
@@ -329,7 +366,7 @@
             </div>
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h3 class="panel-title">Trabaja&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Trabaja tooltip" disabled>i</button></h3>
+                <h3 class="panel-title">Trabaja&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por trabajo." disabled>i</button></h3>
               </div>
               <div class="panel-body">
               <div>
@@ -339,7 +376,7 @@
            </div>
            <div class="panel panel-default">
              <div class="panel-heading">
-               <h3 class="panel-title">Asiste jardin&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Asiste jardin tooltip" disabled>i</button></h3>
+               <h3 class="panel-title">Asiste jardin&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por si asiste a jardin." disabled>i</button></h3>
              </div>
              <div class="panel-body">
            <div>
@@ -441,49 +478,39 @@
  </div>
   <!--1-Config-->
   <!--1.3-Config-->
-    <div id="importar_matriz" class="modal fade" role="dialog">
+  <div id="generar_shape" class="modal fade" role="dialog">
       <div class="modal-dialog">
       <!-- Modal content-->
+      <form action='generate_shape/'  method="GET">
         <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Importar Matriz</h4>
-        </div>
-        <div class="modal-body">
-          <!--alert-->
-          <div class="alert alert-danger alert-dismissable">
-            <a href="#" class="close" data-dismiss="alert" aria-label="close">×</a>
-            <strong>Advertencia: </strong> Se remplazan los datos existentes en la base de datos.
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+  	  <h4 class="modal-title">Generar Shape</h4>
           </div>
-          <!--alert-->
-          <form action=''  method="post",  enctype="multipart/form-data">
-            {% csrf_token %}
-            <fieldset class="form-group">
-              <p>Seleccione la matriz a cargar</p>
-              <div class="form-check">
-                <label class="form-check-label">
-                  <input type="radio" class="form-check-input" name="optionRadioMatrix" id="optionsRadios1" value="option1" checked>
-                  Matriz transporte privado
-                </label>
-              </div>
-              <div class="form-check">
-              <label class="form-check-label">
-                  <input type="radio" class="form-check-input" name="optionRadioMatrix" id="optionsRadios2" value="option2">
-                  Matriz caminando
-                </label>
-              </div>
-            </fieldset>
-            <div class="form-group">
-              <label for="exampleInputFile">Seleccione un archivo</label>
-              <input type="file" class="form-control-file" id="exampleInputFile" aria-describedby="fileHelp">
-              <input type="submit" class="btn btn-primary" name="submit" value="Upload">
-              <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+          <div class="modal-body">
+            <label class="checkbox-inline"><input type="checkbox" name="generar_hogares">Generar Shape de Hogares</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_jardines">Generar Shape de Jardines</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_trabajos">Generar Shape de Hogares</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_autos">Generar Shape de Centros Optimos Auto</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_omnibus">Generar Shape de Centros Optimos Omnibus</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_caminando">Generar Shape de Centros Optimos Caminando</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_autos">Generar Shape [Hogar - Centro Optimo Auto]</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_omnibus">Generar Shape [Hogar - Centro Optimo Omnibus]</label><br>
+            <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_caminando">Generar Shape [Hogar - Centro Optimo Caminando]</label><br>
+          </div>
+          <div class="panel-body">
+            <div class="panel-heading">
+              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
             </div>
+          <div class="form-group row"><div class="col-xs-6  ">
+            Desde: <input  class="form-control" placeholder="ID individuo" name= "fromRangeShape"><br>
+            Hasta: <input  class="form-control" placeholder="ID individuo" name="toRangeShape"></div>
+          </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Importar</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-          </div>
+          <button type="submit" class="shapeButton">Generar</button>
+        </div>
+        </div>
         </div>
       </form>
       </div>
@@ -528,29 +555,11 @@
     <nav class="navbar navbar-defaul">
       <div class="container-fluid">
         <div class="navbar-header">
-          <a class="navbar-brand">Graficar</a>
+          <a class="navbar-brand">Representación Gráfica</a>
         </div>
         <div class="navbar-form navbar-left">
-          <div class="form-group">
-            <select class="form-control"  id="nme">
-              <option>Hogar</option>
-              <option>Jardin</option>
-              <option>Trabajo</option>
-            </select>
-            <input  class="form-control" placeholder="Latitud" id="latO">
-            <input  class="form-control" placeholder="Longitud" id="lngO">
-            <button class="btn btn-default" id="cvtBtn">Convertir</button>
-          </div>
-          <button class="btn btn-default" id="addBtn">Agregar</button>
-          <input class="form-control" onclick="clearMarkers();" type=button value="Ocultar Marcadores">
-          <input class="form-control" onclick="showMarkers();" type=button value="Mostrar Marcadores">
-          <select class="form-control"  id="lgrsA"></select>
-          <select class="form-control"  id="lgrsB"></select>
-          <button class="btn btn-default" id="unrBtn">Unir</button>
-          <button class="form-control" onclick="toggleHeatmap()">Heatmap</button>
-          <button class="form-control" onclick="changeGradient()">Gradiente</button>
-          <button class="form-control" onclick="changeRadius()">Radio</button>
-          <button class="form-control" onclick="changeOpacity()">Opacidad</button>
+          <button href="#" data-toggle="modal" data-target="#generar_shape">Shape Test</button>
+          <!--button class="btn btn-default" href="#" data-toggle="modal" data-target="#generar_shape">UPDATE PLOT</button-->
           <button type="button" class="btn btn-default btn-sm" id="rfsh">
             <img src="{% static 'app/img/rfsh.png' %}" />
           </button>
@@ -558,7 +567,7 @@
       </div>
     </nav>
     <div class="panel-body">
-      <div  id="map"></div>
+      <div id="map"></div>
     </div>
   </div>
   </body>
@@ -568,17 +577,36 @@
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
   <script type="text/javascript">
 
-  function ask2() {
+///JavaScript
+
+  function load_home() {
+     document.getElementById("map").innerHTML='<object style="height:100%; width:100%; background:#FFFFFF;" type="text/html" data="plot/" ></object>';
+   }
+
+  //Task
+  window.onload = document.getElementById('descargar').style.visibility = 'hidden'
+  window.onload = load_home();
+  window.onload = ask();
+
+  function ask2(progressLoop) {
     var xhttp = new XMLHttpRequest();
+    clearTimeout(progressLoop);
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
-        console.log("Entro")
         var obj = JSON.parse(this.responseText);
-        var crrnt = (parseFloat(obj['Done'])/parseFloat(obj['Total']))*100
+        var crrnt = ((parseFloat(obj['Done'])/parseFloat(obj['Total']))*100).toFixed(1);
         document.getElementById("progressB").style. width = crrnt.toString()+"%";
-        alert(crrnt);
+        document.getElementById('prog').innerHTML = crrnt.toString()+"%";
+        console.log(this);
+        progressLoop = setTimeout(function() { ask2(progressLoop); }, 60000);
         if(crrnt>99){
-          clearInterval(progressLoop);
+          document.getElementById('descargar').style.visibility = 'visible';
+          document.getElementById('progressBBy').style.visibility = 'hidden';
+          clearTimeout(progressLoop);
+        }
+        if(crrnt<0){
+          document.getElementById('progressBBy').style.visibility = 'hidden';
+          clearTimeout(progressLoop);
         }
       }
     };
@@ -587,9 +615,11 @@
   }
 
   function ask(){
-      var progressLoop = setInterval(function() { ask2(); }, 5000);
+      var progressLoop = setTimeout(function() { ask2(progressLoop); }, 100);
   }
+
   //Loading bar ¨¨¨
+
 
   $(function () {
     $('[data-toggle="tooltip"]').tooltip()
@@ -611,235 +641,6 @@
           $('#calcularResumen').show();
       });
   });
-  //Cargar Mapa
-    var map, heatmap;
-    var markers = [];
-    var lugares = ['Hogar','Jardin','Trabajo'];
-    function initMap() {
-      var latO	 =  -34.888664;
-      var lngO	 =  -56.159157;
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: parseFloat(latO), lng: parseFloat(lngO)},
-          zoom: 12
-        });
-        heatmap = new google.maps.visualization.HeatmapLayer({
-          data: getPoints(),
-          map: map
-        });
-      }
-
-    function toggleHeatmap() {
-      heatmap.setMap(heatmap.getMap() ? null : map);
-    }
-    function changeGradient() {
-      var gradient = [
-        'rgba(0, 255, 255, 0)',
-        'rgba(0, 255, 255, 1)',
-        'rgba(0, 191, 255, 1)',
-        'rgba(0, 127, 255, 1)',
-        'rgba(0, 63, 255, 1)',
-        'rgba(0, 0, 255, 1)',
-        'rgba(0, 0, 223, 1)',
-        'rgba(0, 0, 191, 1)',
-        'rgba(0, 0, 159, 1)',
-        'rgba(0, 0, 127, 1)',
-        'rgba(63, 0, 91, 1)',
-        'rgba(127, 0, 63, 1)',
-        'rgba(191, 0, 31, 1)',
-        'rgba(255, 0, 0, 1)'
-        ]
-      heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
-    }
-
-    function changeRadius() {
-      heatmap.set('radius', heatmap.get('radius') ? null : 20);
-    }
-    function changeOpacity() {
-      heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
-    }
-    function getPoints() {
-      centros = [[-34.90789983084485,-56.21188583082826],[-34.87420988513144,-56.25163024169635],[-34.85471267658412,-56.24552782077986],[-34.83191038444337,-56.245965540530364],[-34.843894250396865,-56.250296937907216],[-34.803248635125335,-56.338211093376394],[-34.850800285929566,-56.2442618485746],[-34.86545843742159,-56.2207588942146],
-      [-34.86608203085772,-56.249647056045056],[-34.82663949876625,-56.31851522482474],[-34.844464403125755,-56.2744204026315],[-34.858253317934846,-56.250844929833555],[-34.82153632090448,-56.28257105901889],[-34.849959488647926,-56.267480933571036],[-34.853800684284685,-56.27044416616361],[-34.8562983618083,-56.242406587252425],
-      [-34.879303779464315,-56.270766002198755],[-34.86605518758125,-56.33487468811004],[-34.86119948489274,-56.23451772101251],[-34.885875069856255,-56.29326195595671],[-34.78865020965208,-56.353488230567855],[-34.84352816857524,-56.256764379118465],[-34.85411444055079,-56.230645320650936],[-34.86653778040478,-56.26819825988321],
-      [-34.82874015251763,-56.35481541868589],[-34.86938348309337,-56.170710686191256],[-34.87075120451768,-56.21788613640903],[-34.85582585387369,-56.174008184617904],[-34.84875465974794,-56.18715003303194],[-34.84673805913104,-56.17292864283959],[-34.84010977533783,-56.12267358880144],[-34.77544355034039,-56.04218221156409],
-      [-34.79827494930011,-56.09270565902401],[-34.78617033514172,-56.06252976892369],[-34.801723733387725,-56.087234708137714],[-34.77715900212743,-56.03446863973209],[-34.77613011900128,-56.05270934264765],[-34.847491549773856,-56.112650420012066],[-34.81521909776607,-56.10567799980142],[-34.8715300659978,-56.09684602022626],
-      [-34.87650983087791,-56.06580644984409],[-34.87256576540402,-56.11199310003916],[-34.871731816065086,-56.11801951020081],[-34.8444076522377,-56.13978043952838],[-34.86254576959341,-56.16589023011387],[-34.83502601996224,-56.15830933006757],[-34.822451211775245,-56.169998020217506],[-34.82337489785785,-56.156308159677586],
-      [-34.835100819893434,-56.17420397976129],[-34.840236354210916,-56.15405066012133],[-34.836222539024135,-56.17978070048926],[-34.822819710885796,-56.168651923531804],[-34.819439174559975,-56.13971423995263],[-34.82158530217835,-56.14121829018119],[-34.80626198067365,-56.16336815965943],[-34.786262994742266,-56.15764438050916],
-      [-34.802381163799545,-56.12136366987247],[-34.788198336290826,-56.1279899204364],[-34.797867465131866,-56.14886058680188],[-34.82623588088439,-56.13236061953023],[-34.75702752663112,-56.11011431944802],[-34.83192960040328,-56.219397550325596],[-34.82240069757118,-56.231114739690135],[-34.7877069212733,-56.23316253966531],
-      [-34.79841494448431,-56.22825358994971],[-34.84363561364284,-56.19290550999112],[-34.807863782733875,-56.214863950168244],[-34.81419020878629,-56.21325737052464],[-34.839948317792974,-56.192551489437],[-34.797028491126085,-56.24891251016661],[[]-34.82675142877273,-56.22711810980732],[-34.83577597287922,-56.22986383005261]]
-
-
-      //alert(centros)
-      points = [];
-      for(var i =0;i<centros.length;i++){
-        points.push(new google.maps.LatLng(centros[i][0],centros[i][1]))
-      }
-        return points
-    }
-
-    var count = -1;
-    $(function() {
-          var btn = $('#addBtn').click(function () {
-            btn.button('loading')
-            var nme = document.getElementById("nme").value;
-            var originLat = parseFloat(document.getElementById("latO").value);
-            var originLong = parseFloat(document.getElementById("lngO").value);
-            lugares[nme]=[originLat,originLong];
-            document.getElementById('lgrsA').innerHTML += '<option>'+nme+'</option>';
-            document.getElementById('lgrsB').innerHTML += '<option>'+nme+'</option>';
-            var icn = "{% static 'app/img/tbj.png' %}";
-            if(nme=='Jardin'){
-              icn =  "{% static 'app/img/jrd.png' %}";
-            } else if (nme == 'Hogar'){
-              icn =  "{% static 'app/img/hme.png' %}";
-            }
-            var myLatLng = {lat: originLat, lng: originLong};
-            addMarker(myLatLng,icn,nme);
-            setTimeout(function () {
-              btn.button('reset')
-            }, 300)
-          })
-        })
-        function addMarker(location,icn,nme) {
-        var marker = new google.maps.Marker({
-          position: location,
-          icon: icn,
-          map: map,
-          title: nme
-        });
-        markers.push(marker);
-      }
-        // Sets the map on all markers in the array.
-      function setMapOnAll(map) {
-         for (var i = 0; i < markers.length; i++) {
-             markers[i].setMap(map);
-         }
-       }
-       // Removes the markers from the map, but keeps them in the array.
-       function clearMarkers() {
-         setMapOnAll(null);
-       }
-       // Shows any markers currently in the array.
-       function showMarkers() {
-         setMapOnAll(map);
-       }
-        // Deletes all markers in the array by removing references to them.
-        function deleteMarkers() {
-         clearMarkers();
-         markers = [];
-        }
-
-        $(function() {
-              var btn = $('#unrBtn').click(function () {
-                btn.button('loading')
-                var org = lugares[document.getElementById("lgrsA").value];
-                var dst = lugares[document.getElementById("lgrsB").value];
-                var flightPlanCoordinates = [
-                      {lat: org[0], lng: org[1]},
-                      {lat: dst[0], lng: dst[1]}]
-                var camino = new google.maps.Polyline({
-                    path: flightPlanCoordinates,
-                    geodesic: true,
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 1.0,
-                    strokeWeight: 2,
-                    icons: [{
-                        icon: {path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW},
-                        offset: '100%'
-                    }]
-                  });
-                  camino.setMap(map);
-                setTimeout(function () {
-                  btn.button('reset')
-                }, 300)
-              })
-            })
-
-          $(function() {
-                var btn = $('#cvtBtn').click(function () {
-                  btn.button('loading')
-                  var x = parseFloat(document.getElementById("latO").value);
-                  var y = parseFloat(document.getElementById("lngO").value);
-                  var xy = utmToLatLng(x,y)
-                  document.getElementById("latO").value = xy[0];
-                  document.getElementById("lngO").value = xy[1];
-                  setTimeout(function () {
-                    btn.button('reset')
-                  }, 300)
-                })
-              })
-
-            $(function() {
-              var btn = $('#rfsh').click(function () {
-                btn.button('loading')
-                document.getElementById('lgrsA').innerHTML = '';
-                document.getElementById('lgrsB').innerHTML = '';
-                lugares['Hogar'] = [0,0];
-                lugares['Jardin'] = [0,0];
-                lugares['Trabajo'] = [0,0];
-                deleteMarkers();
-                setTimeout(function () {
-                btn.button('reset')
-                }, 300)
-              })
-            })
-
-        function utmToLatLng(easting, northing){
-            var zone = 21; //Cambiar: montevideo esta en la zona 21
-            var northernHemisphere =0;//Cambiar: montevideo esta al sur
-            if (!northernHemisphere){
-                northing = 10000000 - northing;
-            }
-
-            var a = 6378137;
-            var e = 0.081819191;
-            var e1sq = 0.006739497;
-            var k0 = 0.9996;
-
-            var arc = northing / k0;
-            var mu = arc / (a * (1 - Math.pow(e, 2) / 4.0 - 3 * Math.pow(e, 4) / 64.0 - 5 * Math.pow(e, 6) / 256.0));
-
-            var ei = (1 - Math.pow((1 - e * e), (1 / 2.0))) / (1 + Math.pow((1 - e * e), (1 / 2.0)));
-
-            var ca = 3 * ei / 2 - 27 * Math.pow(ei, 3) / 32.0;
-
-            var cb = 21 * Math.pow(ei, 2) / 16 - 55 * Math.pow(ei, 4) / 32;
-            var cc = 151 * Math.pow(ei, 3) / 96;
-            var cd = 1097 * Math.pow(ei, 4) / 512;
-            var phi1 = mu + ca * Math.sin(2 * mu) + cb * Math.sin(4 * mu) + cc * Math.sin(6 * mu) + cd * Math.sin(8 * mu);
-
-            var n0 = a / Math.pow((1 - Math.pow((e * Math.sin(phi1)), 2)), (1 / 2.0));
-
-            var r0 = a * (1 - e * e) / Math.pow((1 - Math.pow((e * Math.sin(phi1)), 2)), (3 / 2.0));
-            var fact1 = n0 * Math.tan(phi1) / r0;
-
-            var _a1 = 500000 - easting;
-            var dd0 = _a1 / (n0 * k0);
-            var fact2 = dd0 * dd0 / 2;
-
-            var t0 = Math.pow(Math.tan(phi1), 2);
-            var Q0 = e1sq * Math.pow(Math.cos(phi1), 2);
-            var fact3 = (5 + 3 * t0 + 10 * Q0 - 4 * Q0 * Q0 - 9 * e1sq) * Math.pow(dd0, 4) / 24;
-
-            var fact4 = (61 + 90 * t0 + 298 * Q0 + 45 * t0 * t0 - 252 * e1sq - 3 * Q0 * Q0) * Math.pow(dd0, 6) / 720;
-
-            var lof1 = _a1 / (n0 * k0);
-            var lof2 = (1 + 2 * t0 + Q0) * Math.pow(dd0, 3) / 6.0;
-            var lof3 = (5 - 2 * Q0 + 28 * t0 - 3 * Math.pow(Q0, 2) + 8 * e1sq + 24 * Math.pow(t0, 2)) * Math.pow(dd0, 5) / 120;
-            var _a2 = (lof1 - lof2 + lof3) / Math.cos(phi1);
-            var _a3 = _a2 * 180 / Math.PI;
-
-            var latitude = 180 * (phi1 - fact1 * (fact2 + fact3 + fact4)) / Math.PI;
-
-            if (!northernHemisphere){
-                latitude = -latitude;
-            }
-
-            var longitude = ((zone > 0) && (6 * zone - 183.0) || 3.0) - _a3;
-
-            var res=  [latitude, longitude];
-            return res;
-            }
 
     //old vvv new ^^^
   $('.btn').on('click', function() {
@@ -960,7 +761,4 @@
                     });
                 });
   </script>
-  <script async defer
-   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyALIO88xKB1Hwd4kKalnRZQvtu5iCwLBVQ&libraries=visualization&callback=initMap">
-   </script>
 </html>
