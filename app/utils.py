@@ -228,3 +228,18 @@ def getMaximoDict(mapa):
         if( aux > maximo):
             maximo = aux
     return maximo
+def getIndivList(request):
+    data = request.GET
+    if(data.get("idList",None)):
+        idStringList = data.get("idList",None).split(",")
+        try:
+            idList = [int(x) for x in idStringList]
+            indvList = Individuo.objects.filter(id__in = idList)
+            return indvList
+        except:
+            return None
+    else:
+        fromRange = int(data.get('fromRange')) if(data.get('fromRange',"") != "" ) else 0
+        toRange = int(data.get('toRange')) if(data.get('toRange',"") != "" ) else Individuo.objects.last().id
+        indvList = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
+        return indvList

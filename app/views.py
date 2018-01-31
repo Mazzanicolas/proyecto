@@ -35,10 +35,7 @@ sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
 def genShape(request):
-    values       = request.GET
-    fromRange    = int(values.get('fromRangeShape')) if(values.get('fromRangeShape',"") != "" ) else 0
-    toRange      = int(values.get('toRangeShape')) if(values.get('toRangeShape',"") != "" ) else Individuo.objects.last().id
-    filenames    = generarShape(values,[fromRange,toRange],request.session.session_key)
+    filenames    = generarShape(request,request.session.session_key)
     zip_subdir   = "Shapefiles"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
@@ -166,8 +163,7 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
         fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
         toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
         if(getData.get("simular",'0') == '1' ):
-            indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
-            #indQuery = IndividuoTiempoCentro.objects.filter(individuo__in = individuos).values_list('id', flat=True):
+            indQuery  = utils.getIndivList(request)
             dictParam = utils.generateParamDict(getData)
             print(dictParam)
         else:
@@ -186,11 +182,10 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
                 jardin.append(False)
             if(trabajaReq == '0'):
                 trabaja.append(False)
-            indQuery  = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+            indQuery  = utils.getIndivList(request).filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
             dictParam = None
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
-    numberPerGroup = 2
     individuos     = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     print("Individuos a calcular: "+str(len(indQuery)))
@@ -212,7 +207,7 @@ def consultaToCSV(request):
     fromRange    = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
     toRange      = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
     if(getData.get("simular",'0') == '1' ):
-        indQuery  = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
+        indQuery  = utils.getIndivList(request)
         dictParam = utils.generateParamDict(getData)
     else:
         transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
@@ -224,7 +219,7 @@ def consultaToCSV(request):
             jardin.append(False)
         if(trabajaReq == '0'):
             trabaja.append(False)
-        indQuery = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+        indQuery = utils.getIndivList(request).filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
         print("Individuos a calcular: "+str(len(indQuery)))
         dictParam = None
     numberPerGroup = math.ceil(len(indQuery)/8)
@@ -268,7 +263,6 @@ def downloadFile(request):
 
 def plot(request):
     return render(request,'app/plot.html')
-
 def newCalcTimes():
     tiempoMaximo   = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)

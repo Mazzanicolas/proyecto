@@ -1,11 +1,14 @@
 import shapefile
 from   app.models import Individuo, IndividuoCentroOptimo, Centro
 from   shapely    import geometry
+import app.utils as utils
 
-def generarShape(values,idRange,idName):
+
+def generarShape(request,idName):
     cache = []
     files = []
-    Individuos = Individuo.objects.filter(id__gte = idRange[0],id__lte = idRange[1])
+    values = request.GET
+    Individuos = indQuery  = utils.getIndivList(request)
     #POINTS HOGARES
     if('generar_hogares' in  values):
         w = shapefile.Writer(shapefile.POINT)
@@ -107,7 +110,7 @@ def generarShape(values,idRange,idName):
             x1,y1     = individuo.hogar.x_coord, individuo.hogar.y_coord
             x2,y2     = CentroOpt.centroOptimoAuto.x_coord, CentroOpt.centroOptimoAuto.y_coord
             lineParts.append([[x1,y1],[x2,y2]])
-            w.record(individuo.id, CentroOpt.centroOptimoAuto.id_centro, CentroOpt.tHogarCentroAuto)
+            w.record(individuo.id, CentroOpt.centroOptimoAuto.id_centro, round(CentroOpt.tHogarCentroAuto/60,2))
             w.line(parts=lineParts)
             lineParts=[]
         w.save('app/files/shpOut/lineaHogaresCentroOptimoAuto'+idName)
@@ -125,7 +128,7 @@ def generarShape(values,idRange,idName):
             x1,y1     = individuo.hogar.x_coord, individuo.hogar.y_coord
             x2,y2     = CentroOpt.centroOptimoOmnibus.x_coord, CentroOpt.centroOptimoOmnibus.y_coord
             lineParts.append([[x1,y1],[x2,y2]])
-            w.record(individuo.id, CentroOpt.centroOptimoOmnibus.id_centro, CentroOpt.tHogarCentroOmnibus)
+            w.record(individuo.id, CentroOpt.centroOptimoOmnibus.id_centro, round(CentroOpt.tHogarCentroOmnibus/60,2))
             w.line(parts=lineParts)
             lineParts=[]
         w.save('app/files/shpOut/lineaHogaresCentroOptimoOmnibus'+idName)
@@ -143,7 +146,7 @@ def generarShape(values,idRange,idName):
             x1,y1     = individuo.hogar.x_coord, individuo.hogar.y_coord
             x2,y2     = CentroOpt.centroOptimoCaminando.x_coord, CentroOpt.centroOptimoCaminando.y_coord
             lineParts.append([[x1,y1],[x2,y2]])
-            w.record(individuo.id, CentroOpt.centroOptimoCaminando.id_centro, CentroOpt.tHogarCentroCaminando)
+            w.record(individuo.id, CentroOpt.centroOptimoCaminando.id_centro, round(CentroOpt.tHogarCentroCaminando/60,2))
             w.line(parts=lineParts)
             lineParts=[]
         w.save('app/files/shpOut/lineaHogaresCentroOptimoCaminando'+idName)
