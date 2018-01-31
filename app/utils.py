@@ -239,7 +239,7 @@ def getIndivList(request):
         except:
             return None
     else:
-        fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
-        toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
+        fromRange = int(data.get('fromRange')) if(data.get('fromRange',"") != "" ) else 0
+        toRange = int(data.get('toRange')) if(data.get('toRange',"") != "" ) else Individuo.objects.last().id
         indvList = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
         return indvList

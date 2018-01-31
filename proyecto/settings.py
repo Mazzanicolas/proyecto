@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-
+import multiprocessing
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -111,10 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CELERY_RESULT_BACKEND = 'redis://'
-
 CELERY_BROKER_URL = 'redis://'
-
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+CELERY_WORKER_CONCURRENCY = multiprocessing.cpu_count() - 2
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
