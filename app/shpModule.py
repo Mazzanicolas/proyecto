@@ -1,11 +1,14 @@
 import shapefile
 from   app.models import Individuo, IndividuoCentroOptimo, Centro
 from   shapely    import geometry
+import app.utils as utils
 
-def generarShape(values,idRange,idName):
+
+def generarShape(request,idName):
     cache = []
     files = []
-    Individuos = Individuo.objects.filter(id__gte = idRange[0],id__lte = idRange[1])
+    values = request.GET
+    Individuos = indQuery  = utils.getIndivList(request)
     #POINTS HOGARES
     if('generar_hogares' in  values):
         w = shapefile.Writer(shapefile.POINT)
