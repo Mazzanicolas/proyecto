@@ -26,16 +26,20 @@ import zipfile
 from io import BytesIO
 from app.shpModule import *
 
+
 global shapeAuto
 global shapeCaminando
+
 
 sf = shapefile.Reader('app/files/shapeAuto.shp')
 shapeAuto = sf.shapes()
 sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
+
 def genShape(request):
-    filenames    = generarShape(request,request.session.session_key)
+
+    filenames    = generarShape(request, request.session.session_key)
     zip_subdir   = "Shapefiles"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
@@ -51,14 +55,16 @@ def genShape(request):
 
 
 def test(request):
-    if(IndividuoCentro.objects.count() <Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and Centro.objects.count()>0):
-        print("******************************************************************************************************************")
+    if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and
+            Centro.objects.count() > 0):
+        print("*****************************")
         newCalcTimes()
     getReq = request.GET
-    if(getReq.get('checkRango','0') == '-1'):
+    if(getReq.get('checkRango', '0') == '-1'):
         return consultaToCSV(request)
     response = redirect('consultaConFiltro')
     return response
+
 
 def progress(request):
     print("PROGRESS")
@@ -73,9 +79,11 @@ def progress(request):
     data = {"Done":done,"Total":total}
     return JsonResponse(data)
 
+
 def redirectSim(request):
-    if(IndividuoCentro.objects.count() <Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and Centro.objects.count()>0):
-        print("******************************************************************************************************************")
+    if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and 
+            Individuo.objects.count() > 0 and Centro.objects.count() > 0):
+        print("**************************************************")
         newCalcTimes()
     getReq = request.GET
     if(getReq.get('checkRes','0') == '1'):
