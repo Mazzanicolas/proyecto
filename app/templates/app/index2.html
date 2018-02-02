@@ -98,7 +98,8 @@
           <li><a href="#" data-toggle="modal" data-target="#rsm">Resumen</a></li>
           <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Calcula la matriz de resumen, a partir del resultado de una ejecucion previa." disabled>i</button></li>
           <!--5-->
-          <li><a id="descargar" href="descargar/" target="_blank">Descargar</a></li>
+          <!--li><a id="descargar" href="descargar/" target="_blank">Descargar</a></li-->
+          <li><a href="#" data-toggle="modal" data-target="#downlaod">Descargar</a></li>
           </ul>
         </div>
       </div>
@@ -160,6 +161,28 @@
       </div>
     </div>
   <!--2-Config-->
+  <!--10-Descargar-->
+  <div id="downlaod" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+      <!-- Modal content-->
+      <form action=''  method="POST">
+      {% csrf_token %}
+        <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Descargar</h4>
+        </div>
+        <li><a id="descargar" href="descargar/" target="_blank">Descargar Resultados</a></li>
+        <li><a id="descargar" href="descargarShape/" target="_blank">Descargar Shapes</a></li>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+          </div>    
+      </div>
+            
+      </form>
+    </div>
+  </div>
+  <!--10-Descargar-->
   <!--3-Config-->
   <div id="sim" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -321,6 +344,78 @@
          </div>
          </div>
          </div>
+         <div class="panel panel-default">
+         <div class="panel-heading">
+          Dias
+        </div>
+        <div class="panel-body">
+            <label class="radio-inline"><input type="checkbox" name="dias" value="0" checked> L </label>
+            <label class="radio-inline"><input type="checkbox" name="dias" value="1" checked> M </label>
+            <label class="radio-inline"><input type="checkbox" name="dias" value="2" checked> Mi </label>
+            <label class="radio-inline"><input type="checkbox" name="dias" value="3" checked> J </label>
+            <label class="radio-inline"><input type="checkbox" name="dias" value="4" checked> V </label>
+            <label class="radio-inline"><input type="checkbox" name="dias" value="5" checked> S </label></br>
+        </div>
+      </div>
+         <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Rango Horario&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
+          </div>
+          <div class="panel-body">
+          <select class="form-control col-xs-6" name="horaInicio">
+            <option>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+            <option>10</option>
+            <option>11</option>
+            <option>12</option>
+            <option>13</option>
+            <option>14</option>
+            <option>15</option>
+            <option>16</option>
+            <option>17</option>
+            <option>18</option>
+            <option>19</option>
+            <option>20</option>
+            <option>21</option>
+            <option>22</option>
+            <option>23</option>
+          </select>
+          <select class="form-control col-xs-6" name="horaFin">
+              <option>0</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+              <option>7</option>
+              <option>8</option>
+              <option>9</option>
+              <option>10</option>
+              <option>11</option>
+              <option>12</option>
+              <option>13</option>
+              <option>14</option>
+              <option>15</option>
+              <option>16</option>
+              <option>17</option>
+              <option>18</option>
+              <option>19</option>
+              <option>20</option>
+              <option>21</option>
+              <option>22</option>
+              <option>23</option>
+          </select>
+        </div>
+        </div>  
          <div class="panel panel-default">
            <div class="panel-heading">
              <h3 class="panel-title">Lista de ID's&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Lista de ID's separados por coma para los que se quiere realizar el calculo." disabled>i</button></h3>
@@ -617,10 +712,11 @@
   {% load static %}
   <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
   <script src="{% static 'app/js/bootstrap.min.js' %}"></script>
+  
   <script type="text/javascript">
 
 ///JavaScript
-
+  
   function load_home() {
      document.getElementById("map").innerHTML='<object style="height:100%; width:100%; background:#FFFFFF;" type="text/html" data="plot/" ></object>';
    }

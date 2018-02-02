@@ -261,6 +261,18 @@ def downloadFile(request):
     response = redirect('index')
     return response
 
+
+def downloadShapeFile(request):
+    groupId = request.session.get('groupId', None)
+    resultType = request.session.get('resultType', None)
+    if(groupId and resultType):
+        resultado = app.GroupResult.restore(groupId)
+        if(resultType == 'individual'):
+            resumenObjectList = resultado.join()
+            resumenObjectList = sum(sum(resumenObjectList,[]), [])
+    #[['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
+    #para cada individuo, si llega, SHP > (Punto en coordenadas centro), DBF > IdCentro, Idind, dia, hora, tiempoViaje, cantidadPediatras
+
 def plot(request):
     return render(request,'app/plot.html')
 def newCalcTimes():
