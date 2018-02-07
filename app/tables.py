@@ -227,7 +227,9 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
-    if(tieneTrabajo and trabajo and hora in range(trabajo.hora_inicio,trabajo.hora_fin) or tieneJardin and jardin and hora in range(jardin.hora_inicio,jardin.hora_fin)):
+    if(tieneTrabajo and trabajo and hora in range(trabajo.hora_inicio,trabajo.hora_fin) and 
+            dia in utils.getListOfDays(trabajo.dias) or tieneJardin and 
+            jardin and hora in range(jardin.hora_inicio,jardin.hora_fin) and dia in utils.getListOfDays(jardin.dias)):
         record.tiempoViaje = -1
         return record.tiempoViaje
     if(tieneTrabajo and trabajo and dia in utils.getListOfDays(trabajo.dias)):

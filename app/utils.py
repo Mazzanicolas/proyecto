@@ -103,7 +103,7 @@ def getPrestadores():
 
 def getListOfDays(stringDays):
     daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5}
-    daysByComma = stringDays.split(';')
+    daysByComma = stringDays.split('.')
     resDays = []
     for day in daysByComma:
         if('-' in day):
