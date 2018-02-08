@@ -107,17 +107,35 @@ def index(request):
     init()
     if(not Sector.objects.all()):
         load.cargarSectores(shapeAuto,shapeCaminando)
-    post = request.POST
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
         s = Settings(setting = "tiempoMaximo",value = "60")
         s.save()
     if(not Settings.objects.filter(setting = "tiempoConsulta")):
         s = Settings(setting = "tiempoConsulta",value = "30")
         s.save()
+    if (not Settings.objects.filter(setting = "tiempoLlega")):
+        s = Settings(setting = "tiempoLlega",value = "30")
+        s.save()
+    post = request.POST
+    cookies = request.COOKIES
+    if(cookies):
+        if('tiempoMaximo' in cookies):
+            maxT = cookies.get("tiempoMaximo")
+        else:
+            maxT = Settings.objects.get(setting = "tiempoMaximo").value
+        if('tiempoConsulta' in cookies):
+            consT = cookies.get("tiempoConsulta")
+        else:
+            consT = Settings.objects.get(setting = "tiempoConsulta").value
+        if("tiempoLlega" in cookies):
+            tiempoL = cookies.get("tiempoLlega")
+        else:
+            tiempoL = Settings.objects.get(setting = "tiempoLlega").value
     if(post):
-        tiempoMax = post.get("tiempoTransporte")
-        tiempoCons = post.get("tiempoConsulta")
-        radioCargado = post.get("optionsRadios")
+        tiempoMax = post.get("tiempoTransporte",None)
+        tiempoCons = post.get("tiempoConsulta",None)
+        tiempoLlega = post.get("tiempoLlega",None)
+        radioCargado = post.get("optionsRadios",None)
         radioMatrix =  radioCargado
         if(radioCargado):
             if(radioCargado == "option1"):
@@ -142,18 +160,17 @@ def index(request):
                 response['Content-Disposition'] = 'attachment; filename="errores.csv"'
                 return response
         if(tiempoMax):
-            maxT = Settings.objects.get(setting = "tiempoMaximo")
-            maxT.value = tiempoMax
-            maxT.save()
+            maxT = tiempoMax
         if(tiempoCons):
-            consT = Settings.objects.get(setting = "tiempoConsulta")
-            consT.value = tiempoCons
-            consT.save()
-    maxT    = Settings.objects.get(setting = "tiempoMaximo").value
-    consT   = Settings.objects.get(setting = "tiempoConsulta").value
-    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT}
-    return render(request, 'app/index2.html',context)
-
+            consT = tiempoCons
+        if(tiempoLlega):
+            tiempoL = tiempoLlega
+    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL}
+    response = render(request, 'app/index2.html',context)
+    response.set_cookie(key = 'tiempoMaximo',  value = maxT)
+    response.set_cookie(key = 'tiempoConsulta',value = consT)
+    response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
+    return response
 def guardarArchivo(nombre, archivo):
     with default_storage.open('tmp/'+nombre, 'wb+') as destination:
         for chunk in archivo.chunks():
@@ -192,9 +209,13 @@ def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
                 trabaja.append(False)
             indQuery  = utils.getIndivList(request).filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
             dictParam = None
+    dictTiemposSettings = dict()
+    dictTiemposSettings['tiempoMaximo'] =request.COOKIES.get('tiempoMaximo')
+    dictTiemposSettings['tiempoConsulta'] = request.COOKIES.get('tiempoConsulta')
+    dictTiemposSettings['tiempoLlega'] = request.COOKIES.get('tiempoLlega')
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
-    individuos     = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
+    individuos     = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     print("Individuos a calcular: "+str(len(indQuery)))
     resultList = []
@@ -230,9 +251,13 @@ def consultaToCSV(request):
         indQuery = utils.getIndivList(request).filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
         print("Individuos a calcular: "+str(len(indQuery)))
         dictParam = None
+    dictTiemposSettings = dict()
+    dictTiemposSettings['tiempoMaximo'] = request.COOKIES.get('tiempoMaximo')
+    dictTiemposSettings['tiempoConsulta'] = request.COOKIES.get('tiempoConsulta')
+    dictTiemposSettings['tiempoLlega'] = request.COOKIES.get('tiempoLlega')
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
-    individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey] for i in range(0, len(indQuery), numberPerGroup)]
+    individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     resultList = []
     job = calculateIndividual.chunks(individuos,1).group()

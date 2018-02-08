@@ -10,7 +10,7 @@ import redis
 
 
 @shared_task
-def calculateIndividual(individuos,simParam,sessionKey):
+def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
     #individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
     result = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
@@ -41,7 +41,9 @@ def calculateIndividual(individuos,simParam,sessionKey):
             centroId = centro.id_centro
             aux =[]
             for tiempo in tiempos:
-                tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin)
+                tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, 
+                            pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, 
+                            tieneJardin = tieneJardin,dictTiemosSettings=dictTiemosSettings)
                 result.append([individuo.id,prestador,centroId,centro.prestador.id,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
     s = SessionStore(session_key=sessionKey)
@@ -60,7 +62,7 @@ def calculateIndividual(individuos,simParam,sessionKey):
             my_lock.release()
     return result
 @shared_task
-def suzuki(individuos,simParam,sessionKey):
+def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
     resultList = []
     individuos = Individuo.objects.filter(id__in = individuos)
     listCentros = Centro.objects.all()
@@ -90,7 +92,8 @@ def suzuki(individuos,simParam,sessionKey):
             samePrest = prestadorId == centro.prestador.id if (prestadorId != -2) else True
             centroId = centro.id_centro
             for tiempo in tiempos:
-                tiempoViaje, llega = calcTiempoDeViaje(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin)
+                tiempoViaje, llega = calcTiempoDeViaje(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,
+                        samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin,dictTiemosSettings=dictTiemosSettings)
                 if(llega == "Si"):
                     dia = tiempo.dia
                     dictConsultasPorDia[dia] = dictConsultasPorDia[dia] + 1
@@ -131,9 +134,10 @@ def suzuki(individuos,simParam,sessionKey):
         if have_lock:
             my_lock.release()
     return resultList
-def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin):
-    tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
-    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
+def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemosSettings):
+    tiempoMaximo = int(dictTiemosSettings.get('tiempoMaximo'))
+    tiempoConsulta = int(dictTiemosSettings.get('tiempoConsulta'))
+    tiReLle = int(dictTiemosSettings.get('tiempoLlega'))
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
@@ -150,8 +154,10 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
                     return resultTimpo,resultLlega
                 else:
                     resultTimpo = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
-                    horaViajeMasConsulta = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and jardin.hora_fin + tiempos['tJardinCentro'] <= hora and hasPed  and samePrest) else "No"
+                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                    horaTerCons2  = jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle and hasPed  and samePrest) else "No"
                     return resultTimpo,resultLlega
             else:
                 resultTimpo = tiempos['tHogarCentro']
@@ -162,19 +168,21 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                    horaViajeMasConsulta = hora + tiempoConsulta + tiempos['tCentroJardin']
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and trabajo.hora_fin + resultTimpo <= hora and hasPed  and samePrest) else "No"
+                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroJardin']
+                    horaTerCons2 = trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)                    
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and trabajo.hora_fin + resultTimpo <= hora + tiReLle and hasPed  and samePrest) else "No"
                     return resultTimpo,resultLlega
 
                 else:
                     resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
                     horaLlegadaJardin = trabajo.hora_fin + tiempos['tTrabajoJardin']
                     horaSalidaJardin = jardin.hora_fin if (horaLlegadaJardin <= jardin.hora_fin) else horaLlegadaJardin
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= hora and hasPed   and samePrest) else "No"
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= hora + tiReLle and hasPed   and samePrest) else "No"
                     return resultTimpo,resultLlega
             else:
                 resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and trabajo.hora_fin + resultTimpo <= hora and hasPed  and samePrest) else "No"
+                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and trabajo.hora_fin + resultTimpo <= hora +tiReLle and hasPed  and samePrest) else "No"
                 return resultTimpo,resultLlega
     else:
         if(jardin and dia in utils.getListOfDays(jardin.dias)):
@@ -184,15 +192,16 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
                 return resultTimpo,resultLlega
             else:
                 resultTimpo = tiempos['tHogarJardin']+ tiempos['tJardinCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and jardin.hora_fin + tiempos['tJardinCentro'] <= hora and hasPed and samePrest) else "No"
+                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle and hasPed and samePrest) else "No"
                 return resultTimpo,resultLlega
         else:
             resultTimpo = tiempos['tHogarCentro']
             resultLlega = "Si" if (resultTimpo<=tiempoMaximo and hasPed  and samePrest) else "No"
             return resultTimpo,resultLlega
-def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin):
-    tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
-    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
+def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemosSettings):
+    tiempoMaximo = int(dictTiemosSettings.get('tiempoMaximo'))
+    tiempoConsulta = int(dictTiemosSettings.get('tiempoConsulta'))
+    tiReLle = int(dictTiemosSettings.get('tiempoLlega'))
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
@@ -205,15 +214,17 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     resultTimpo = tiempos['tHogarCentro']
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']<= trabajo.hora_inicio) else "No"
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and hora + tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and hora + tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']<= trabajo.hora_inicio) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
                 else:
                     #TODO: VER AFTER LUNES
                     resultTimpo = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
-                    horaViajeMasConsulta = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and jardin.hora_fin + tiempos['tJardinCentro'] <= hora) else "No"
+                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                    horaTerCons2  = jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
@@ -228,8 +239,10 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                    horaViajeMasConsulta = hora + tiempoConsulta + tiempos['tCentroJardin']
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and trabajo.hora_fin + resultTimpo <= hora) else "No"
+                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroJardin']
+                    horaTerCons2 = trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2) 
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and trabajo.hora_fin + resultTimpo <= hora + tiReLle) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
@@ -238,13 +251,13 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                     resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
                     horaLlegadaJardin = trabajo.hora_fin + tiempos['tTrabajoJardin']
                     horaSalidaJardin = jardin.hora_fin if (horaLlegadaJardin <= jardin.hora_fin) else horaLlegadaJardin
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= hora) else "No"
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= hora) + tiReLle else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
             else:
                 resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and trabajo.hora_fin + resultTimpo <= hora) else "No"
+                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and trabajo.hora_fin + resultTimpo <= hora + tiReLle) else "No"
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo,resultLlegaG,resultLlega
@@ -258,7 +271,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                 return resultTimpo,resultLlegaG,resultLlega
             else:
                 resultTimpo = tiempos['tHogarJardin']+ tiempos['tJardinCentro']
-                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and jardin.hora_fin + tiempos['tJardinCentro'] <= hora) else "No"
+                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle) else "No"
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo,resultLlegaG,resultLlega

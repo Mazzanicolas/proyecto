@@ -48,6 +48,7 @@ class PersonTable(tables.Table):
         sequence = ('individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','llega')
 class TestPersonTable(ExportMixin, tables.Table):
     currentUser = -1
+    request = None
     tiempos = dict()
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
     individuo = tables.Column(accessor = 'individuo.id',verbose_name='Individuo')
@@ -61,9 +62,11 @@ class TestPersonTable(ExportMixin, tables.Table):
     llega = tables.Column(verbose_name = 'Llega', empty_values = ())
 
     def render_dia(self,record):
+        if(not self.request):
+            self.request = CrequestMiddleware.get_request()
         return self.daysList[record.dia]
     def render_llegaGeografico(self, record):
-        return checkLlega(record.individuo,record.centro,record.dia,record.hora,record.tiempoViaje,record,record.individuo.tieneTrabajo,record.individuo.tieneJardin,self.tiempos)
+        return checkLlega(self,record.individuo,record.centro,record.dia,record.hora,record.tiempoViaje,record,record.individuo.tieneTrabajo,record.individuo.tieneJardin,self.tiempos)
     def render_tiempoViaje(self, record):
         if(self.currentUser == -1 or self.currentUser != record.individuo.id):
             self.tiempos = utils.getTiempos(record.individuo,record.centro,record.individuo.tipo_transporte.id)
@@ -110,7 +113,7 @@ class SimPersonTable(TestPersonTable):
             self.currentUser =  record.individuo.id
         return calcTiempoDeViaje(record.individuo,record.centro,record.dia,record.hora,self.trabaja,self.jardin,self.tiempos,record)
     def render_llegaGeografico(self, record):
-        return checkLlega(record.individuo,record.centro,record.dia,record.hora,record.tiempoViaje,record,self.trabaja,self.jardin,self.tiempos)
+        return checkLlega(self,record.individuo,record.centro,record.dia,record.hora,record.tiempoViaje,record,self.trabaja,self.jardin,self.tiempos)
     def render_llega(self, record):
         if(self.mutualista == '-1'):
             mutualista = record.individuo.prestador.id
@@ -158,9 +161,9 @@ def checkIfPedAndMut(llega,individuo,centro,cantidad_pediatras,mutualista):
         if(mutualista == centro.prestador.id and cantidad_pediatras > 0):
             return "Si"
     return "No"
-def checkLlega(individuo,centro, dia,hora,tiempoViaje,record,tieneTrabajo,tieneJardin,tiempos):
-    tiempoMaximo = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
-    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
+def checkLlega(self,individuo,centro, dia,hora,tiempoViaje,record,tieneTrabajo,tieneJardin,tiempos):
+    tiempoMaximo = int(self.request.COOKIES.get("tiempoMaximo"))  # Cambiar(Tomar de bd)
+    tiempoConsulta = int(self.request.COOKIES.get("tiempoConsulta")) #Cambiar(Tomar de bd)
     trabajo = individuo.trabajo
     jardin = individuo.jardin
     hogar = individuo.hogar
