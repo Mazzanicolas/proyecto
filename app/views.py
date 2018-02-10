@@ -299,13 +299,24 @@ def downloadShapeFile(request):
     groupId = request.session.get('groupId', None)
     resultType = request.session.get('resultType', None)
     if(groupId and resultType):
-        resultado = app.GroupResult.restore(groupId)
+        resultCelery = app.GroupResult.restore(groupId)
         if(resultType == 'individual'):
-            resumenObjectList = resultado.join()
-            resumenObjectList = sum(sum(resumenObjectList,[]), [])
-    #[['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
-    #para cada individuo, si llega, SHP > (Punto en coordenadas centro), DBF > IdCentro, Idind, dia, hora, tiempoViaje, cantidadPediatras
-
+            celeryResultAsList = sum(sum(resultCelery.join(),[]), []) 
+    filenames    = generarShape(request, request.session.session_key, celeryResultAsList)
+    zip_subdir   = "Shapefiles"
+    zip_filename = "%s.zip" % zip_subdir
+    s  = BytesIO()
+    zf = zipfile.ZipFile(s, "w")
+    for fpath in filenames:
+        fdir, fname = os.path.split(fpath)
+        zip_path    = os.path.join(zip_subdir, fname)
+        zf.write(fpath, zip_path)
+    zf.close()
+    resp = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+    return resp
+    #[['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega'],  ..]
+    
 def plot(request):
     return render(request,'app/plot.html')
 def newCalcTimes():

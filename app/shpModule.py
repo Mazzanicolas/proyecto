@@ -3,153 +3,185 @@ from   app.models import Individuo, IndividuoCentroOptimo, Centro
 from   shapely    import geometry
 import app.utils as utils
 
+global files
 
-def generarShape(request,idName):
-    cache = []
-    files = []
+files = []
+
+def getIDCentroXYCoordDictionary(centros):
+    xyCoordCentrosDictionary = dict()
+    for centro in centros:
+        xyCoordCentrosDictionary[centro.id_centro] = [centro.x_coord,centro.y_coord]
+    return xyCoordCentrosDictionary
+
+def saveShapeFiles(fileName, sessionId, shapeWriter):
+    directory = 'app/files/shpOut/'
+    shapeWriter.save(directory+fileName+sessionId)
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    files.extend([directory+fileName+sessionId+'.shp',directory+fileName+sessionId+'.shx',directory+fileName+sessionId+'.dbf'])
+
+def generarShapeLlega(fields, individuos,xyCoordCentrosDictionary, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 //Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(individuo[2])
+        shapeWriter.point(xCoordCentro,yCoordCentro)
+        shapeWriter.record(individuo[0],individuo[2],individuo[5],individuo[7],individuo[9])
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeHogares(fields, individuos, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 //Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
+        shapeWriter.point(xCoordHogar,yCoordHogar)
+        shapeWriter.record(individuo.id)
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeJardines(fields, individuos, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 //Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        if(individuo.tieneJardin):
+            xCoordJardin,yCoordJardin = individuo.jardin.x_coord, individuo.jardin.y_coord
+            shapeWriter.point(xCoordJardin,yCoordJardin)
+            shapeWriter.record(individuo.id,individuo.jardin.hora_inicio,individuo.jardin.hora_fin)
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+    
+def generarShapeTrabajos(fields, individuos, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        if(individuo.tieneTrabajo):
+            xCoordTrabajo,yCoordTrabajo = individuo.trabajo.x_coord, individuo.trabajo.y_coord
+            shapeWriter.point(xCoordTrabajo,yCoordTrabajo)
+            shapeWriter.record(individuo.id,individuo.trabajo.hora_inicio,individuo.trabajo.hora_fin)
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeCentroOptimoAuto(fields, individuos, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
+        xCoordCentroAuto,yCoordCentroAuto = centroOptimo.centroOptimoAuto.x_coord, centroOptimo.centroOptimoAuto.y_coord
+        shapeWriter.point(xCoordCentroAuto,yCoordCentroAuto)
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, centroOptimo.tHogarCentroAuto)
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
+        xCoordCentroOmnibus,yCoordCentroOmnibus = centroOptimo.centroOptimoOmnibus.x_coord, centroOptimo.centroOptimoOmnibus.y_coord
+        shapeWriter.point(xCoordCentroOmnibus,yCoordCentroOmnibus)
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, centroOptimo.tHogarCentroOmnibus)
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeCentroOptimoCaminando(fields, individuos, fileName, sessionId):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
+        xCoordCentroCaminando,yCoordCentroCaminando = centroOptimo.centroOptimoCaminando.x_coord, centroOptimo.centroOptimoCaminando.y_coord
+        shapeWriter.point(xCoordCentroCaminando,yCoordCentroCaminando)
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, centroOptimo.tHogarCentroCaminando)
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, sessionId):
+    lineParts = []        
+    shapeWriter = shapefile.Writer(shapefile.POLYLINE)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
+        xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
+        xCoordCentroAuto,yCoordCentroAuto = centroOptimo.centroOptimoAuto.x_coord, centroOptimo.centroOptimoAuto.y_coord
+        lineParts.append([[xCoordHogar,yCoordHogar],[xCoordCentroAuto,yCoordCentroAuto]])
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroAuto))
+        shapeWriter.line(parts=lineParts)
+        lineParts=[]
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def genrerarShapeLineaHogarCentroOmnibus(fields, individuos, fileName, sessionId):
+    lineParts = []
+    shapeWriter = shapefile.Writer(shapefile.POLYLINE)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
+        xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
+        xCoordCentroOmnibus,yCoordCentroOmnibus = centroOptimo.centroOptimoOmnibus.x_coord, centroOptimo.centroOptimoOmnibus.y_coord
+        lineParts.append([[xCoordHogar,yCoordHogar],[xCoordCentroOmnibus,yCoordCentroOmnibus]])
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroOmnibus))
+        shapeWriter.line(parts=lineParts)
+        lineParts=[]
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def generarShapeLineaHogarCentroCaminando(fields, individuos, fileName, sessionId):
+    lineParts = []
+    shapeWriter = shapefile.Writer(shapefile.POLYLINE)
+    #shapeWriter.autoBalance = 1 #Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    for individuo in individuos:
+        centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
+        xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
+        xCoordCentroCaminando,yCoordCentroCaminando = centroOptimo.centroOptimoCaminando.x_coord, centroOptimo.centroOptimoCaminando.y_coord
+        lineParts.append([[xCoordHogar,yCoordHogar],[xCoordCentroCaminando,yCoordCentroCaminando]])
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroCaminando))
+        shapeWriter.line(parts=lineParts)
+        lineParts=[]
+    saveShapeFiles(fileName, sessionId, shapeWriter)
+
+def createShapeFields(shapeWriter,fields):
+    for field in fields:
+        shapeWriter.field(field)
+    return shapeWriter
+
+def secondsToMinsRounded(timeInSeconds):
+    return round(timeInSeconds/60,2)
+
+def getListLlega(celeryResultAsList):
+    individuosLlega = []
+    for indivudoCentroDiaHora in celeryResultAsList:
+        if(llega(indivudoCentroDiaHora)):
+            individuosLlega.append(indivudoCentroDiaHora)
+    return individuosLlega
+
+def llega(indivudoCentroDiaHora):
+    if(indivudoCentroDiaHora[-1]=='Si'):
+        return True
+    return False
+
+def generarShape(request,sessionId,celeryResultAsList):
     values = request.GET
-    Individuos = indQuery  = utils.getIndivList(request)
-    #POINTS HOGARES
+    xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
+    individuos = indQuery = utils.getIndivList(request)
+    if('generar_llega' in values):
+        individuosLlega = getListLlega(celeryResultAsList)
+        generarShapeLlega(['IDHogar','IDCentro','DiasLlega','TiempoDeViaje','CantidadDePediatras'],individuosLlega,xyCoordCentrosDictionary,'Llega', sessionId)
     if('generar_hogares' in  values):
-        w = shapefile.Writer(shapefile.POINT)
-        #w.autoBalance = 1 //Descomentar en release
-        w.field('IDHogar')
-        for individuo in Individuos:
-            x1,y1 = individuo.hogar.x_coord, individuo.hogar.y_coord
-            w.point(x1, y1)
-            w.record(individuo.id)
-        w.save('app/files/shpOut/hogares'+idName)
-        w = shapefile.Writer(shapefile.POINT)
-        files.extend(['app/files/shpOut/hogares'+idName+'.shp','app/files/shpOut/hogares'+idName+'.shx','app/files/shpOut/hogares'+idName+'.dbf'])
-    ###WIP VVV
-    #POINTS HOGARES
+        generarShapeHogares(['IDHogar'], individuos, 'Hogares', sessionId)
     if('generar_jardines' in  values):
-        w = shapefile.Writer(shapefile.POINT)
-        #w.autoBalance = 1 //Descomentar en release
-        w.field('IDHogar')
-        w.field('HoraInicio')
-        w.field('HoraFin')
-        for individuo in Individuos:
-            if(individuo.tieneJardin):
-                x1,y1 = individuo.jardin.x_coord, individuo.jardin.y_coord
-                w.point(x1, y1)
-                w.record(individuo.id,individuo.jardin.hora_inicio,individuo.jardin.hora_fin)
-        w.save('app/files/shpOut/jardines'+idName)
-        w = shapefile.Writer(shapefile.POINT)
-        files.extend(['app/files/shpOut/jardines'+idName+'.shp','app/files/shpOut/jardines'+idName+'.shx','app/files/shpOut/jardines'+idName+'.dbf'])
+        generarShapeJardines(['IDHogar','HoraInicio','HoraFin'], individuos, 'Jardines', sessionId)
     if('generar_trabajos' in  values):
-        w = shapefile.Writer(shapefile.POINT)
-        #w.autoBalance = 1 //Descomentar en release
-        w.field('IDHogar')
-        w.field('HoraInicio')
-        w.field('HoraFin')
-        for individuo in Individuos:
-            if(individuo.tieneTrabajo):
-                x1,y1 = individuo.trabajo.x_coord, individuo.trabajo.y_coord
-                w.point(x1, y1)
-                w.record(individuo.id,individuo.trabajo.hora_inicio,individuo.trabajo.hora_fin)
-        w.save('app/files/shpOut/trabajos'+idName)
-        w = shapefile.Writer(shapefile.POINT)
-        files.extend(['app/files/shpOut/trabajos'+idName+'.shp','app/files/shpOut/trabajos'+idName+'.shx','app/files/shpOut/trabajos'+idName+'.dbf'])
-    ###WIP ^^^
-    #POINTS CENTROS OPTIMOS AUTO
+        generarShapeTrabajos(['IDHogar','HoraInicio','HoraFin'], individuos, 'Trabajos', sessionId)
     if('generar_autos' in  values):
-        w = shapefile.Writer(shapefile.POINT)
-        #w.autoBalance = 1 #Descomentar en release
-        w.field('IDHogar')
-        w.field('IDCentroOptimoAuto')
-        w.field('TiempoAuto')
-        for individuo in Individuos:
-            CentroOpt = IndividuoCentroOptimo.objects.get(individuo = individuo)
-            x1,y1     = CentroOpt.centroOptimoAuto.x_coord, CentroOpt.centroOptimoAuto.y_coord
-            w.point(x1, y1)
-            w.record(individuo.id, CentroOpt.centroOptimoAuto.id_centro, CentroOpt.tHogarCentroAuto)
-        w.save('app/files/shpOut/centrosOptimosAuto'+idName)
-        w = shapefile.Writer(shapefile.POINT)
-        files.extend(['app/files/shpOut/centrosOptimosAuto'+idName+'.shp','app/files/shpOut/centrosOptimosAuto'+idName+'.shx','app/files/shpOut/centrosOptimosAuto'+idName+'.dbf'])
-    #POINTS CENTROS OPTIMOS OMNIBUS
+        generarShapeCentroOptimoAuto(['IDHogar','IDCentroOptimoAuto','TiempoAuto'], individuos, 'CentrosOptimosAuto', sessionId)
     if('generar_omnibus' in  values):
-        w = shapefile.Writer(shapefile.POINT)
-        #w.autoBalance = 1 #Descomentar en release
-        w.field('IDHogar')
-        w.field('IDCentroOptimoOmnibus')
-        w.field('TiempoOmnibus')
-        for individuo in Individuos:
-            CentroOpt = IndividuoCentroOptimo.objects.get(individuo = individuo)
-            x1,y1     = CentroOpt.centroOptimoOmnibus.x_coord, CentroOpt.centroOptimoOmnibus.y_coord
-            w.point(x1, y1)
-            w.record(individuo.id, CentroOpt.centroOptimoOmnibus.id_centro, CentroOpt.tHogarCentroOmnibus)
-        w.save('app/files/shpOut/centrosOptimosOmnibus'+idName)
-        w = shapefile.Writer(shapefile.POINT)
-        files.extend(['app/files/shpOut/centrosOptimosOmnibus'+idName+'.shp','app/files/shpOut/centrosOptimosOmnibus'+idName+'.shx','app/files/shpOut/centrosOptimosOmnibus'+idName+'.dbf'])
-    #POINTS CENTROS OPTIMOS CAMINANDO
+        generarShapeCentroOptimoOmnibus(['IDHogar','IDCentroOptimoOmnibus','TiempoOmnibus'], individuos, 'CentrosOptimosOmnibus', sessionId)
     if('generar_caminando' in  values):
-        w = shapefile.Writer(shapefile.POINT)
-        #w.autoBalance = 1 #Descomentar en release
-        w.field('IDHogar')
-        w.field('IDCentroOptimoCaminando')
-        w.field('TiempoCaminando')
-        for individuo in Individuos:
-            CentroOpt = IndividuoCentroOptimo.objects.get(individuo = individuo)
-            x1,y1     = CentroOpt.centroOptimoCaminando.x_coord, CentroOpt.centroOptimoCaminando.y_coord
-            w.point(x1, y1)
-            w.record(individuo.id, CentroOpt.centroOptimoCaminando.id_centro, CentroOpt.tHogarCentroCaminando)
-        w.save('app/files/shpOut/centrosOptimosCaminando'+idName)
-        w = shapefile.Writer(shapefile.POINT)
-        files.extend(['app/files/shpOut/centrosOptimosCaminando'+idName+'.shp','app/files/shpOut/centrosOptimosCaminando'+idName+'.shx','app/files/shpOut/centrosOptimosCaminando'+idName+'.dbf'])
-    #LINES HOGAR <---> CENTROS OPTIMOS AUTO
+        generarShapeCentroOptimoCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'CentrosOptimosCaminando', sessionId)
     if('generar_hogar_autos' in  values):
-        lineParts = []
-        w = shapefile.Writer(shapefile.POLYLINE)
-        #w.autoBalance = 1 #Descomentar en release
-        w.field('IDHogar')
-        w.field('IDCentroOptimoAuto')
-        w.field('TiempoAuto')
-        for individuo in Individuos:
-            CentroOpt = IndividuoCentroOptimo.objects.get(individuo = individuo)
-            x1,y1     = individuo.hogar.x_coord, individuo.hogar.y_coord
-            x2,y2     = CentroOpt.centroOptimoAuto.x_coord, CentroOpt.centroOptimoAuto.y_coord
-            lineParts.append([[x1,y1],[x2,y2]])
-            w.record(individuo.id, CentroOpt.centroOptimoAuto.id_centro, round(CentroOpt.tHogarCentroAuto/60,2))
-            w.line(parts=lineParts)
-            lineParts=[]
-        w.save('app/files/shpOut/lineaHogaresCentroOptimoAuto'+idName)
-        files.extend(['app/files/shpOut/lineaHogaresCentroOptimoAuto'+idName+'.shp','app/files/shpOut/lineaHogaresCentroOptimoAuto'+idName+'.shx','app/files/shpOut/lineaHogaresCentroOptimoAuto'+idName+'.dbf'])
-    #LINES HOGAR <---> CENTROS OPTIMOS OMNIBUS
+        generarShapeLineaHogarCentroAuto(['IDHogar','IDCentroOptimoAuto','TiempoAuto'], individuos, 'LineaHogarCentrosOptimosAuto', sessionId)
     if('generar_hogar_omnibus' in  values):
-        lineParts = []
-        w = shapefile.Writer(shapefile.POLYLINE)
-        #w.autoBalance = 1 #Descomentar en release
-        w.field('IDHogar')
-        w.field('IDCentroOptimoOmnibus')
-        w.field('TiempoOmnibus')
-        for individuo in Individuos:
-            CentroOpt = IndividuoCentroOptimo.objects.get(individuo = individuo)
-            x1,y1     = individuo.hogar.x_coord, individuo.hogar.y_coord
-            x2,y2     = CentroOpt.centroOptimoOmnibus.x_coord, CentroOpt.centroOptimoOmnibus.y_coord
-            lineParts.append([[x1,y1],[x2,y2]])
-            w.record(individuo.id, CentroOpt.centroOptimoOmnibus.id_centro, round(CentroOpt.tHogarCentroOmnibus/60,2))
-            w.line(parts=lineParts)
-            lineParts=[]
-        w.save('app/files/shpOut/lineaHogaresCentroOptimoOmnibus'+idName)
-        files.extend(['app/files/shpOut/lineaHogaresCentroOptimoOmnibus'+idName+'.shp','app/files/shpOut/lineaHogaresCentroOptimoOmnibus'+idName+'.shx','app/files/shpOut/lineaHogaresCentroOptimoOmnibus'+idName+'.dbf'])
-    #LINES HOGAR <---> CENTROS OPTIMOS CAMINANDO
+        genrerarShapeLineaHogarCentroOmnibus(['IDHogar','IDCentroOptimoOmnibus','TiempoOmnibus'], individuos, 'LineaHogarCentrosOptimosOmnibus', sessionId)
     if('generar_hogar_caminando' in  values):
-        lineParts = []
-        w = shapefile.Writer(shapefile.POLYLINE)
-        #w.autoBalance = 1 #Descomentar en release
-        w.field('IDHogar')
-        w.field('IDCentroOptimoCaminando')
-        w.field('TiempoCaminando')
-        for individuo in Individuos:
-            CentroOpt = IndividuoCentroOptimo.objects.get(individuo = individuo)
-            x1,y1     = individuo.hogar.x_coord, individuo.hogar.y_coord
-            x2,y2     = CentroOpt.centroOptimoCaminando.x_coord, CentroOpt.centroOptimoCaminando.y_coord
-            lineParts.append([[x1,y1],[x2,y2]])
-            w.record(individuo.id, CentroOpt.centroOptimoCaminando.id_centro, round(CentroOpt.tHogarCentroCaminando/60,2))
-            w.line(parts=lineParts)
-            lineParts=[]
-        w.save('app/files/shpOut/lineaHogaresCentroOptimoCaminando'+idName)
-        files.extend(['app/files/shpOut/lineaHogaresCentroOptimoCaminando'+idName+'.shp','app/files/shpOut/lineaHogaresCentroOptimoCaminando'+idName+'.shx','app/files/shpOut/lineaHogaresCentroOptimoCaminando'+idName+'.dbf'])
-
+        generarShapeLineaHogarCentroCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'LineaHogarCentrosOptimosCaminando', sessionId)
     return files
