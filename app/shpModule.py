@@ -152,6 +152,7 @@ def getListLlega(celeryResultAsList):
     for indivudoCentroDiaHora in celeryResultAsList:
         if(llega(indivudoCentroDiaHora)):
             individuosLlega.append(indivudoCentroDiaHora)
+    print(len(individuosLlega))
     return individuosLlega
 
 def llega(indivudoCentroDiaHora):
@@ -163,7 +164,7 @@ def generarShape(request,sessionId,celeryResultAsList):
     values = request.GET
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = indQuery = utils.getIndivList(request)
-    if('generar_llega' in values):
+    if(True):#'generar_llega' in values):
         individuosLlega = getListLlega(celeryResultAsList)
         generarShapeLlega(['IDHogar','IDCentro','DiasLlega','TiempoDeViaje','CantidadDePediatras'],individuosLlega,xyCoordCentrosDictionary,'Llega', sessionId)
     if('generar_hogares' in  values):

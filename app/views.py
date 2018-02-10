@@ -299,8 +299,10 @@ def downloadShapeFile(request):
     groupId = request.session.get('groupId', None)
     resultType = request.session.get('resultType', None)
     if(groupId and resultType):
+        print("Grup")
         resultCelery = app.GroupResult.restore(groupId)
         if(resultType == 'individual'):
+            print("individual")
             celeryResultAsList = sum(sum(resultCelery.join(),[]), []) 
     filenames    = generarShape(request, request.session.session_key, celeryResultAsList)
     zip_subdir   = "Shapefiles"
