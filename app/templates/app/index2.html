@@ -98,7 +98,6 @@
           <li><a href="#" data-toggle="modal" data-target="#rsm">Resumen</a></li>
           <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Calcula la matriz de resumen, a partir del resultado de una ejecucion previa." disabled>i</button></li>
           <!--5-->
-          <!--li><a id="descargar" href="descargar/" target="_blank">Descargar</a></li-->
           <li><a href="#" data-toggle="modal" data-target="#downlaod">Descargar</a></li>
           </ul>
         </div>
@@ -109,7 +108,7 @@
       <div class="progress">
         <div id="progressB" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="10" aria-valuemax="0" style="width:0%">
           <div id="prog">0%</div>
-        </div>
+        </div><div class="btn-group btn-group-xs" align="right"><a href="cancelar/" class="btn btn-default">Cancelar</a></div>
       </div>
     </div>
     <!--NavBar-->
@@ -793,7 +792,7 @@
         document.getElementById("progressB").style. width = crrnt.toString()+"%";
         document.getElementById('prog').innerHTML = crrnt.toString()+"%";
         console.log(this);
-        progressLoop = setTimeout(function() { ask2(progressLoop); }, 60000);
+        progressLoop = setTimeout(function() { ask2(progressLoop); }, 15000);
         if(crrnt>99){
           document.getElementById('descargar').style.visibility = 'visible';
           document.getElementById('progressBBy').style.visibility = 'hidden';
