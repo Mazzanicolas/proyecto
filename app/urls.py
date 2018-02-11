@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^descargarShape/$', views.downloadShapeFile, name='descargarShape'),
     url(r'^plot/$', views.plot, name='plot'),
     url(r'^generate_shape/$', views.genShape, name='genrate_shape'),
+    url(r'^cancelar/$', views.cancelarConsulta, name='cancelarConsulta'),
 
 
 ]

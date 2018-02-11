@@ -79,6 +79,19 @@ def progress(request):
     data = {"Done":done,"Total":total}
     return JsonResponse(data)
 
+def cancelarConsulta(request):
+    print("CANCELAR CONSULTA")
+    groupId = request.session.get('groupId', None)
+    if(groupId):
+        group = app.GroupResult.restore(groupId)
+        if(group):
+            #group.revoke()
+            #group.delete()
+            group.forget()
+    done = -1
+    total = request.session.get('total', 100)
+    data = {"Done":done,"Total":total}    
+    return redirect('index')
 
 def redirectSim(request):
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and 
