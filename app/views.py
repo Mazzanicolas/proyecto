@@ -36,7 +36,7 @@ shapeAuto = sf.shapes()
 sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 
-
+#( ͡° ͜ʖ ͡°)
 def genShape(request):
 
     filenames    = generarShape(request, request.session.session_key)
