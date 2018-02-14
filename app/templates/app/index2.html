@@ -16,48 +16,12 @@
       line-height: 0.1;
       border-radius: 30px;
     }
+    .buttonCenter
+    {
+      text-align: center;
+      margin:0 auto;
 
-
-    .shapeButton {
-    	-moz-box-shadow:inset 0px 1px 0px 0px #fbafe3;
-    	-webkit-box-shadow:inset 0px 1px 0px 0px #fbafe3;
-    	box-shadow:inset 0px 1px 0px 0px #fbafe3;
-    	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ff5bb0), color-stop(1, #ef027d));
-    	background:-moz-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
-    	background:-webkit-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
-    	background:-o-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
-    	background:-ms-linear-gradient(top, #ff5bb0 5%, #ef027d 100%);
-    	background:linear-gradient(to bottom, #ff5bb0 5%, #ef027d 100%);
-    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5bb0', endColorstr='#ef027d',GradientType=0);
-    	background-color:#ff5bb0;
-    	-moz-border-radius:9px;
-    	-webkit-border-radius:9px;
-    	border-radius:9px;
-    	display:inline-block;
-    	cursor:pointer;
-    	color:#ffffff;
-    	font-family:Verdana;
-    	font-size:15px;
-    	padding:6px 15px;
-    	text-decoration:none;
-    	text-shadow:0px 1px 7px #c70067;
     }
-    .shapeButton:hover {
-    	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ef027d), color-stop(1, #ff5bb0));
-    	background:-moz-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
-    	background:-webkit-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
-    	background:-o-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
-    	background:-ms-linear-gradient(top, #ef027d 5%, #ff5bb0 100%);
-    	background:linear-gradient(to bottom, #ef027d 5%, #ff5bb0 100%);
-    	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ef027d', endColorstr='#ff5bb0',GradientType=0);
-    	background-color:#ef027d;
-    }
-    .shapeButton:active {
-    	position:relative;
-    	top:1px;
-    }
-
-
     </style>
 		<meta charset="UTF-8">
 		<title>Proyecto 2017</title>
@@ -73,14 +37,8 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><a class="navbar-brand" href="#">Proyecto 2017-2018</a>
           <ul class="nav navbar-nav">
           <!--1-->
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cargar<span class="caret"></span></a>
-              <ul class="dropdown-menu">
-                <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar Datos &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar datos tooltip" disabled>i</button></a></li>
-                <li><a href="#" data-toggle="modal" data-target="#">Cargar Shapes &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar shapes tooltip" disabled>i</button></a></li>
-                <!--li><button onclick="load_home();">Julio</button></li-->
-              </ul>
-            </li>
+          <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar</a></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Cargar datos en el sistema." disabled>i</button></li> 
           <!--1-->
           <!--2-->
           <li><a href="#" data-toggle="modal" data-target="#config">Configuración</a></li>
@@ -153,7 +111,6 @@
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary" >Guardar</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
           </div>
         </div>
       </form>
@@ -171,10 +128,19 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h4 class="modal-title">Descargar</h4>
         </div>
-        <li><a id="descargar" href="descargar/" target="_blank">Descargar Resultados</a></li>
-        <li><a id="descargar" href="descargarShape/" target="_blank">Descargar Shapes</a></li>
+        <div class="panel panel-default">
+          <div class="panel-body buttonCenter">
+            <a class="btn btn-default" type="button" href="descargar/" target="_blank">Descargar Resultados</a>
+            </div>
+          </div>
+        <!--li><a id="descargar" href="descargarShape/" target="_blank">Descargar Shapes</a></li-->
+        <div class="panel panel-default">
+          <div class="panel-body buttonCenter">
+            <a class="btn btn-default" type="button" href="#" data-toggle="modal" data-target="#generar_shape" target="_blank">Descargar Shapes</a>
+          </div>
+        </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+            
           </div>    
       </div>
             
@@ -349,7 +315,6 @@
         </div>
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Calcular</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
         </div>
       </div>
     </form>
@@ -716,6 +681,14 @@
          <fieldset class="form-group">
            <p>Seleccione los datos a cargar</p>
            <div class="panel-body">
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios7" value="option7">
+                  Tipos de transporte &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Tipos de transporte tooltip" disabled>i</button>
+                </label>
+              </div>
+            </div>
+           <div class="panel-body">
                <div class="form-check">
                  <label class="form-check-label">
                    <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option3">
@@ -735,14 +708,7 @@
                  </label>
                </div>
              </div>
-             <div class="panel-body">
-               <div class="form-check">
-                 <label class="form-check-label">
-                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios7" value="option7">
-                   Tipos de transporte &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Tipos de transporte tooltip" disabled>i</button>
-                 </label>
-               </div>
-             </div>
+
            <div class="panel-body">
            <div class="form-check">
              <label class="form-check-label">
@@ -751,17 +717,17 @@
              </label>
            </div>
            <div class="form-check">
-           <label class="form-check-label">
-               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
-               Conjunto de datos para personas  &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Conjunto de datos para personas tooltip" disabled>i</button>
-             </label>
-           </div>
-           <div class="form-check">
              <label class="form-check-label">
                <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5" value="option5">
                Conjunto de datos para centros &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="conjunto de datos para centros tooltip" disabled>i</button>
              </label>
            </div>
+           <div class="form-check">
+              <label class="form-check-label">
+                  <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
+                  Conjunto de datos para personas  &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Conjunto de datos para personas tooltip" disabled>i</button>
+                </label>
+              </div>
          </div>
          </fieldset>
          <div class="form-group">
@@ -772,7 +738,6 @@
      </div>
      <div class="modal-footer">
        <button type="submit" class="btn btn-primary btn-lg " id="load" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Cargando " name="submit" value="Upload" />Cargar</button>
-       <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
        </div>
      </div>
    </form>
@@ -791,39 +756,22 @@
           </div>
           <div class="modal-body">
             <label class="checkbox-inline"><input type="checkbox" name="generar_llega">Generar Shape Llega en base a las restricciones</label><br>
+            <hr>
             <label class="checkbox-inline"><input type="checkbox" name="generar_hogares">Generar Shape de Hogares</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_jardines">Generar Shape de Jardines</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_trabajos">Generar Shape de Hogares</label><br>
+            <hr>
             <label class="checkbox-inline"><input type="checkbox" name="generar_autos">Generar Shape de Centros Optimos Auto</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_omnibus">Generar Shape de Centros Optimos Omnibus</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_caminando">Generar Shape de Centros Optimos Caminando</label><br>
+            <hr>
             <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_autos">Generar Shape [Hogar - Centro Optimo Auto]</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_omnibus">Generar Shape [Hogar - Centro Optimo Omnibus]</label><br>
             <label class="checkbox-inline"><input type="checkbox" name="generar_hogar_caminando">Generar Shape [Hogar - Centro Optimo Caminando]</label><br>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Lista de ID's&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Lista de ID's separados por coma para los que se quiere realizar el calculo." disabled>i</button></h3>
-            </div>
-              <div class="panel-body">
-              <div class="form-group row"><div class="col-xs-6">
-                <input  class="form-control" placeholder="Lista de ID's" name="idList"></div>
-              </div>
-            </div>
-          </div>
-          <div class="panel panel-default">
-          <div class="panel-body">
-            <div class="panel-heading">
-              <h3 class="panel-title">Rango de ID&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
-            </div>
-          <div class="form-group row"><div class="col-xs-6  ">
-            Desde: <input  class="form-control" placeholder="ID individuo" name= "fromRangeShape"><br>
-            Hasta: <input  class="form-control" placeholder="ID individuo" name="toRangeShape"></div>
-          </div>
-        </div>
-      </div>
+          </div>          
         <div class="modal-footer">
-          <button type="submit" class="shapeButton">Generar</button>
+          <a id="descargar" class="btn btn-default" href="descargarShape/" target="_blank">Descargar Shapes</a>
+          <!--button type="submit" class="btn btn-default" href="descargarShape/" target="_blank">Generar</button-->
         </div>
         </div>
         </div>
@@ -831,34 +779,6 @@
       </div>
     </div>
     <!--1.3-Config-->
-  <!--1.4-Config-->
-  <div id="exportar_matriz" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-    <!-- Modal content-->
-      <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Exportar Matriz</h4>
-      </div>
-      <div class="modal-body">
-        <form>
-          <fieldset class="form-group">
-            <p>Seleccione los datos a exportar</p>
-          </fieldset>
-          <div class="panel-footer">
-            <label class="checkbox-inline"><input type="checkbox" id="downloadBox" value="download_mutualistas" checked>Matriz transporte privado</label>
-            <label class="checkbox-inline"><input type="checkbox" id="downlaodBox" value="download_personas" checked> Matriz caminando </label></br>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button-imp" class="btn btn-primary" data-dismiss="modal"  onclick="showAlert()">Descargar</button>
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!--1.4-Config-->
   <!--1-alert-->
   <div id="implementar" class="alert alert-info alert-dismissable" style="display: none;">
     <a href="#" class="close" onclick="showAlert()">×</a>
@@ -873,7 +793,7 @@
           <a class="navbar-brand">Representación Gráfica</a>
         </div>
         <div class="navbar-form navbar-left">
-          <button href="#" data-toggle="modal" data-target="#generar_shape">Shape Test</button>
+          <!--button href="#" data-toggle="modal" data-target="#generar_shape">Shape Test</button-->
           <!--button class="btn btn-default" href="#" data-toggle="modal" data-target="#generar_shape">UPDATE PLOT</button-->
           <button type="button" class="btn btn-default btn-sm" id="rfsh">
             <img src="{% static 'app/img/rfsh.png' %}" />
