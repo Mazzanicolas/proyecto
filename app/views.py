@@ -85,8 +85,8 @@ def cancelarConsulta(request):
     if(groupId):
         group = app.GroupResult.restore(groupId)
         if(group):
-            #group.revoke()
-            #group.delete()
+            group.revoke()
+            group.delete()
             group.forget()
     done = -1
     total = request.session.get('total', 100)
@@ -194,38 +194,7 @@ def guardarArchivo(nombre, archivo):
 def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
     tiempoInicio = time.time()
     sessionKey = request.session.session_key
-    if(MedidasDeResumen.objects.all()):
-        individuos = []
-    else:
-        getData = request.GET
-        fromRange = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
-        toRange = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
-        if(getData.get("simular",'0') == '1' ):
-            indQuery  = utils.getIndivList(request)
-            dictParam = utils.generateParamDict(getData)
-            print(dictParam)
-        else:
-            transportList = []
-            if(getData.get('autoResumenes', None)):
-                transportList.append(1)
-            if(getData.get('caminandoResumenes', None)):
-                transportList.append(0)
-            if(getData.get('omnibusResumenes', None)):
-                transportList.append(2)
-            trabajaReq = getData.get('trabajaResumenes', None)
-            jardinReq  =  getData.get('jardinResumenes', None)
-            trabaja    = [True] if trabajaReq else [False]
-            jardin     = [True] if jardinReq else [False]
-            if(jardinReq == '0'):
-                jardin.append(False)
-            if(trabajaReq == '0'):
-                trabaja.append(False)
-            indQuery  = utils.getIndivList(request).filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
-            dictParam = None
-    dictTiemposSettings = dict()
-    dictTiemposSettings['tiempoMaximo'] =request.COOKIES.get('tiempoMaximo')
-    dictTiemposSettings['tiempoConsulta'] = request.COOKIES.get('tiempoConsulta')
-    dictTiemposSettings['tiempoLlega'] = request.COOKIES.get('tiempoLlega')
+    indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(request)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos     = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
@@ -246,33 +215,13 @@ def consultaToCSV(request):
     tiempoInicio = time.time()
     sessionKey   = request.session.session_key
     getData      = request.GET
-    fromRange    = int(getData.get('fromRange')) if(getData.get('fromRange',"") != "" ) else 0
-    toRange      = int(getData.get('toRange')) if(getData.get('toRange',"") != "" ) else Individuo.objects.last().id
-    if(getData.get("simular",'0') == '1' ):
-        indQuery  = utils.getIndivList(request)
-        dictParam = utils.generateParamDict(getData)
-    else:
-        transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
-        trabajaReq    = getData.get('trabajaResumenes', None)
-        jardinReq     =  getData.get('jardinResumenes', None)
-        trabaja       = [True] if trabajaReq else [False]
-        jardin        = [True] if jardinReq else [False]
-        if(jardinReq == '0'):
-            jardin.append(False)
-        if(trabajaReq == '0'):
-            trabaja.append(False)
-        indQuery = utils.getIndivList(request).filter(id__gte = fromRange,id__lte = toRange, tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
-        print("Individuos a calcular: "+str(len(indQuery)))
-        dictParam = None
-    dictTiemposSettings = dict()
-    dictTiemposSettings['tiempoMaximo'] = request.COOKIES.get('tiempoMaximo')
-    dictTiemposSettings['tiempoConsulta'] = request.COOKIES.get('tiempoConsulta')
-    dictTiemposSettings['tiempoLlega'] = request.COOKIES.get('tiempoLlega')
+    indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(request)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
     request.session['total'] = len(individuos)
     resultList = []
+    #return resultList.join('s')
     job = calculateIndividual.chunks(individuos,1).group()
     result = job.apply_async()
     result.save()
@@ -289,8 +238,9 @@ def downloadFile(request):
     if(groupId and resultType):
         resultado = app.GroupResult.restore(groupId)
         if(resultType == 'individual'):
+            header = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
             resumenObjectList = resultado.join()
-            resumenObjectList = sum(sum(resumenObjectList,[]), [])
+            resumenObjectList =  header + sum(sum(resumenObjectList,[]), [])
             pseudo_buffer = utils.Echo()
             writer = csv.writer(pseudo_buffer)
             response = StreamingHttpResponse((writer.writerow(row) for row in resumenObjectList),

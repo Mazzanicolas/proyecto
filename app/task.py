@@ -12,9 +12,19 @@ import redis
 @shared_task
 def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
     #individuos = Individuo.objects.filter(id__in = individuos)
-    listCentros = Centro.objects.all()
-    result = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
+    diasFilter = [int(x) for x in dictTiemosSettings.get('dias','0.1.2.3.4.5').split('.')]
+    horaInicio = int(dictTiemosSettings.get('horaInicio',0))*100
+    horaFin = int(dictTiemosSettings.get('horaFin',23))*100
+    result = []
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
+    if(simParam):
+        listaCentros = Centro.objects.all()
+    else:
+        p = dictTiemosSettings['centroPrest']
+        if(p == '-1'):
+            listaCentros = Centro.objects.all()
+        else:
+            listaCentros = Centro.objects.filter(prestador__id = int(p))
     for individuo in individuos:
         print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
@@ -30,8 +40,8 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
             tieneTrabajo = individuo.tieneTrabajo
             tieneJardin = individuo.tieneJardin
             prestador = individuo.prestador.id
-        for centro in listCentros:
-            tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo, centro = centro)
+        for centro in listaCentros:
+            tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo, centro = centro,dia__in = diasFilter,hora__gte = horaInicio,hora__lte = horaFin)
             tiemposViaje = utils.getTiempos(individuo = individuo,centro = centro,tipoTrans = tipoTrans.id)
             if(prestador == -2):
                 prestador = centro.prestador.id
@@ -65,7 +75,17 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
 def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
     resultList = []
     individuos = Individuo.objects.filter(id__in = individuos)
-    listCentros = Centro.objects.all()
+    diasFilter = [int(x) for x in dictTiemosSettings.get('dias','0.1.2.3.4.5').split('.')]
+    horaInicio = int(dictTiemosSettings.get('horaInicio',0))*100
+    horaFin = int(dictTiemosSettings.get('horaFin',23))*100
+    if(simParam):
+        listaCentros = Centro.objects.all()
+    else:
+        p = dictTiemosSettings['centroPrest']
+        if(p == '-1'):
+            listaCentros = Centro.objects.all()
+        else:
+            listaCentros = Centro.objects.filter(prestador__id = int(p))
     for individuo in individuos:
         print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
@@ -86,14 +106,14 @@ def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
         dictHorasPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         dictCentrosPorDia = {0:set(),1:set(),2:set(),3:set(),4:set(),5:set()}
         centros = dict()
-        for centro in listCentros:
-            tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo, centro = centro)
+        for centro in listaCentros:
+            tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo, centro = centro,dia__in = diasFilter,hora__gte = horaInicio,hora__lte = horaFin)
             tiemposViaje = utils.getTiempos(individuo = individuo,centro = centro,tipoTrans = tipoTrans)
             samePrest = prestadorId == centro.prestador.id if (prestadorId != -2) else True
             centroId = centro.id_centro
             for tiempo in tiempos:
                 tiempoViaje, llega = calcTiempoDeViaje(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,
-                        samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin,dictTiemosSettings=dictTiemosSettings)
+                        samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin,dictTiemosSettings=dictTiemosSettiempostings)
                 if(llega == "Si"):
                     dia = tiempo.dia
                     dictConsultasPorDia[dia] = dictConsultasPorDia[dia] + 1
@@ -150,7 +170,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     resultTimpo = tiempos['tHogarCentro']
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']<= trabajo.hora_inicio and hasPed ) else "No"
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and hora + tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']<= trabajo.hora_inicio and hasPed ) else "No"
                     return resultTimpo,resultLlega
                 else:
                     resultTimpo = tiempos['tHogarJardin'] + tiempos['tJardinCentro']

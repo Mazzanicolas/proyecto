@@ -3,10 +3,7 @@ from shapely.geometry import Polygon, Point
 
 def generateParamDict(getReq):
     res = dict()
-    if(getReq.get('checkB',0) == '-1'):
-        res['mutualista'] ='-1'
-    else:
-        res['mutualista'] = getReq.get('prestador','-1')
+    res['mutualista'] = getReq.get('prestador','-1')
     if(getReq.get('checkM','0') == '-1'):
         res['tipoTransporte'] ='-1'
     else:
@@ -228,18 +225,45 @@ def getMaximoDict(mapa):
         if( aux > maximo):
             maximo = aux
     return maximo
-def getIndivList(request):
-    data = request.GET
-    if(data.get("idList",None)):
-        idStringList = data.get("idList",None).split(",")
+    #        print("Individuos a calcular: "+str(len(indQuery)))
+def genSettingsDict(request):
+    settingsDict = dict()
+    settingsDict['tiempoMaximo'] = request.COOKIES.get('tiempoMaximo')
+    settingsDict['tiempoConsulta'] = request.COOKIES.get('tiempoConsulta')
+    settingsDict['tiempoLlega'] = request.COOKIES.get('tiempoLlega')
+    settingsDict['centroPrest'] = request.GET.get("prestadorFiltro")
+    settingsDict['horaInicio'] = request.GET.get("horaInicio")
+    settingsDict['horaFin'] = request.GET.get("horaFin")
+    settingsDict['dias'] = '.'.join(request.GET.getlist('dias'))
+    return settingsDict
+
+def getIndivList_ParamDict_SettingsDict(request):
+    getData = request.GET
+    if(getData.get("idList",None)):
+        idStringList = getData.get("idList",None).split(",")
         try:
             idList = [int(x) for x in idStringList]
             indvList = Individuo.objects.filter(id__in = idList)
-            return indvList
         except:
-            return None
+            indvList = Individuo.objects.all()
     else:
-        fromRange = int(data.get('fromRange')) if(data.get('fromRange',"") != "" ) else 0
-        toRange = int(data.get('toRange')) if(data.get('toRange',"") != "" ) else Individuo.objects.last().id
-        indvList = Individuo.objects.filter(id__gte = fromRange,id__lte = toRange)
-        return indvList
+        indvList = Individuo.objects.all()
+    if(getData.get("simular",'0') == '1' ):
+        dictParam = generateParamDict(request.GET)
+    else:
+        transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
+        trabajaReq    = getData.get('trabaja', None)
+        jardinReq     =  getData.get('jardinResumenes', None)
+        trabaja       = [True] if trabajaReq else [False]
+        jardin        = [True] if jardinReq else [False]
+        if(jardinReq == '0'):
+            jardin.append(False)
+        if(trabajaReq == '0'):
+            trabaja.append(False)
+        indQuery = indvList.filter(tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+        dictParam = None
+    return indvList,dictParam,genSettingsDict(request)
+def minsToMilitaryTime(time):
+    hours = time/60
+    mins  = time%60
+    return int(hours)*100+mins
