@@ -242,7 +242,7 @@ def downloadFile(request):
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
     print("putoi")
-    zf = zipfile.ZipFile(s, "w")
+    zf = zipfile.ZipFile(s, "w",zipfile.ZIP_DEFLATED)
     if(not request.session.get('isIndividual',0) == 0):
         indvPath = './app/files/consultOut/IndividualResult'+sessionKey+'.csv'
         fdir, fname = os.path.split(indvPath)
