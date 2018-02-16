@@ -79,10 +79,10 @@ def cancelarConsulta(request):
     deleteConsultaResults(request)
     return redirect('index')
 def deleteConsultaResults(request):
-    request.session['isIndividual'] = None
-    request.session['isResumen'] = None
+    request.session['isIndividual'] = 0
+    request.session['isResumen'] = 0
     asyncKey = request.session.get('asyncKey',None)
-    if(asyncKey):
+    if(asyncKey and asyncKey == -404):
         asyncResult = result.AsyncResult(asyncKey)
         if(asyncResult):
             print(asyncResult)
@@ -232,9 +232,7 @@ def consultaToCSV(request):
 def generateCsvResults(request):
     deleteConsultaResults(request)
     asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
-    request.session['asyncKey'] = asyncKey.id
-    request.session['current'] = 0
-    request.session.save()
+    request.session['asyncKey'] = asyncKey.id   
     response = redirect('index')
     return response
 
@@ -243,13 +241,14 @@ def downloadFile(request):
     zip_subdir   = "Resultados"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
+    print("putoi")
     zf = zipfile.ZipFile(s, "w")
-    if(request.session.get('isIndividual',None)):
+    if(not request.session.get('isIndividual',0) == 0):
         indvPath = './app/files/consultOut/IndividualResult'+sessionKey+'.csv'
         fdir, fname = os.path.split(indvPath)
         zip_path    = os.path.join(zip_subdir, 'Resultado individual.csv')
         zf.write(indvPath, zip_path)
-    if(request.session.get('isResumen',None)):
+    if(not request.session.get('isResumen',0) == 0):
         resumenPath = './app/files/consultOut/ResumenResult'+sessionKey+'.csv'
         fdir, fname = os.path.split(resumenPath)
         zip_path    = os.path.join(zip_subdir, 'Resumen.csv')

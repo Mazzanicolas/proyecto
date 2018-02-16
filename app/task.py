@@ -16,15 +16,14 @@ def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
     tiempoInicio = time.time()
     getData      = get
-    isInd = session['isIndividual'] = True
-    isRes = session['isResumen'] = True
     indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(get,cookies)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
-    session['total'] = len(individuos)*2 + 10 if (isInd and isRes) else len(individuos) + 5
+    session['total'] = len(individuos)*2 + 10 if (True and True) else len(individuos) + 5
     session['current'] = 0
-    session['lock'] = '1'
+    session['isIndividual'] = 1
+    session['isResumen'] = 1
     session.save()
     if(True):#getData.get('individual',0)== '1'):
         job = calculateIndividual.chunks(individuos,1).group()
