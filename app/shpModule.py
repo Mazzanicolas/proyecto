@@ -33,6 +33,34 @@ def generarShapeLlega(fields, individuos,xyCoordCentrosDictionary, fileName, ses
         shapeWriter.record(individuo[0],individuo[2],individuo[3],individuo[4],individuo[5],individuo[6],individuo[7],individuo[9])
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
+def generarResumenLlega(fields, individuos,xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
+    shapeWriter = shapefile.Writer(shapefile.POINT)
+    #shapeWriter.autoBalance = 1 //Descomentar en release
+    shapeWriter = createShapeFields(shapeWriter,fields)
+    currentIdsInDBF = []
+    dictionaryOfIdOccurences = getDictionaryCantidadLlega(individuos)
+    for individuo in individuos:
+        if(not idIsDuplicated(individuo[0],individuo[2],currentIdsInDBF)):
+            xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(individuo[2])
+            shapeWriter.point(xCoordCentro,yCoordCentro)
+            shapeWriter.record(individuo[0],individuo[2],dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), '?'))
+            currentIdsInDBF.append(str(individuo[0])+'_'+str(individuo[2]))
+    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+
+def idIsDuplicated(idIndividuoToCheck,idCentroToCheck,listOfIds):
+    combinationToCheck = str(idIndividuoToCheck)+'_'+str(idCentroToCheck)
+    if(combinationToCheck in listOfIds):
+        return True
+    return False
+
+def getDictionaryCantidadLlega(individuos):
+    dictionaryOfIdOccurences = dict()
+    for individuo in individuos:
+        dictionaryOfIdOccurences[str(individuo[0])+'_'+str(individuo[2])] = dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), 0)+1
+    print(dictionaryOfIdOccurences)
+    return dictionaryOfIdOccurences
+
+
 def generarShapeHogares(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
@@ -170,9 +198,12 @@ def generarShape(request,sessionId,celeryResultAsList):
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = Individuo.objects.all()
     pathToFilesToDownlaod = []
-    if('generar_llega' in values):#'generar_llega' in values):
+    if('generar_llega' in values):
         individuosLlega = getListLlega(celeryResultAsList)
         generarShapeLlega(['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],individuosLlega,xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
+    if('generar_resumen_llega' in values):
+        individuosLlega = getListLlega(celeryResultAsList)
+        generarResumenLlega(['IDHogar','IDCentro','CantidadLlega'],individuosLlega,xyCoordCentrosDictionary,'LlegaResumido', sessionId, pathToFilesToDownlaod)
     if('generar_hogares' in  values):
         generarShapeHogares(['IDHogar'], individuos, 'Hogares', sessionId, pathToFilesToDownlaod)
     if('generar_jardines' in  values):
