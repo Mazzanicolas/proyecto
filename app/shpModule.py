@@ -2,7 +2,13 @@ import shapefile
 from   app.models import Individuo, IndividuoCentroOptimo, Centro
 from   shapely    import geometry
 import app.utils as utils
+import os
+import glob
 
+def cleanOldShapeFiles():
+    files = glob.glob('./app/files/shpOut/*')
+    for aFile in files:
+        os.remove(aFile)
 
 def getIDCentroXYCoordDictionary(centros):
     xyCoordCentrosDictionary = dict()
@@ -24,7 +30,7 @@ def generarShapeLlega(fields, individuos,xyCoordCentrosDictionary, fileName, ses
     for individuo in individuos:
         xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(individuo[2])
         shapeWriter.point(xCoordCentro,yCoordCentro)
-        shapeWriter.record(individuo[0],individuo[2],individuo[5],individuo[7],individuo[9])
+        shapeWriter.record(individuo[0],individuo[2],individuo[3],individuo[4],individuo[5],individuo[6],individuo[7],individuo[9])
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeHogares(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
@@ -159,13 +165,14 @@ def llega(indivudoCentroDiaHora):
     return False
 
 def generarShape(request,sessionId,celeryResultAsList):
+    cleanOldShapeFiles()
     values = request.GET
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = Individuo.objects.all()
     pathToFilesToDownlaod = []
     if('generar_llega' in values):#'generar_llega' in values):
         individuosLlega = getListLlega(celeryResultAsList)
-        generarShapeLlega(['IDHogar','IDCentro','DiasLlega','TiempoDeViaje','CantidadDePediatras'],individuosLlega,xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
+        generarShapeLlega(['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],individuosLlega,xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
     if('generar_hogares' in  values):
         generarShapeHogares(['IDHogar'], individuos, 'Hogares', sessionId, pathToFilesToDownlaod)
     if('generar_jardines' in  values):
