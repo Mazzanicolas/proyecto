@@ -233,7 +233,7 @@ def generateCsvResults(request):
     deleteConsultaResults(request)
     asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
     request.session['asyncKey'] = asyncKey.id
-    session['current'] = 0
+    request.session['current'] = 0
     request.session.save()
     response = redirect('index')
     return response
