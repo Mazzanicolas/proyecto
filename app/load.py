@@ -17,7 +17,7 @@ TIEMPO_VIAJE = 45 # 45 segundos entre paradas
 global RADIO_CERCANO
 RADIO_CERCANO = 500 # distancia maxima en metros para que dos paradas se consideren cercanas
 global TIEMPO_CAMBIO_PARADA
-TIEMPO_CAMBIO_PARADA = (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
+TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
                                                                           # con los valores por defecto es 3 minutos.
 
 def cargarCentroPediatras(request,shapeAuto, shapeCaminando):
