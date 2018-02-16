@@ -1,26 +1,96 @@
 # Create your tasks here
 from __future__ import absolute_import, unicode_literals
-from celery import shared_task
+from celery import shared_task, group, result
+from celery.result import allow_join_result
 import time
 from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 import app.utils as utils
 from django.contrib.sessions.models import Session
 from django.contrib.sessions.backends.db import SessionStore
 import redis
+import csv
+import math
 
+@shared_task(ignore_result = True)
+def delegator(get,sessionKey,cookies):
+    session = SessionStore(session_key=sessionKey)
+    tiempoInicio = time.time()
+    getData      = get
+    isInd = session['isIndividual'] = True
+    isRes = session['isResumen'] = True
+    indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(get,cookies)
+    numberPerGroup = math.ceil(len(indQuery)/8)
+    numberPerGroup = min(3,numberPerGroup)
+    individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
+    session['total'] = len(individuos)*2 + 10 if (isInd and isRes) else len(individuos) + 5
+    session['current'] = 0
+    session['lock'] = '1'
+    session.save()
+    if(True):#getData.get('individual',0)== '1'):
+        job = calculateIndividual.chunks(individuos,1).group()
+        resultado = job.apply_async(queue = "CalculationQueue")
+        header = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
+        with allow_join_result():
+            resultList = resultado.join()
+            resultList =  header + sum(sum(resultList,[]), [])
+            saveCSVfromString(resultList,sessionKey)
 
+    if(True):#getData.get('resumen',0) == '1'):
+        job = suzuki.chunks(individuos,1).group()
+        result = job.apply_async(queue = "CalculationQueue")
+        with allow_join_result():
+            resultList = result.join()
+            resultList = sum(sum(resultList,[]), [])
+            saveResumenToCsv(resultList,sessionKey)
+
+def saveResumenToCsv(result,sessionKey):
+    fieldNames = ['persona', 'cantidadTotalHoras','cantidadHorasLunes','cantidadHorasMartes','cantidadHorasMiercoles', 'cantidadHorasJueves',
+                'cantidadHorasViernes','cantidadHorasSabado', 'cantidadMaximaHoras','cantidadConsultasLunes', 'cantidadConsultasMartes','cantidadConsultasMiercoles',
+                'cantidadConsultasJueves', 'cantidadConsultasViernes','cantidadConsultasSabado','cantidadTotalConsultas', 'cantidadCentrosLunes', 
+                'cantidadCentrosMartes','cantidadCentrosMiercoles','cantidadCentrosJueves', 'cantidadCentrosViernes','cantidadCentrosSabado', 'cantidadTotalCentros', 
+                'centroOptimo']
+    with open('./app/files/consultOut/ResumenResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
+        writer = csv.DictWriter(csvFile,delimiter = ',',fieldnames = fieldNames)
+        writer.writeheader()
+        for row in result:
+            writer.writerow(row)
+    addProgress(sessionKey,5)
+    print("EndOFRESUMENCSV")
+
+def saveCSVfromString(csvAsString,sessionKey):
+    with open('./app/files/consultOut/IndividualResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
+        writer = csv.writer(csvFile)
+        for row in csvAsString:
+            writer.writerow(row)
+    addProgress(sessionKey,5)
+    print("ENDOSINDIVIDUALCSV")
+def addProgress(sessionKey,amount):
+    session = SessionStore(session_key=sessionKey)
+    have_lock = False
+    my_lock = redis.Redis().lock(sessionKey)
+    try:
+        have_lock = my_lock.acquire(blocking=True)
+        if have_lock:
+            print("Got lock.")
+            session['current'] = session['current'] + amount if(session.get('current',None)) else amount
+            session.save()
+        else:
+            print("Did not acquire lock.")
+    finally:
+        if have_lock:
+            my_lock.release()
 @shared_task
-def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
+def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
     #individuos = Individuo.objects.filter(id__in = individuos)
-    diasFilter = [int(x) for x in dictTiemosSettings.get('dias','0.1.2.3.4.5').split('.')]
-    horaInicio = int(dictTiemosSettings.get('horaInicio',0))*100
-    horaFin = int(dictTiemosSettings.get('horaFin',23))*100
+    diasFilter = [int(x) for x in dictTiemposSettings.get('dias','0.1.2.3.4.5').split('.')]
+    horaInicio = int(dictTiemposSettings.get('horaInicio',0))*100
+    horaFin = int(dictTiemposSettings.get('horaFin',23))*100
     result = []
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
     if(simParam):
         listaCentros = Centro.objects.all()
     else:
-        p = dictTiemosSettings['centroPrest']
+        p = dictTiemposSettings['centroPrest']
         if(p == '-1'):
             listaCentros = Centro.objects.all()
         else:
@@ -53,15 +123,15 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
             for tiempo in tiempos:
                 tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, 
                             pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, 
-                            tieneJardin = tieneJardin,dictTiemosSettings=dictTiemosSettings)
+                            tieneJardin = tieneJardin,dictTiemposSettings=dictTiemposSettings)
                 result.append([individuo.id,prestador,centroId,centro.prestador.id,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
-    s = SessionStore(session_key=sessionKey)
     have_lock = False
     my_lock = redis.Redis().lock(sessionKey)
     try:
         have_lock = my_lock.acquire(blocking=True)
         if have_lock:
+            s = SessionStore(session_key=sessionKey)
             print("Got lock.")
             s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
             s.save()
@@ -72,16 +142,15 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemosSettings):
             my_lock.release()
     return result
 @shared_task
-def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
+def suzuki(individuos,simParam,sessionKey,dictTiemposSettings):
     resultList = []
-    individuos = Individuo.objects.filter(id__in = individuos)
-    diasFilter = [int(x) for x in dictTiemosSettings.get('dias','0.1.2.3.4.5').split('.')]
-    horaInicio = int(dictTiemosSettings.get('horaInicio',0))*100
-    horaFin = int(dictTiemosSettings.get('horaFin',23))*100
+    diasFilter = [int(x) for x in dictTiemposSettings.get('dias','0.1.2.3.4.5').split('.')]
+    horaInicio = int(dictTiemposSettings.get('horaInicio',0))*100
+    horaFin = int(dictTiemposSettings.get('horaFin',23))*100
     if(simParam):
         listaCentros = Centro.objects.all()
     else:
-        p = dictTiemosSettings['centroPrest']
+        p = dictTiemposSettings['centroPrest']
         if(p == '-1'):
             listaCentros = Centro.objects.all()
         else:
@@ -113,7 +182,7 @@ def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
             centroId = centro.id_centro
             for tiempo in tiempos:
                 tiempoViaje, llega = calcTiempoDeViaje(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,
-                        samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin,dictTiemosSettings=dictTiemosSettiempostings)
+                        samePrest = samePrest, tieneTrabajo = tieneTrabajo, tieneJardin = tieneJardin,dictTiemposSettings=dictTiemposSettings)
                 if(llega == "Si"):
                     dia = tiempo.dia
                     dictConsultasPorDia[dia] = dictConsultasPorDia[dia] + 1
@@ -128,23 +197,23 @@ def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
         totalConsultas = utils.getTotalFromDict(dictConsultasPorDia)
         totalCentros = len(centros)
         centroOptimo = utils.getCentroOptimo(centros)
-        centroOptimo = Centro.objects.get(id_centro = centroOptimo) if(centroOptimo) else centroOptimo
-        leResumen = MedidasDeResumen(persona = individuo, cantidadTotalHoras = totalHoras,cantidadHorasLunes = len(dictHorasPorDia[0]),
-                    cantidadHorasMartes = len(dictHorasPorDia[1]),cantidadHorasMiercoles = len(dictHorasPorDia[2]), cantidadHorasJueves = len(dictHorasPorDia[3]),
-                    cantidadHorasViernes = len(dictHorasPorDia[4]),cantidadHorasSabado = len(dictHorasPorDia[5]), cantidadMaximaHoras = utils.getMaximoDict(dictHorasPorDia),
-                    cantidadConsultasLunes = dictConsultasPorDia[0], cantidadConsultasMartes = dictConsultasPorDia[1],cantidadConsultasMiercoles = dictConsultasPorDia[2],
-                    cantidadConsultasJueves = dictConsultasPorDia[3], cantidadConsultasViernes = dictConsultasPorDia[4],cantidadConsultasSabado = dictConsultasPorDia[5],
-                    cantidadTotalConsultas = totalConsultas, cantidadCentrosLunes = len(dictCentrosPorDia[0]), cantidadCentrosMartes = len(dictCentrosPorDia[1]),
-                    cantidadCentrosMiercoles = len(dictCentrosPorDia[2]),cantidadCentrosJueves = len(dictCentrosPorDia[3]), cantidadCentrosViernes = len(dictCentrosPorDia[4]),
-                    cantidadCentrosSabado = len(dictCentrosPorDia[5]), cantidadTotalCentros = totalCentros, centroOptimo = centroOptimo)
+       # centroOptimo = Centro.objects.get(id_centro = centroOptimo) if(centroOptimo) else centroOptimo
+        leResumen = {'persona':individuo.id, 'cantidadTotalHoras':totalHoras,'cantidadHorasLunes':len(dictHorasPorDia[0]),
+                    'cantidadHorasMartes':len(dictHorasPorDia[1]),'cantidadHorasMiercoles':len(dictHorasPorDia[2]), 'cantidadHorasJueves':len(dictHorasPorDia[3]),
+                    'cantidadHorasViernes':len(dictHorasPorDia[4]),'cantidadHorasSabado':len(dictHorasPorDia[5]), 'cantidadMaximaHoras':utils.getMaximoDict(dictHorasPorDia),
+                    'cantidadConsultasLunes':dictConsultasPorDia[0], 'cantidadConsultasMartes':dictConsultasPorDia[1],'cantidadConsultasMiercoles':dictConsultasPorDia[2],
+                    'cantidadConsultasJueves':dictConsultasPorDia[3], 'cantidadConsultasViernes':dictConsultasPorDia[4],'cantidadConsultasSabado':dictConsultasPorDia[5],
+                    'cantidadTotalConsultas':totalConsultas, 'cantidadCentrosLunes':len(dictCentrosPorDia[0]), 'cantidadCentrosMartes':len(dictCentrosPorDia[1]),
+                    'cantidadCentrosMiercoles':len(dictCentrosPorDia[2]),'cantidadCentrosJueves':len(dictCentrosPorDia[3]), 'cantidadCentrosViernes':len(dictCentrosPorDia[4]),
+                    'cantidadCentrosSabado':len(dictCentrosPorDia[5]), 'cantidadTotalCentros':totalCentros, 'centroOptimo':centroOptimo}
         resultList.append(leResumen)
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
-    s = SessionStore(session_key=sessionKey)
     have_lock = False
     my_lock = redis.Redis().lock(sessionKey)
     try:
         have_lock = my_lock.acquire(blocking=True)
         if have_lock:
+            s = SessionStore(session_key=sessionKey)
             print("Got lock.")
             s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
             s.save()
@@ -154,10 +223,10 @@ def suzuki(individuos,simParam,sessionKey,dictTiemosSettings):
         if have_lock:
             my_lock.release()
     return resultList
-def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemosSettings):
-    tiempoMaximo = int(dictTiemosSettings.get('tiempoMaximo'))
-    tiempoConsulta = int(dictTiemosSettings.get('tiempoConsulta'))
-    tiReLle = int(dictTiemosSettings.get('tiempoLlega'))
+def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemposSettings):
+    tiempoMaximo = int(dictTiemposSettings.get('tiempoMaximo'))
+    tiempoConsulta = int(dictTiemposSettings.get('tiempoConsulta'))
+    tiReLle = int(dictTiemposSettings.get('tiempoLlega'))
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
@@ -218,10 +287,10 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
             resultTimpo = tiempos['tHogarCentro']
             resultLlega = "Si" if (resultTimpo<=tiempoMaximo and hasPed  and samePrest) else "No"
             return resultTimpo,resultLlega
-def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemosSettings):
-    tiempoMaximo = int(dictTiemosSettings.get('tiempoMaximo'))
-    tiempoConsulta = int(dictTiemosSettings.get('tiempoConsulta'))
-    tiReLle = int(dictTiemosSettings.get('tiempoLlega'))
+def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemposSettings):
+    tiempoMaximo = int(dictTiemposSettings.get('tiempoMaximo'))
+    tiempoConsulta = int(dictTiemposSettings.get('tiempoConsulta'))
+    tiReLle = int(dictTiemposSettings.get('tiempoLlega'))
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin

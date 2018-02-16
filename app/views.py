@@ -11,10 +11,10 @@ import shapefile
 import time
 import csv
 from django.shortcuts import redirect
-from celery import group, result
+from celery import group, result,chord
 from proyecto.celery import app
 from app.checkeo_errores import *
-from app.task import suzuki, calculateIndividual
+from app.task import suzuki, calculateIndividual, delegator
 import app.utils as utils
 import app.load as load
 from django.contrib.sessions.models import Session
@@ -38,7 +38,6 @@ shapeCaminando = sf.shapes()
 
 #( ͡° ͜ʖ ͡°)
 def genShape(request):
-
     filenames    = generarShape(request, request.session.session_key)
     zip_subdir   = "Shapefiles"
     zip_filename = "%s.zip" % zip_subdir
@@ -61,37 +60,35 @@ def test(request):
         newCalcTimes()
     getReq = request.GET
     if(getReq.get('checkRango', '0') == '-1'):
-        return consultaToCSV(request)
+        return generateCsvResults(request)
     response = redirect('consultaConFiltro')
     return response
 
 
 def progress(request):
     print("PROGRESS")
-    groupId = request.session.get('groupId', None)
-    if(groupId):
-        #resultado = app.GroupResult.restore(groupId)
-        #done = resultado.completed_count()
-        done = request.session.get('current',-1)
-    else:
-        done = -1
+    isIndividual = request.session.get('isIndividual', None)
+    isResumen = request.session.get('isResumen', None)
+    done = request.session.get('current',-1)
     total = request.session.get('total', 100)
     data = {"Done":done,"Total":total}
     return JsonResponse(data)
 
 def cancelarConsulta(request):
     print("CANCELAR CONSULTA")
-    groupId = request.session.get('groupId', None)
-    if(groupId):
-        group = app.GroupResult.restore(groupId)
-        if(group):
-            group.revoke()
-            group.delete()
-            group.forget()
-    done = -1
-    total = request.session.get('total', 100)
-    data = {"Done":done,"Total":total}    
+    deleteConsultaResults(request)
     return redirect('index')
+def deleteConsultaResults(request):
+    request.session['isIndividual'] = None
+    request.session['isResumen'] = None
+    asyncKey = request.session.get('asyncKey',None)
+    if(asyncKey):
+        asyncResult = result.AsyncResult(asyncKey)
+        if(asyncResult):
+            print(asyncResult)
+            asyncResult.revoke(terminate = True)
+            asyncResult.forget()
+    request.session['current'] = -1
 
 def redirectSim(request):
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and 
@@ -102,7 +99,7 @@ def redirectSim(request):
     if(getReq.get('checkRes','0') == '1'):
         return resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request)
     if(getReq.get('checkRango','0') == '-1'):
-        return consultaToCSV(request)
+        return generateCsvResults(request)
     response = redirect('Simulacion')
     if(getReq.get('checkB',0) == '-1'):
         response.set_cookie(key='mutualista',value='-1')
@@ -232,30 +229,35 @@ def consultaToCSV(request):
     response = redirect('index')
     return response
 
-def downloadFile(request):
-    groupId = request.session.get('groupId', None)
-    resultType = request.session.get('resultType', None)
-    if(groupId and resultType):
-        resultado = app.GroupResult.restore(groupId)
-        if(resultType == 'individual'):
-            header = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
-            resumenObjectList = resultado.join()
-            resumenObjectList =  header + sum(sum(resumenObjectList,[]), [])
-            pseudo_buffer = utils.Echo()
-            writer = csv.writer(pseudo_buffer)
-            response = StreamingHttpResponse((writer.writerow(row) for row in resumenObjectList),
-                                             content_type="text/csv")
-            response['Content-Disposition'] = 'attachment; filename="resultado.csv"'
-            return response
-        else:
-            resumenObjectList = resultado.join()
-            resumenObjectList = sum(sum(resumenObjectList,[]), [])
-            table  = ResumenTable(resumenObjectList)
-            RequestConfig(request).configure(table)
-            exporter = TableExport('csv', table)
-            return exporter.response('table.{}'.format('csv'))
+def generateCsvResults(request):
+    deleteConsultaResults(request)
+    asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
+    request.session['asyncKey'] = asyncKey.id
+    session['current'] = 0
+    request.session.save()
     response = redirect('index')
     return response
+
+def downloadFile(request):
+    sessionKey = request.session.session_key
+    zip_subdir   = "Resultados"
+    zip_filename = "%s.zip" % zip_subdir
+    s  = BytesIO()
+    zf = zipfile.ZipFile(s, "w")
+    if(request.session.get('isIndividual',None)):
+        indvPath = './app/files/consultOut/IndividualResult'+sessionKey+'.csv'
+        fdir, fname = os.path.split(indvPath)
+        zip_path    = os.path.join(zip_subdir, 'Resultado individual.csv')
+        zf.write(indvPath, zip_path)
+    if(request.session.get('isResumen',None)):
+        resumenPath = './app/files/consultOut/ResumenResult'+sessionKey+'.csv'
+        fdir, fname = os.path.split(resumenPath)
+        zip_path    = os.path.join(zip_subdir, 'Resumen.csv')
+        zf.write(resumenPath, zip_path)
+    zf.close()
+    resp = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
+    resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
+    return resp
 
 
 def downloadShapeFile(request):

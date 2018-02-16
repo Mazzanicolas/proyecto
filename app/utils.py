@@ -226,19 +226,19 @@ def getMaximoDict(mapa):
             maximo = aux
     return maximo
     #        print("Individuos a calcular: "+str(len(indQuery)))
-def genSettingsDict(request):
+def genSettingsDict(GET,COOKIES):
     settingsDict = dict()
-    settingsDict['tiempoMaximo'] = request.COOKIES.get('tiempoMaximo')
-    settingsDict['tiempoConsulta'] = request.COOKIES.get('tiempoConsulta')
-    settingsDict['tiempoLlega'] = request.COOKIES.get('tiempoLlega')
-    settingsDict['centroPrest'] = request.GET.get("prestadorFiltro")
-    settingsDict['horaInicio'] = request.GET.get("horaInicio")
-    settingsDict['horaFin'] = request.GET.get("horaFin")
-    settingsDict['dias'] = '.'.join(request.GET.getlist('dias'))
+    settingsDict['tiempoMaximo'] = COOKIES.get('tiempoMaximo')
+    settingsDict['tiempoConsulta'] = COOKIES.get('tiempoConsulta')
+    settingsDict['tiempoLlega'] = COOKIES.get('tiempoLlega')
+    settingsDict['centroPrest'] = GET.get("prestadorFiltro")
+    settingsDict['horaInicio'] = GET.get("horaInicio")
+    settingsDict['horaFin'] = GET.get("horaFin")
+    settingsDict['dias'] = '.'.join(GET.getlist('dias'))
     return settingsDict
 
-def getIndivList_ParamDict_SettingsDict(request):
-    getData = request.GET
+def getIndivList_ParamDict_SettingsDict(get,cookies):
+    getData = get
     if(getData.get("idList",None)):
         idStringList = getData.get("idList",None).split(",")
         try:
@@ -249,7 +249,7 @@ def getIndivList_ParamDict_SettingsDict(request):
     else:
         indvList = Individuo.objects.all()
     if(getData.get("simular",'0') == '1' ):
-        dictParam = generateParamDict(request.GET)
+        dictParam = generateParamDict(get)
     else:
         transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
         trabajaReq    = getData.get('trabaja', None)
@@ -262,7 +262,7 @@ def getIndivList_ParamDict_SettingsDict(request):
             trabaja.append(False)
         indQuery = indvList.filter(tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
         dictParam = None
-    return indvList,dictParam,genSettingsDict(request)
+    return indvList,dictParam,genSettingsDict(get,cookies)
 def minsToMilitaryTime(time):
     hours = time/60
     mins  = time%60
