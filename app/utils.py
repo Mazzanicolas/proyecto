@@ -54,18 +54,23 @@ def parsear_hora(hora):
     m = '{:<02d}'.format(int(m))
     return int(h + m)
 
-def getSectorForPoint(ancal,tipo,shapeAuto, shapeCaminando):
+def getSectorForPoint(ancal,tipo,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando):
     if(tipo == "Auto" or tipo == 1 ):
         shapes = shapeAuto
+        records = recordsAuto
         tipo = "Auto"
     else:
+        records = recordsCaminando
         tipo = "Caminando"
         shapes = shapeCaminando
     point = Point(ancal.x_coord,ancal.y_coord)
     for i in range(len(shapes)):
         polygon = Polygon(shapes[i].points)
         if(point.within(polygon)):
-            return Sector.objects.get(shape = i,tipo_sector = tipo)#len(shapeAuto)+i)#, tipo_sector = tipo)
+            if(tipo == "Auto" or tipo == 1 ):
+                return SectorAuto.objects.get(shapeid =records[i][0])
+            else:
+                return SectorCaminando.objects.get(shapeid = records[i][0])
 def calcularTiempoViaje(anclas,transporte):
     tiempoViaje = 0
     hora = 0

@@ -9,15 +9,15 @@ class AnclaTemporal(models.Model):
     hora_inicio = models.IntegerField(blank=True, null=True)
     hora_fin = models.IntegerField(blank=True, null=True)
     dias = models.CharField(max_length = 20)
-    sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_auto')
-    sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sector_caminando')
+    sector_auto = models.ForeignKey('SectorAuto', models.SET_NULL,blank=True, null=True,related_name='sector_auto')
+    sector_caminando = models.ForeignKey('SectorCaminando', models.SET_NULL,blank=True, null=True,related_name='sector_caminando')
 
 class Centro(models.Model):
     id_centro = models.IntegerField(primary_key = True)
     x_coord = models.FloatField()
     y_coord = models.FloatField()
-    sector_auto = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_auto')
-    sector_caminando = models.ForeignKey('Sector', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_caminando')
+    sector_auto = models.ForeignKey('SectorAuto', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_auto')
+    sector_caminando = models.ForeignKey('SectorCaminando', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_caminando')
     prestador = models.ForeignKey('Prestador', models.CASCADE)
 
     class Meta:
@@ -106,23 +106,28 @@ class Prestador(models.Model):
     def __str__(self):
         return u'{0}'.format(self.nombre)
 
-class Sector(models.Model):
+class SectorAuto(models.Model):
+    shapeid = models.CharField(max_length = 50,primary_key=True)
     x_centroide = models.IntegerField()
     y_centroide = models.IntegerField()
-    tipo_sector = models.CharField(max_length = 20)
-    shape = models.IntegerField()
+    shapePosition = models.IntegerField()
+class SectorCaminando(models.Model):
+    shapeid = models.CharField(max_length = 50,primary_key=True)
+    x_centroide = models.IntegerField()
+    y_centroide = models.IntegerField()
+    shapePosition = models.IntegerField()
 
 class SectorTiempoAuto(models.Model):
-    sector_1 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sector_1')
-    sector_2 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sector_2')
+    sector_1 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sector_1')
+    sector_2 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sector_2')
     tiempo = models.FloatField()
     distancia = models.FloatField(blank=True, null=True)
 
     class Meta:
         unique_together = (('sector_1', 'sector_2'),)
 class SectorTiempoCaminando(models.Model):
-    sector_1 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_1')
-    sector_2 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_2')
+    sector_1 = models.ForeignKey(SectorCaminando, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_1')
+    sector_2 = models.ForeignKey(SectorCaminando, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_2')
     tiempo = models.FloatField()
     distancia = models.FloatField(blank=True, null=True)
 
@@ -130,8 +135,8 @@ class SectorTiempoCaminando(models.Model):
         unique_together = (('sector_1', 'sector_2'),)
 
 class SectorTiempoOmnibus(models.Model):
-    sectorO_1 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
-    sectorO_2 = models.ForeignKey(Sector, models.SET_NULL, blank=True, null=True,related_name='sectorO_2')
+    sectorO_1 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
+    sectorO_2 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sectorO_2')
     tiempo = models.FloatField()
     class Meta:
         unique_together = (('sectorO_1', 'sectorO_2'),)

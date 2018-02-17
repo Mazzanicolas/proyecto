@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, Sector, Prestador,Centro,Pediatra,IndividuoTiempoCentro,IndividuoCentro, IndividuoCentroOptimo
+from app.models import Individuo, Settings, SectorAuto,SectorCaminando, Prestador,Centro,Pediatra,IndividuoTiempoCentro,IndividuoCentro, IndividuoCentroOptimo
 from django.db.models import F
 import math
 from django_tables2.export.export import TableExport
@@ -28,12 +28,15 @@ from app.shpModule import *
 
 global shapeAuto
 global shapeCaminando
-
+global recordsAuto
+global recordsCaminando
 
 sf = shapefile.Reader('app/files/shapeAuto.shp')
 shapeAuto = sf.shapes()
+recordsAuto = sf.records()
 sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
+recordsCaminando = sf.records()
 
 #( ͡° ͜ʖ ͡°)
 def genShape(request):
@@ -112,8 +115,8 @@ def redirectSim(request):
 
 def index(request):
     init()
-    if(not Sector.objects.all()):
-        load.cargarSectores(shapeAuto,shapeCaminando)
+    if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
+        load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
         s = Settings(setting = "tiempoMaximo",value = "60")
         s.save()
@@ -148,13 +151,13 @@ def index(request):
             if(radioCargado == "option1"):
                 lineas = load.cargarMutualistas(request)
             elif(radioCargado == "option2"):
-                lineas = load.cargarIndividuoAnclas(request,shapeAuto, shapeCaminando)
+                lineas = load.cargarIndividuoAnclas(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
             elif(radioMatrix == "option3"):
-                lineas = load.cargarTiempos(0,request,shapeAuto, shapeCaminando)
+                lineas = load.cargarTiempos(1,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
             elif(radioMatrix == "option4"):
-                lineas = load.cargarTiempos(1,request,shapeAuto, shapeCaminando)
+                lineas = load.cargarTiempos(0,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
             elif(radioMatrix == "option5"):
-                lineas = load.cargarCentroPediatras(request,shapeAuto, shapeCaminando)
+                lineas = load.cargarCentroPediatras(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
             elif(radioMatrix == "option6"): # omnibus
                 lineas = load.cargarTiemposBus(request)
             elif(radioMatrix == "option7"):

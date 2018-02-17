@@ -1,7 +1,7 @@
 import django_filters
 from django import forms
 from django.forms import widgets
-from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempoAuto,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.models import Individuo, Settings, TipoTransporte, Prestador, AnclaTemporal, SectorTiempoAuto,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 
 class IndividuoTiempoCentroFilter(django_filters.FilterSet):
     DIAS = (

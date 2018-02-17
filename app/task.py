@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task, group, result
 from celery.result import allow_join_result
 import time
-from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte, Prestador, AnclaTemporal, Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 import app.utils as utils
 from django.contrib.sessions.models import Session
 from django.contrib.sessions.backends.db import SessionStore
