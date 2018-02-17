@@ -12,6 +12,7 @@ def checkTiempos(tipo,request):
     lineas=[]
     lineas.extend(l)
     lineas = lineas[1:]
+    return "soyunbool",lineas
     for caso in lineas:
         if len(caso) != 4:
             errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(caso)))

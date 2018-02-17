@@ -78,17 +78,16 @@ def calcularTiempoViaje(anclas,transporte):
         for i in range(0,len(anclas)-1):
             if(anclas[i] is None or anclas[i+1] is None):
                 return -7000#-1/60
+            sector1 = anclas[i]
+            sector2 = anclas[i+1]
             if(transporte == 0):
-                if(anclas[i].id <= anclas[i+1].id):
-                    sector1 = anclas[i]
-                    sector2 = anclas[i+1]
+                aux = SectorTiempoCaminando.objects.filter(sector_1 = sector1, sector_2 = sector2)
+                if(len(aux)>0):
+                    tiempoViaje += aux[0].tiempo
                 else:
-                    sector1 = anclas[i+1]
-                    sector2 = anclas[i]
-            else:
-                sector1 = anclas[i]
-                sector2 = anclas[i+1]
-            tiempoViaje += (SectorTiempo.objects.get(sector_1 = sector1, sector_2 = sector2).tiempo)
+                    tiempoViaje += SectorTiempoCaminando.objects.get(sector_1 = sector2, sector_2 = sector1).tiempo
+                return tiempoViaje
+            tiempoViaje += SectorTiempoAuto.objects.get(sector_1 = sector1, sector_2 = sector2).tiempo
             return tiempoViaje
     else:
         for i in range(len(anclas)-1):

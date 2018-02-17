@@ -2,24 +2,18 @@ from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
 from app.models import Individuo, Settings, SectorAuto,SectorCaminando, Prestador,Centro,Pediatra,IndividuoTiempoCentro,IndividuoCentro, IndividuoCentroOptimo
-from django.db.models import F
 import math
-from django_tables2.export.export import TableExport
-from django_tables2 import RequestConfig
 import shapefile
 import time
 import csv
 from django.shortcuts import redirect
-from celery import group, result,chord
 from proyecto.celery import app
 from app.checkeo_errores import *
 from app.task import delegator
 import app.utils as utils
 import app.load as load
 from django.contrib.sessions.models import Session
-from django.contrib.sessions.backends.db import SessionStore
 from django.http import JsonResponse
-import redis
 import os
 import zipfile
 from io import BytesIO

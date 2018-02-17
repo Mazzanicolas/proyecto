@@ -4,6 +4,7 @@ from app.checkeo_errores import *
 import app.utils
 import csv
 from django.http import HttpResponse, StreamingHttpResponse
+import time
 
 #Habria que sacar todos estos tiempos a settings, pero no es urgente
 global TIEMPO_ARBITRARIAMENTE_ALTO
@@ -146,18 +147,22 @@ def cargarIndividuoAnclas(requestf,shapeAuto,recordsAuto, shapeCaminando,records
 def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando):
     print("WOW!")
     res, lineas = checkTiempos(tipo,request)
-    print("WOW")
     if not res:
         return lineas
     if(tipo == 0):
+        sep = ';'
+        print("soyCaminando")
         SectorTiempoCaminando.objects.all().delete()
     else:
-        print("wow")
+        print("soyAuto")
+        sep = ','
         print(tipo)
         SectorTiempoAuto.objects.all().delete()
     id = 0
     tiempos = []
+    init = time.time()
     for caso in lineas:
+        caso = caso[0].split(sep)
         sector1 = caso[0]
         sector2 = caso[1]
         t = float(caso[2])
@@ -170,13 +175,15 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
         id +=1
         if(id % 10000 == 0):
             print(id)
-            if(tipo == 0):
+            print(time.time() - init)
+            init = time.time()
+            if(tipo == 1):
                 guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
             else:
                 guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
             tiempos = []
     if(tiempos):
-        if(tipo == 0):
+        if(tipo == 1):
             guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
         else:
             guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
