@@ -269,8 +269,21 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos
             return record.tiempoViaje
 
 class IndividuoTable(tables.Table):
+    id              = tables.Column(accessor = 'id',verbose_name='Individuo')
+    tipo_transporte = tables.Column(accessor = 'tipo_transporte',verbose_name='Tipo de Transporte')
+    tieneJardin     = tables.Column(accessor = 'tieneJardin',verbose_name='Tiene Jardin')
+    tieneTrabajo    = tables.Column(accessor = 'tieneTrabajo',verbose_name='Tiene Trabajo')
+    prestador       = tables.Column(accessor = 'prestador.nombre',verbose_name='Prestador')
+    hogar           = tables.Column(accessor = 'hogar.id',verbose_name='Hogar')
+    trabajo         = tables.Column(accessor = 'trabajo.id',verbose_name='Trabajo')
+    jardin          = tables.Column(accessor = 'jardin.id',verbose_name='Jardin')
+
     class Meta:
         model = Individuo
+        per_page = 200
+        attrs = {"class": "paleblue"}
+        sequence = ('id', 'tipo_transporte', 'tieneJardin','tieneTrabajo', 'prestador', 'hogar', 'trabajo','jardin')
+
 class IndividuoTableView(SingleTableView):
     filter_class = None
     formhelper_class = None
@@ -283,17 +296,49 @@ class IndividuoTableView(SingleTableView):
         return self.filter.qs
 
     def get_table(self, **kwargs):
-        table = super(PagedFilteredTableView, self).get_table()
+        table = super(IndividuoTableView, self).get_table()
         RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
         return table
 
     def get_context_data(self, **kwargs):
-        context = super(PagedFilteredTableView, self).get_context_data()
+        context = super(IndividuoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class IndividuoListView(ExportMixin,PagedFilteredTableView):
+class IndividuoListView(IndividuoTableView):
     model = IndividuoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
     filter_class = IndividuoFilter
     formhelper_class = IndHelper
+
+class CentrosTable(tables.Table):
+      class Meta:
+        model = Centro
+        attrs = {"class": "paleblue"}
+
+class CentrosTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = Centro.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(CentrosTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(CentrosTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class CentrosListView(CentrosTableView):
+    model = CentrosTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = CentroFilter
+    formhelper_class = CenHelper

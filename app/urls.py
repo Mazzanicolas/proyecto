@@ -13,4 +13,6 @@ urlpatterns = [
     url(r'^descargarShape/$', views.downloadShapeFile, name='descargarShape'),
     url(r'^plot/$', views.plot, name='plot'),
     url(r'^generate_shape/$', views.genShape, name='genrate_shape'),
+    url(r'^redirectTable/$', views.redirectTable, name='redirectTable'),
+    url(r'^individuos/$', tables.CentrosListView.as_view(), name='individuosTable'),
 ]

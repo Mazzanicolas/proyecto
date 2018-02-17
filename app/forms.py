@@ -43,3 +43,19 @@ class IndHelper(FormHelper):
             <br>    <br>
         """),
     )
+
+class CenHelper(FormHelper):
+    form_class = 'form-horizontal'
+    label_class = 'col-lg-2'
+    field_class = 'col-lg-8'
+    form_method = 'GET'
+    layout = Layout(
+        TabHolder(
+        Tab('Individuo',
+        'individuo'),
+        ),
+        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
+        HTML("""
+            <br>    <br>
+        """),
+    )

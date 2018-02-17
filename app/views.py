@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
+from app.tables import *
 from app.models import Individuo, Settings, SectorAuto,SectorCaminando, Prestador,Centro,Pediatra,IndividuoTiempoCentro,IndividuoCentro, IndividuoCentroOptimo
 import math
 import shapefile
@@ -124,19 +125,18 @@ def index(request):
         s.save()
     post = request.POST
     cookies = request.COOKIES
-    if(cookies):
-        if('tiempoMaximo' in cookies):
-            maxT = cookies.get("tiempoMaximo")
-        else:
-            maxT = Settings.objects.get(setting = "tiempoMaximo").value
-        if('tiempoConsulta' in cookies):
-            consT = cookies.get("tiempoConsulta")
-        else:
-            consT = Settings.objects.get(setting = "tiempoConsulta").value
-        if("tiempoLlega" in cookies):
-            tiempoL = cookies.get("tiempoLlega")
-        else:
-            tiempoL = Settings.objects.get(setting = "tiempoLlega").value
+    if(cookies and 'tiempoMaximo' in cookies):
+        maxT = cookies.get("tiempoMaximo")
+    else:
+        maxT = Settings.objects.get(setting = "tiempoMaximo").value
+    if(cookies and 'tiempoConsulta' in cookies):
+        consT = cookies.get("tiempoConsulta")
+    else:
+        consT = Settings.objects.get(setting = "tiempoConsulta").value
+    if(cookies and "tiempoLlega" in cookies):
+        tiempoL = cookies.get("tiempoLlega")
+    else:
+        tiempoL = Settings.objects.get(setting = "tiempoLlega").value
     if(post):
         tiempoMax = post.get("tiempoTransporte",None)
         tiempoCons = post.get("tiempoConsulta",None)
@@ -214,7 +214,15 @@ def downloadFile(request):
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
     return resp
 
-
+def redirectTable(request):
+    verDatos = request.GET.get('datosAVer',0)
+    if(verDatos == '1'):
+        #response = redirect('individuosTable')
+        #return response
+        table = IndividuoTable(Individuo.objects.all())
+        return render(request, 'app/resumen.html', {'table': table})
+    print(request.GET)
+    return
 def downloadShapeFile(request):
     path = './app/files/consultOut/IndividualResult'
     filenames    = generarShape(request, request.session.session_key, path)

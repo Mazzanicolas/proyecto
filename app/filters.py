@@ -55,3 +55,5 @@ class IndividuoFilter(django_filters.FilterSet):
         queryset= TipoTransporte.objects.all(),
         widget=forms.CheckboxSelectMultiple()
     )
+class CentroFilter(django_filters.FilterSet):
+    id_centro = django_filters.NumberFilter(label = 'Filtrar por Centro', name='id')
