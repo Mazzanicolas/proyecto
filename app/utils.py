@@ -263,7 +263,7 @@ def getIndivList_ParamDict_SettingsDict(get,cookies):
         indQuery = indvList.filter(tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
         dictParam = None
     return indvList,dictParam,genSettingsDict(get,cookies)
-def minsToMilitaryTime(time):
+def minsToMil(time):
     hours = time/60
     mins  = time%60
     return int(hours)*100+mins

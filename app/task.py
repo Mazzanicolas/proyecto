@@ -11,7 +11,7 @@ import redis
 import csv
 import math
 
-@shared_task(ignore_result = True)
+@shared_task()
 def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
     tiempoInicio = time.time()
@@ -237,53 +237,53 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
         if(hora < trabajo.hora_inicio):
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    resultTimpo = tiempos['tHogarCentro']
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and hora + tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']<= trabajo.hora_inicio and hasPed ) else "No"
+                    resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and utils.minsToMil(tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']) <= trabajo.hora_inicio and hasPed ) else "No"
                     return resultTimpo,resultLlega
                 else:
-                    resultTimpo = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
-                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
-                    horaTerCons2  = jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                    resultTimpo = utils.minsToMil(tiempos['tHogarJardin'] + tiempos['tJardinCentro'])
+                    horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
+                    horaTerCons2  = utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle and hasPed  and samePrest) else "No"
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle) and hasPed  and samePrest) else "No"
                     return resultTimpo,resultLlega
             else:
-                resultTimpo = tiempos['tHogarCentro']
-                horaViajeMasConsulta = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                horaViajeMasConsulta = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
                 resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and hasPed ) else "No"
                 return resultTimpo,resultLlega
         else:
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroJardin']
-                    horaTerCons2 = trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
+                    resultTimpo = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
+                    horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'])
+                    horaTerCons2 = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin'])
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)                    
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and trabajo.hora_fin + resultTimpo <= hora + tiReLle and hasPed  and samePrest) else "No"
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and utils.minsToMil(trabajo.hora_fin + resultTimpo) <= utils.minsToMil(hora + tiReLle) and hasPed  and samePrest) else "No"
                     return resultTimpo,resultLlega
 
                 else:
-                    resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
-                    horaLlegadaJardin = trabajo.hora_fin + tiempos['tTrabajoJardin']
+                    resultTimpo =utils.minsToMil(tiempos['tTrabajoJardin'] + tiempos['tJardinCentro'])
+                    horaLlegadaJardin = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoJardin'])
                     horaSalidaJardin = jardin.hora_fin if (horaLlegadaJardin <= jardin.hora_fin) else horaLlegadaJardin
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= hora + tiReLle and hasPed   and samePrest) else "No"
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and  utils.minsToMil(horaSalidaJardin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle) and hasPed   and samePrest) else "No"
                     return resultTimpo,resultLlega
             else:
-                resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and trabajo.hora_fin + resultTimpo <= hora +tiReLle and hasPed  and samePrest) else "No"
+                resultTimpo = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
+                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(trabajo.hora_fin + resultTimpo) <= utils.minsToMil(hora +tiReLle) and hasPed  and samePrest) else "No"
                 return resultTimpo,resultLlega
     else:
         if(jardin and dia in utils.getListOfDays(jardin.dias)):
             if(hora < jardin.hora_inicio):
-                resultTimpo = tiempos['tHogarCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and hora + tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and hasPed  and samePrest) else "No"
+                resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and hasPed  and samePrest) else "No"
                 return resultTimpo,resultLlega
             else:
-                resultTimpo = tiempos['tHogarJardin']+ tiempos['tJardinCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle and hasPed and samePrest) else "No"
+                resultTimpo = utils.minsToMil(tiempos['tHogarJardin']+ tiempos['tJardinCentro'])
+                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro']) <= hora + tiReLle and hasPed and samePrest) else "No"
                 return resultTimpo,resultLlega
         else:
-            resultTimpo = tiempos['tHogarCentro']
+            resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
             resultLlega = "Si" if (resultTimpo<=tiempoMaximo and hasPed  and samePrest) else "No"
             return resultTimpo,resultLlega
 def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemposSettings):
@@ -301,24 +301,24 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
         if(hora < trabajo.hora_inicio):
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    resultTimpo = tiempos['tHogarCentro']
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and hora + tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio and hora + tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']<= trabajo.hora_inicio) else "No"
+                    resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo'])<= trabajo.hora_inicio) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
                 else:
                     #TODO: VER AFTER LUNES
-                    resultTimpo = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
-                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
-                    horaTerCons2  = jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                    resultTimpo = utils.minsToMil(tiempos['tHogarJardin'] + tiempos['tJardinCentro'])
+                    horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
+                    horaTerCons2  = utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle) else "No"
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle)) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
             else:
-                resultTimpo = tiempos['tHogarCentro']
-                horaViajeMasConsulta = hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
+                resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                horaViajeMasConsulta = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
                 resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio) else "No"
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
@@ -326,45 +326,45 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
         else:
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                    horaTerCons1 = hora + tiempoConsulta + tiempos['tCentroJardin']
-                    horaTerCons2 = trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
+                    resultTimpo = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
+                    horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'])
+                    horaTerCons2 = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin'])
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2) 
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and trabajo.hora_fin + resultTimpo <= hora + tiReLle) else "No"
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= jardin.hora_inicio and utils.minsToMil(trabajo.hora_fin + resultTimpo) <= utils.minsToMil(hora + tiReLle)) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
 
                 else:
-                    resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
-                    horaLlegadaJardin = trabajo.hora_fin + tiempos['tTrabajoJardin']
+                    resultTimpo = utils.minsToMil(tiempos['tTrabajoJardin'] + tiempos['tJardinCentro'])
+                    horaLlegadaJardin = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoJardin'])
                     horaSalidaJardin = jardin.hora_fin if (horaLlegadaJardin <= jardin.hora_fin) else horaLlegadaJardin
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= hora) + tiReLle else "No"
+                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and  utils.minsToMil(horaSalidaJardin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle)) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo,resultLlegaG,resultLlega
             else:
-                resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and trabajo.hora_fin + resultTimpo <= hora + tiReLle) else "No"
+                resultTimpo = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
+                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(trabajo.hora_fin + resultTimpo) <= utils.minsToMil(hora + tiReLle)) else "No"
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo,resultLlegaG,resultLlega
     else:
         if(jardin and dia in utils.getListOfDays(jardin.dias)):
             if(hora < jardin.hora_inicio):
-                resultTimpo = tiempos['tHogarCentro']
-                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and hora + tiempoConsulta + tiempos['tCentroJardin'] <= jardin.hora_inicio) else "No"
+                resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio) else "No"
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo,resultLlegaG,resultLlega
             else:
-                resultTimpo = tiempos['tHogarJardin']+ tiempos['tJardinCentro']
-                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and jardin.hora_fin + tiempos['tJardinCentro'] <= hora + tiReLle) else "No"
+                resultTimpo = utils.minsToMil(tiempos['tHogarJardin']+ tiempos['tJardinCentro'])
+                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle)) else "No"
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo,resultLlegaG,resultLlega
         else:
-            resultTimpo = tiempos['tHogarCentro']
+            resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
             resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo) else "No"
             BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
             resultLlega = "Si" if (BoolLlega) else "No"

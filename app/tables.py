@@ -164,6 +164,7 @@ def checkIfPedAndMut(llega,individuo,centro,cantidad_pediatras,mutualista):
 def checkLlega(self,individuo,centro, dia,hora,tiempoViaje,record,tieneTrabajo,tieneJardin,tiempos):
     tiempoMaximo = int(self.request.COOKIES.get("tiempoMaximo"))  # Cambiar(Tomar de bd)
     tiempoConsulta = int(self.request.COOKIES.get("tiempoConsulta")) #Cambiar(Tomar de bd)
+    tiReLle = int(self.request.COOKIES.get('tiempoLlega'))
     trabajo = individuo.trabajo
     jardin = individuo.jardin
     hogar = individuo.hogar
@@ -171,61 +172,56 @@ def checkLlega(self,individuo,centro, dia,hora,tiempoViaje,record,tieneTrabajo,t
     if(tiempoViaje > tiempoMaximo or tiempoViaje == -1):
         record.llegaGeografico = "No"
         return "No"
-    if(tieneTrabajo and trabajo and dia in utils.getListOfDays(trabajo.dias)):
+    if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(hora < trabajo.hora_inicio):
-            horaAcumulada += tiempoConsulta
-            if(tieneJardin and jardin and dia in utils.getListOfDays(jardin.dias)):
+            if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    horaAcumulada += tiempos['tCentroJardin']
-                    if(horaAcumulada <= jardin.hora_inicio):
-                        horaAcumulada += tiempos['tJardinTrabajo']
-                        if(horaAcumulada <= trabajo.hora_inicio):
-                            record.llegaGeografico = "Si"
-                            return "Si"
+                    resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                    record.llegaGeografico =  "Si" if (utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo'])<= trabajo.hora_inicio) else "No"
+                    return record.llegaGeografico
                 else:
-                    if(jardin.hora_fin + tiempos['tJardinCentro'] <= hora):
-                        horaAcumulada += tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
-                        if(horaAcumulada <= trabajo.hora_inicio):
-                            record.llegaGeografico = "Si"
-                            return "Si"
+                    horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
+                    horaTerCons2  = utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
+                    record.llegaGeografico = "Si" if (horaViajeMasConsulta <= trabajo.hora_inicio and utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle)) else "No"
+                    return record.llegaGeografico
             else:
-                horaAcumulada += tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
-                if(horaAcumulada <= trabajo.hora_inicio):
-                    record.llegaGeografico = "Si"
-                    return "Si"
+                horaViajeMasConsulta = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
+                record.llegaGeografico = "Si" if (horaViajeMasConsulta <= trabajo.hora_inicio) else "No"
+                return record.llegaGeografico
         else:
-            if(tieneJardin and jardin and dia in utils.getListOfDays(jardin.dias)):
+            if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    horaAcumulada += tiempoConsulta
-                    horaAcumulada += tiempos['tCentroJardin']
-                    if(trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] <= hora and tiempos['tTrabajoHogar+horaAcumulada'] <= jardin.hora_inicio):
-                        record.llegaGeografico = "Si"
-                        return "Si"
+                    horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'])
+                    horaTerCons2 = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin'])
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2) 
+                    record.llegaGeografico = "Si" if (horaViajeMasConsulta<= jardin.hora_inicio and utils.minsToMil(trabajo.hora_fin + resultTimpo) <= utils.minsToMil(hora + tiReLle)) else "No"
+                    return record.llegaGeografico
                 else:
-                    if(trabajo.hora_fin + tiempos['tTrabajoJardin'] <= jardin.hora_fin and jardin.hora_fin + tiempos['tJardinCentro'] <= hora):
-                        record.llegaGeografico = "Si"
-                        return "Si"
+                    resultTimpo = utils.minsToMil(tiempos['tTrabajoJardin'] + tiempos['tJardinCentro'])
+                    horaLlegadaJardin = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoJardin'])
+                    horaSalidaJardin = jardin.hora_fin if (horaLlegadaJardin <= jardin.hora_fin) else horaLlegadaJardin
+                    record.llegaGeografico = "Si" if (utils.minsToMil(horaSalidaJardin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle)) else "No"
+                    return record.llegaGeografico
             else:
-                if(trabajo.hora_fin+ tiempos['tTrabajoHogar']+tiempos['tHogarCentro'] <= hora):
-                    record.llegaGeografico = "Si"
-                    return "Si"
+                resultTimpo = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
+                record.llegaGeografico = "Si" if (utils.minsToMil(trabajo.hora_fin + resultTimpo) <= utils.minsToMil(hora + tiReLle)) else "No"
+                return record.llegaGeografico
     else:
-        if(tieneJardin and jardin and dia in utils.getListOfDays(jardin.dias)):
+        if(jardin and dia in utils.getListOfDays(jardin.dias)):
             if(hora < jardin.hora_inicio):
-                horaAcumulada += tiempoConsulta
-                horaAcumulada += tiempos['tCentroJardin']
-                if(horaAcumulada <= jardin.hora_inicio):
-                    record.llegaGeografico = "Si"
-                    return "Si"
+                resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+                resultLlegaG = "Si" if (utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio) else "No"
+                return record.llegaGeografico
             else:
-                if(jardin.hora_fin + tiempos['tJardinCentro'] <= hora):
-                    record.llegaGeografico = "Si"
-                    return "Si"
+                resultTimpo = utils.minsToMil(tiempos['tHogarJardin']+ tiempos['tJardinCentro'])
+                resultLlegaG = "Si" if (utils.minsToMil(jardin.hora_fin + tiempos['tJardinCentro']) <= utils.minsToMil(hora + tiReLle)) else "No"
+                return record.llegaGeografico
         else:
-            record.llegaGeografico = "Si"
-            return "Si"
-    record.llegaGeografico = "No"
-    return "No"
+            resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
+            resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo) else "No"
+            return record.llegaGeografico
+
 def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos,record):
     hogar = individuo.hogar
     trabajo = individuo.trabajo
@@ -239,33 +235,33 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos
         if(hora < trabajo.hora_inicio):
             if(tieneJardin and jardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    record.tiempoViaje = tiempos['tHogarCentro']
+                    record.tiempoViaje = utils.minsToMil(tiempos['tHogarCentro'])
                     return record.tiempoViaje
                 else:
-                    record.tiempoViaje = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
+                    record.tiempoViaje = utils.minsToMil(tiempos['tHogarJardin'] + tiempos['tJardinCentro'])
                     return record.tiempoViaje
             else:
-                record.tiempoViaje = tiempos['tHogarCentro']
+                record.tiempoViaje = utils.minsToMil(tiempos['tHogarCentro'])
                 return record.tiempoViaje
         else:
             if(tieneJardin and jardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
-                    record.tiempoViaje = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
+                    record.tiempoViaje = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
                     return record.tiempoViaje
                 else:
-                    record.tiempoViaje = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
+                    record.tiempoViaje = utils.minsToMil(tiempos['tTrabajoJardin'] + tiempos['tJardinCentro'])
                     return record.tiempoViaje
             else:
-                record.tiempoViaje = tiempos['tHogarCentro']
+                record.tiempoViaje = utils.minsToMil(tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'])
                 return record.tiempoViaje
     else:
         if(tieneJardin and jardin  and dia in utils.getListOfDays(jardin.dias)):
             if(hora < jardin.hora_inicio):
-                record.tiempoViaje = tiempos['tHogarCentro']
+                record.tiempoViaje = utils.minsToMil(tiempos['tHogarCentro'])
                 return record.tiempoViaje
             else:
-                record.tiempoViaje = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
+                record.tiempoViaje = utils.minsToMil(tiempos['tHogarJardin'] + tiempos['tJardinCentro'])
                 return record.tiempoViaje
         else:
-            record.tiempoViaje = tiempos['tHogarCentro']
+            record.tiempoViaje = utils.minsToMil(tiempos['tHogarCentro'])
             return record.tiempoViaje
