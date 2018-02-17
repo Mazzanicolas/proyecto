@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen,SectorTiempoOmnibus,IndividuoCentro, IndividuoCentroOptimo
+from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempoAuto,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen,SectorTiempoOmnibus,IndividuoCentro, IndividuoCentroOptimo
 from django.db.models import F
 import math
 from django_tables2.export.export import TableExport
@@ -67,8 +67,6 @@ def test(request):
 
 def progress(request):
     print("PROGRESS")
-    isIndividual = request.session.get('isIndividual', None)
-    isResumen = request.session.get('isResumen', None)
     done = request.session.get('current',-1)
     total = request.session.get('total', 100)
     data = {"Done":done,"Total":total}
@@ -78,16 +76,18 @@ def cancelarConsulta(request):
     print("CANCELAR CONSULTA")
     deleteConsultaResults(request)
     return redirect('index')
+
 def deleteConsultaResults(request):
     request.session['isIndividual'] = 0
     request.session['isResumen'] = 0
     asyncKey = request.session.get('asyncKey',None)
-    if(asyncKey and asyncKey == -404):
+    if(asyncKey and not asyncKey == -404):
         asyncResult = result.AsyncResult(asyncKey)
         if(asyncResult):
             print(asyncResult)
             asyncResult.revoke(terminate = True)
             asyncResult.forget()
+            request.session['asyncKey'] = -404
     request.session['current'] = -1
 
 def redirectSim(request):
@@ -241,7 +241,6 @@ def downloadFile(request):
     zip_subdir   = "Resultados"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
-    print("putoi")
     zf = zipfile.ZipFile(s, "w",zipfile.ZIP_DEFLATED)
     if(not request.session.get('isIndividual',0) == 0):
         indvPath = './app/files/consultOut/IndividualResult'+sessionKey+'.csv'

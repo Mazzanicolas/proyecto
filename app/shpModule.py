@@ -4,6 +4,7 @@ from   shapely    import geometry
 import app.utils as utils
 import os
 import glob
+import csv
 
 def cleanOldShapeFiles():
     files = glob.glob('./app/files/shpOut/*')
@@ -23,28 +24,36 @@ def saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod):
     pathToFilesToDownlaod.extend([directory+fileName+sessionId+'.shp',directory+fileName+sessionId+'.shx',directory+fileName+sessionId+'.dbf'])
     return pathToFilesToDownlaod
 
-def generarShapeLlega(fields, individuos,xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeLlega(path, fields, xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
-    for individuo in individuos:
-        xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(individuo[2])
-        shapeWriter.point(xCoordCentro,yCoordCentro)
-        shapeWriter.record(individuo[0],individuo[2],individuo[3],individuo[4],individuo[5],individuo[6],individuo[7],individuo[9])
+    with open(path, newline='') as csvfile:
+        aFile = csv.reader(csvfile, delimiter=',', quotechar='|')
+        removeCsvHeader(aFile)
+        for individuo in aFile:
+            if(llega(individuo)):
+                xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(int(individuo[2]))
+                shapeWriter.point(xCoordCentro,yCoordCentro)
+                shapeWriter.record(individuo[0],individuo[2],individuo[3],individuo[4],individuo[5],individuo[6],individuo[7],individuo[9])
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
-def generarResumenLlega(fields, individuos,xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
+def generarResumenLlega(path, fields, xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
     currentIdsInDBF = []
-    dictionaryOfIdOccurences = getDictionaryCantidadLlega(individuos)
-    for individuo in individuos:
-        if(not idIsDuplicated(individuo[0],individuo[2],currentIdsInDBF)):
-            xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(individuo[2])
-            shapeWriter.point(xCoordCentro,yCoordCentro)
-            shapeWriter.record(individuo[0],individuo[2],dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), '?'))
-            currentIdsInDBF.append(str(individuo[0])+'_'+str(individuo[2]))
+    dictionaryOfIdOccurences = getDictionaryCantidadLlega(path)
+    with open(path, newline='') as csvfile:
+        aFile = csv.reader(csvfile, delimiter=',', quotechar='|')
+        removeCsvHeader(aFile)
+        for individuo in aFile:
+            if(llega(individuo)):
+                if(not idIsDuplicated(individuo[0],individuo[2],currentIdsInDBF)):
+                    xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(int(individuo[2]))
+                    shapeWriter.point(xCoordCentro,yCoordCentro)
+                    shapeWriter.record(individuo[0],individuo[2],dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), '?'))
+                    currentIdsInDBF.append(str(individuo[0])+'_'+str(individuo[2]))
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
 def idIsDuplicated(idIndividuoToCheck,idCentroToCheck,listOfIds):
@@ -53,10 +62,14 @@ def idIsDuplicated(idIndividuoToCheck,idCentroToCheck,listOfIds):
         return True
     return False
 
-def getDictionaryCantidadLlega(individuos):
+def getDictionaryCantidadLlega(path):
     dictionaryOfIdOccurences = dict()
-    for individuo in individuos:
-        dictionaryOfIdOccurences[str(individuo[0])+'_'+str(individuo[2])] = dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), 0)+1
+    with open(path, newline='') as csvfile:
+        aFile = csv.reader(csvfile, delimiter=',', quotechar='|')
+        removeCsvHeader(aFile)
+        for individuo in aFile:
+            if(llega(individuo)):
+                dictionaryOfIdOccurences[str(individuo[0])+'_'+str(individuo[2])] = dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), 0)+1
     print(dictionaryOfIdOccurences)
     return dictionaryOfIdOccurences
 
@@ -101,7 +114,7 @@ def generarShapeCentroOptimoAuto(fields, individuos, fileName, sessionId, pathTo
         centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
         xCoordCentroAuto,yCoordCentroAuto = centroOptimo.centroOptimoAuto.x_coord, centroOptimo.centroOptimoAuto.y_coord
         shapeWriter.point(xCoordCentroAuto,yCoordCentroAuto)
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, centroOptimo.tHogarCentroAuto)
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroAuto))
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
@@ -112,7 +125,7 @@ def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, sessionId, pat
         centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
         xCoordCentroOmnibus,yCoordCentroOmnibus = centroOptimo.centroOptimoOmnibus.x_coord, centroOptimo.centroOptimoOmnibus.y_coord
         shapeWriter.point(xCoordCentroOmnibus,yCoordCentroOmnibus)
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, centroOptimo.tHogarCentroOmnibus)
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroOmnibus))
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeCentroOptimoCaminando(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
@@ -123,7 +136,7 @@ def generarShapeCentroOptimoCaminando(fields, individuos, fileName, sessionId, p
         centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
         xCoordCentroCaminando,yCoordCentroCaminando = centroOptimo.centroOptimoCaminando.x_coord, centroOptimo.centroOptimoCaminando.y_coord
         shapeWriter.point(xCoordCentroCaminando,yCoordCentroCaminando)
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, centroOptimo.tHogarCentroCaminando)
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroCaminando))
     saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
@@ -192,18 +205,18 @@ def llega(indivudoCentroDiaHora):
         return True
     return False
 
-def generarShape(request,sessionId,celeryResultAsList):
+def generarShape(request,sessionId,pathToSourceData):
     cleanOldShapeFiles()
     values = request.GET
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = Individuo.objects.all()
     pathToFilesToDownlaod = []
     if('generar_llega' in values):
-        individuosLlega = getListLlega(celeryResultAsList)
-        generarShapeLlega(['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],individuosLlega,xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
+        path = pathToSourceData+sessionId+'.csv'
+        generarShapeLlega(path, ['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
     if('generar_resumen_llega' in values):
-        individuosLlega = getListLlega(celeryResultAsList)
-        generarResumenLlega(['IDHogar','IDCentro','CantidadLlega'],individuosLlega,xyCoordCentrosDictionary,'LlegaResumido', sessionId, pathToFilesToDownlaod)
+        path = pathToSourceData+sessionId+'.csv'
+        generarResumenLlega(path,['IDHogar','IDCentro','CantidadLlega'],xyCoordCentrosDictionary,'LlegaResumido', sessionId, pathToFilesToDownlaod)
     if('generar_hogares' in  values):
         generarShapeHogares(['IDHogar'], individuos, 'Hogares', sessionId, pathToFilesToDownlaod)
     if('generar_jardines' in  values):
@@ -223,3 +236,8 @@ def generarShape(request,sessionId,celeryResultAsList):
     if('generar_hogar_caminando' in  values):
         generarShapeLineaHogarCentroCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'LineaHogarCentrosOptimosCaminando', sessionId, pathToFilesToDownlaod)
     return pathToFilesToDownlaod
+
+def removeCsvHeader(aFile):
+    next(aFile)
+    return aFile
+

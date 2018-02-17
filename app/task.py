@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task, group, result
 from celery.result import allow_join_result
 import time
-from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempo,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte,Sector, Prestador, AnclaTemporal, Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
 import app.utils as utils
 from django.contrib.sessions.models import Session
 from django.contrib.sessions.backends.db import SessionStore
@@ -16,16 +16,22 @@ def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
     tiempoInicio = time.time()
     getData      = get
+    isResumen = False
+    isIndividual = False
     indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(get,cookies)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
-    session['total'] = len(individuos)*2 + 10 if (True and True) else len(individuos) + 5
     session['current'] = 0
-    session['isIndividual'] = 1
-    session['isResumen'] = 1
+    if(getData.get('generarIndividual',0)== '1'):
+        session['isIndividual'] = 1
+        isIndividual = True
+    if(getData.get('generarIndividual',0) == '1'):
+        session['isResumen'] = 1
+        isResumen = True
+    session['total'] = len(individuos)*2 + 10 if (isIndividual and isResumen) else len(individuos) + 5
     session.save()
-    if(True):#getData.get('individual',0)== '1'):
+    if(isIndividual):
         job = calculateIndividual.chunks(individuos,1).group()
         resultado = job.apply_async(queue = "CalculationQueue")
         header = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
@@ -34,7 +40,7 @@ def delegator(get,sessionKey,cookies):
             resultList =  header + sum(sum(resultList,[]), [])
             saveCSVfromString(resultList,sessionKey)
 
-    if(True):#getData.get('resumen',0) == '1'):
+    if(isResumen):
         job = suzuki.chunks(individuos,1).group()
         result = job.apply_async(queue = "CalculationQueue")
         with allow_join_result():
