@@ -105,8 +105,10 @@ class SimPersonTable(TestPersonTable):
             return 'Auto'
         elif(self.tipoTrans == '0'):
             return "Caminando"
-        else:
+        elif(self.tipoTrans == '2'):
             return "Bus"
+        return record.individuo.tipo_transporte.nombre
+
     def render_tiempoViaje(self, record):
         if(self.currentUser == -1 or self.currentUser != record.individuo.id):
             self.tiempos = utils.getTiempos(record.individuo,record.centro,self.tipoTrans)
@@ -172,9 +174,9 @@ def checkLlega(self,individuo,centro, dia,hora,tiempoViaje,record,tieneTrabajo,t
     if(tiempoViaje > tiempoMaximo or tiempoViaje == -1):
         record.llegaGeografico = "No"
         return "No"
-    if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
+    if(tieneTrabajo and trabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(hora < trabajo.hora_inicio):
-            if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
+            if(jardin and tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
                     record.llegaGeografico =  "Si" if (utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo'])<= trabajo.hora_inicio) else "No"
@@ -190,7 +192,7 @@ def checkLlega(self,individuo,centro, dia,hora,tiempoViaje,record,tieneTrabajo,t
                 record.llegaGeografico = "Si" if (horaViajeMasConsulta <= trabajo.hora_inicio) else "No"
                 return record.llegaGeografico
         else:
-            if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
+            if(jardin and tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     horaTerCons1 = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin'])
                     horaTerCons2 = utils.minsToMil(trabajo.hora_fin + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin'])

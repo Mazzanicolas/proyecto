@@ -1,11 +1,10 @@
 from __future__ import absolute_import, unicode_literals
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import render
-from app.models import Individuo, Settings, TipoTransporte,Sector, Prestador, AnclaTemporal, SectorTiempoAuto,Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen,SectorTiempoOmnibus,IndividuoCentro, IndividuoCentroOptimo
+from app.models import Individuo, Settings, Sector, Prestador,Centro,Pediatra,IndividuoTiempoCentro,IndividuoCentro, IndividuoCentroOptimo
 from django.db.models import F
 import math
 from django_tables2.export.export import TableExport
-from app.tables import PersonTable,ResumenTable,TestPersonTable, SimPersonTable,PagedFilteredTableView
 from django_tables2 import RequestConfig
 import shapefile
 import time
@@ -14,7 +13,7 @@ from django.shortcuts import redirect
 from celery import group, result,chord
 from proyecto.celery import app
 from app.checkeo_errores import *
-from app.task import suzuki, calculateIndividual, delegator
+from app.task import delegator
 import app.utils as utils
 import app.load as load
 from django.contrib.sessions.models import Session
@@ -53,7 +52,7 @@ def genShape(request):
     return resp
 
 
-def test(request):
+def redirectConsulta(request):
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and
             Centro.objects.count() > 0):
         print("*****************************")
@@ -96,8 +95,6 @@ def redirectSim(request):
         print("**************************************************")
         newCalcTimes()
     getReq = request.GET
-    if(getReq.get('checkRes','0') == '1'):
-        return resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request)
     if(getReq.get('checkRango','0') == '-1'):
         return generateCsvResults(request)
     response = redirect('Simulacion')
@@ -187,47 +184,6 @@ def guardarArchivo(nombre, archivo):
             destination.write(chunk)
         csv = os.path.join(settings.MEDIA_ROOT, destination)
         return csv
-
-def resumenConFiltroOSinFiltroPeroNingunoDeLosDos(request):
-    tiempoInicio = time.time()
-    sessionKey = request.session.session_key
-    indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(request)
-    numberPerGroup = math.ceil(len(indQuery)/8)
-    numberPerGroup = min(3,numberPerGroup)
-    individuos     = [[[x.id for x in indQuery[i:i + numberPerGroup]],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
-    request.session['total'] = len(individuos)
-    print("Individuos a calcular: "+str(len(indQuery)))
-    resultList = []
-    job = suzuki.chunks(individuos,1).group()
-    result = job.apply_async()
-    result.save()
-    request.session['lock'] = '1'
-    request.session['current'] = 0
-    request.session['groupId'] = result.id
-    request.session['resultType'] = 'resumen'
-    response = redirect('index')
-    return response
-
-def consultaToCSV(request):
-    tiempoInicio = time.time()
-    sessionKey   = request.session.session_key
-    getData      = request.GET
-    indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(request)
-    numberPerGroup = math.ceil(len(indQuery)/8)
-    numberPerGroup = min(3,numberPerGroup)
-    individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
-    request.session['total'] = len(individuos)
-    resultList = []
-    #return resultList.join('s')
-    job = calculateIndividual.chunks(individuos,1).group()
-    result = job.apply_async()
-    result.save()
-    request.session['current'] = 0
-    request.session['lock'] = '1'
-    request.session['groupId'] = result.id
-    request.session['resultType'] = 'individual'
-    response = redirect('index')
-    return response
 
 def generateCsvResults(request):
     deleteConsultaResults(request)
