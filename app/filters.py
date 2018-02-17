@@ -36,3 +36,22 @@ class IndividuoTiempoCentroFilter(django_filters.FilterSet):
     class Meta:
         model = IndividuoTiempoCentro
         fields = ['individuo', 'centro','hora','dia','trabajo','prestador','transporte','tiempoViaje']
+
+class IndividuoFilter(django_filters.FilterSet):
+    individuo = django_filters.NumberFilter(label = 'Filtrar por Individuo', name='id')
+    trabajo =  django_filters.BooleanFilter(label = "Trabaja", name = "tieneTrabajo")
+    jardin =  django_filters.BooleanFilter(label = "Trabaja", name = "tieneJardin")
+    prestador = django_filters.filters.ModelMultipleChoiceFilter(
+        name='prestador__nombre',
+        to_field_name='nombre',
+        label = "Prestadores",
+        queryset=Prestador.objects.all(),
+        widget=forms.CheckboxSelectMultiple()
+    )
+    transporte = django_filters.filters.ModelMultipleChoiceFilter(
+        name='tipo_transporte',
+        to_field_name='id',
+        label = "Transporte",
+        queryset= TipoTransporte.objects.all(),
+        widget=forms.CheckboxSelectMultiple()
+    )

@@ -4,5 +4,7 @@
     "python.linting.pylintArgs": [
         "--ignore=E501",
         "--load-plugins",
-        "pylint_django"]
+        "pylint_django"
+    ],
+    "python.pythonPath": "C:\\Users\\Bruno\\AppData\\Local\\Programs\\Python\\Python36-32\\python.exe"
 }

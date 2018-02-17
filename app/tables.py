@@ -1,14 +1,14 @@
 
 import django_tables2 as tables
-from .models import IndividuoTiempoCentro,IndividuoCentro, MedidasDeResumen, Settings, Prestador
+from .models import *
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from django_tables2 import SingleTableView
 from django_tables2.export.views import ExportMixin
 from crequest.middleware import CrequestMiddleware
 import app.utils as utils
-from app.forms import IndTieCenHelper
-from app.filters import IndividuoTiempoCentroFilter
+from app.forms import *
+from app.filters import *
 from django_tables2 import RequestConfig
 
 class PagedFilteredTableView(SingleTableView):
@@ -267,3 +267,33 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos
         else:
             record.tiempoViaje = utils.minsToMil(tiempos['tHogarCentro'])
             return record.tiempoViaje
+
+class IndividuoTable(tables.Table):
+    class Meta:
+        model = Individuo
+class IndividuoTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = Individuo.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(PagedFilteredTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(PagedFilteredTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class IndividuoListView(ExportMixin,PagedFilteredTableView):
+    model = IndividuoTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = IndividuoFilter
+    formhelper_class = IndHelper
