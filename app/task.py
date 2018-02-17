@@ -24,9 +24,11 @@ def delegator(get,sessionKey,cookies):
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
     session['current'] = 0
     if(getData.get('generarIndividual',0)== '1'):
+        print("Soy un Individual")
         session['isIndividual'] = 1
         isIndividual = True
-    if(getData.get('generarIndividual',0) == '1'):
+    if(getData.get('generarResumen',0) == '1'):
+        print("Soy un resumen")
         session['isResumen'] = 1
         isResumen = True
     session['total'] = len(individuos)*2 + 10 if (isIndividual and isResumen) else len(individuos) + 5

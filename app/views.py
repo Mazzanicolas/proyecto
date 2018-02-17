@@ -6,6 +6,7 @@ import math
 import shapefile
 import time
 import csv
+from celery import result
 from django.shortcuts import redirect
 from proyecto.celery import app
 from app.checkeo_errores import *
@@ -85,6 +86,7 @@ def deleteConsultaResults(request):
             asyncResult.forget()
             request.session['asyncKey'] = -404
     request.session['current'] = -1
+    request.session.save()
 
 def redirectSim(request):
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and 
@@ -194,6 +196,8 @@ def downloadFile(request):
     zip_subdir   = "Resultados"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
+    print("Valor isIndividual es: " + str(request.session.get('isIndividual',-40)))
+    print("Valor isResumen es: " + str(request.session.get('isResumen',-40)))
     zf = zipfile.ZipFile(s, "w",zipfile.ZIP_DEFLATED)
     if(not request.session.get('isIndividual',0) == 0):
         indvPath = './app/files/consultOut/IndividualResult'+sessionKey+'.csv'
