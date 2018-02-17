@@ -44,6 +44,8 @@
           <li><a href="#" data-toggle="modal" data-target="#config">Configuración</a></li>
           <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Permite cambiar los valores de ajustes del sistema." disabled>i</button></li>
           <!--2-->
+          <li><a href="#" data-toggle="modal" data-target="#verDatos">Datos</a></li>
+          <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Permite ver los datos en la base." disabled>i</button></li>
           <!--3-->
           <li><a href="#" data-toggle="modal" data-target="#sim">Simular</a></li>
           <li><button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Realiza calculos inputando restricciones ficticias a los individuos." disabled>i</button></li>
@@ -115,6 +117,34 @@
       </div>
     </div>
   <!--2-Config-->
+  <div id="verDatos" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+    <!-- Modal content-->
+    <form action=''  method="POST">
+    {% csrf_token %}
+      <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Ver datos de la base</h4>
+      </div>
+        <!--Tiempo transporte-->
+        <div class="panel-body">
+          <div class="input-group">
+            <select class="form-control col-xs-6" name="datosAVer">
+              <option>Tabla A</option>
+              <option>Tabla B</option>
+              <option>Tabla C</option>
+              <option>Tabla A</option>
+            </select>  
+          </div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" >Ver</button>
+        </div>
+      </div>
+    </form>
+    </div>
+  </div>
   <!--10-Descargar-->
   <div id="downlaod" class="modal fade" role="dialog">
       <div class="modal-dialog">
@@ -301,14 +331,14 @@
           <div class="panel panel-default">
             <div class="panel-body"> ¿Como quiere el resultado? </div>
             <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" id="cbCSV" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
+              <label class="checkbox-inline"><input type="checkbox" id="cbCSV2" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
             </div>
           </div>
           <div class="panel panel-default">
             <div class="panel-body"> Resultados a generar </div>
             <div class="panel-footer">
               <label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Simulación</label></br>
-              <label class="checkbox-inline"><input type="checkbox" name="generarResumen" value="1"> Resumen</label></br>
+              <label class="checkbox-inline"><input type="checkbox"id="cbCSV3" name="generarResumen" value="1"> Resumen</label></br>
             </div>
           </div>
         </div>
@@ -485,12 +515,11 @@
               <label class="checkbox-inline"><input type="checkbox" id="cbCSV" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
             </div>
           </div>
-          <!--Anclas-->
           <div class="panel panel-default">
             <div class="panel-body"> Resultados a generar </div>
             <div class="panel-footer">
               <label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Ejecución</label></br>
-              <label class="checkbox-inline"><input type="checkbox" name="generarResumen" value="1"> Resumen</label></br>
+              <label class="checkbox-inline"><input type="checkbox" id="cbCSV0" name="generarResumen" value="1"> Resumen</label></br>
             </div>
           </div>
         </div>
@@ -748,15 +777,25 @@
               $('#rangoIDresult').hide();
           });
       });
-      //Mostrar resumen
+      //Mostrar resumen PENE
         $(document).ready(function(){
-        $('input[name="checkRes"]').change(function(){
+        $(document.getElementById("cbCSV0")).change(function(){
             if(this.checked){
               document.getElementById("cbCSV").disabled = true;
               document.getElementById("cbCSV").checked = true;
             }
             else
               document.getElementById("cbCSV").disabled = false;
+            });
+        });
+        $(document).ready(function(){
+        $(document.getElementById("cbCSV3")).change(function(){
+            if(this.checked){
+              document.getElementById("cbCSV2").disabled = true;
+              document.getElementById("cbCSV2").checked = true;
+            }
+            else
+              document.getElementById("cbCSV2").disabled = false;
             });
         });
     //Mostrar transportes
