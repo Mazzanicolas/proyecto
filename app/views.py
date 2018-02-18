@@ -177,6 +177,7 @@ def index(request):
     response.set_cookie(key = 'tiempoConsulta',value = consT)
     response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
     return response
+
 def guardarArchivo(nombre, archivo):
     with default_storage.open('tmp/'+nombre, 'wb+') as destination:
         for chunk in archivo.chunks():
@@ -255,6 +256,7 @@ def redirectTable(request):
 
     print(request.GET)
     return
+
 def downloadShapeFile(request):
     path = './app/files/consultOut/IndividualResult'
     filenames    = generarShape(request, request.session.session_key, path)
@@ -262,13 +264,18 @@ def downloadShapeFile(request):
     return resp
     #[['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega'],  ..]
 
+def getCleanFileName(aFile):
+    name = aFile.split("$")[0]
+    extentsion = aFile[-4:]
+    return name+extentsion
+
 def zipFile(zip_subdir, filenames):
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
     zf = zipfile.ZipFile(s, "w")
     for fpath in filenames:
         fdir, fname = os.path.split(fpath)
-        zip_path    = os.path.join(zip_subdir, fname)
+        zip_path    = os.path.join(zip_subdir, getCleanFileName(fname))
         zf.write(fpath, zip_path)
     zf.close()
     resp = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
@@ -277,6 +284,7 @@ def zipFile(zip_subdir, filenames):
 
 def plot(request):
     return render(request,'app/plot.html')
+
 def newCalcTimes():
     tiempoMaximo   = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
     tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)

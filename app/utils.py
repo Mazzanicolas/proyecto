@@ -1,5 +1,17 @@
 from app.models import *
 from shapely.geometry import Polygon, Point
+import os
+import glob
+
+def cleanAllFolderFiles(path):
+    files = glob.glob(path+'*')
+    for aFile in files:
+        os.remove(aFile)
+
+def createFolderInUsers(directory):
+    directory = './app/files/users/'+direcotry
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 def generateParamDict(getReq):
     res = dict()
@@ -18,6 +30,7 @@ class Echo:
     def write(self, value):
         """Write the value by returning it, instead of storing in a buffer."""
         return value
+        
 def newGetSector(lugar, transporte):
     if(lugar is None):
         return None
@@ -27,6 +40,7 @@ def newGetSector(lugar, transporte):
         return lugar.sector_caminando
     else:
         return lugar.sector_auto
+
 def printCentroids(shapeAuto):
     for shape in shapeAuto:
         p = Polygon(shape.points)
@@ -34,6 +48,7 @@ def printCentroids(shapeAuto):
             return p.representative_point()
         else:
             return p.centroid
+
 def centroid(shape):
     poligono = Polygon(shape.points)
     if poligono.is_valid:

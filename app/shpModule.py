@@ -2,14 +2,7 @@ import shapefile
 from   app.models import Individuo, IndividuoCentroOptimo, Centro
 from   shapely    import geometry
 import app.utils as utils
-import os
-import glob
 import csv
-
-def cleanOldShapeFiles():
-    files = glob.glob('./app/files/shpOut/*')
-    for aFile in files:
-        os.remove(aFile)
 
 def getIDCentroXYCoordDictionary(centros):
     xyCoordCentrosDictionary = dict()
@@ -19,9 +12,9 @@ def getIDCentroXYCoordDictionary(centros):
 
 def saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod):
     directory = 'app/files/shpOut/'
-    shapeWriter.save(directory+fileName+sessionId)
+    shapeWriter.save(directory+fileName+'$'+sessionId)
     shapeWriter = shapefile.Writer(shapefile.POINT)
-    pathToFilesToDownlaod.extend([directory+fileName+sessionId+'.shp',directory+fileName+sessionId+'.shx',directory+fileName+sessionId+'.dbf'])
+    pathToFilesToDownlaod.extend([directory+fileName+'$'+sessionId+'.shp',directory+fileName+'$'+sessionId+'.shx',directory+fileName+'$'+sessionId+'.dbf'])
     return pathToFilesToDownlaod
 
 def generarShapeLlega(path, fields, xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
@@ -192,31 +185,44 @@ def createShapeFields(shapeWriter,fields):
 def secondsToMinsRounded(timeInSeconds):
     return round(timeInSeconds/60,2)
 
-def getListLlega(celeryResultAsList):
+def llegaToCsv(path):
     individuosLlega = []
-    for indivudoCentroDiaHora in celeryResultAsList:
-        if(llega(indivudoCentroDiaHora)):
-            individuosLlega.append(indivudoCentroDiaHora)
-    print(len(individuosLlega))
-    return individuosLlega
+    with open(path, newline='') as csvfile:
+        aFile = csv.reader(csvfile, delimiter=',', quotechar='|')
+        removeCsvHeader(aFile)
+        for indivudoCentroDiaHora in aFile:
+            if(llega(indivudoCentroDiaHora)):
+                individuosLlega.append(indivudoCentroDiaHora)
+        print(len(individuosLlega))
+    temporalFilePath = writeCsvFile(individuosLlega)
+    return temporalFilePath
 
 def llega(indivudoCentroDiaHora):
     if(indivudoCentroDiaHora[-1]=='Si'):
         return True
     return False
 
+def writeCsvFile(afile):
+    path = './app/files/shpOut/Llega.csv'
+    with open(path, 'w', newline='') as temporalFile:
+        writer = csv.writer(temporalFile)
+        writer.writerows(afile)
+    return path
+
 def generarShape(request,sessionId,pathToSourceData):
-    cleanOldShapeFiles()
+    utils.cleanAllFolderFiles('./app/files/shpOut/')
     values = request.GET
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = Individuo.objects.all()
     pathToFilesToDownlaod = []
     if('generar_llega' in values):
         path = pathToSourceData+sessionId+'.csv'
-        generarShapeLlega(path, ['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
+        temporalFilePath = llegaToCsv(path)
+        generarShapeLlega(temporalFilePath, ['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
     if('generar_resumen_llega' in values):
         path = pathToSourceData+sessionId+'.csv'
-        generarResumenLlega(path,['IDHogar','IDCentro','CantidadLlega'],xyCoordCentrosDictionary,'LlegaResumido', sessionId, pathToFilesToDownlaod)
+        temporalFilePath = llegaToCsv(path)
+        generarResumenLlega(temporalFilePath,['IDHogar','IDCentro','CantidadLlega'],xyCoordCentrosDictionary,'LlegaResumido', sessionId, pathToFilesToDownlaod)
     if('generar_hogares' in  values):
         generarShapeHogares(['IDHogar'], individuos, 'Hogares', sessionId, pathToFilesToDownlaod)
     if('generar_jardines' in  values):
