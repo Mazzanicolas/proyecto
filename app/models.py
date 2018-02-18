@@ -43,8 +43,6 @@ class Individuo(models.Model):
 class IndividuoCentro(models.Model):
     individuo = models.ForeignKey(Individuo, models.CASCADE)
     centro    = models.ForeignKey(Centro, models.CASCADE)
-    tiempoViajeAntesTrabajo = models.IntegerField(blank=True, null=True)
-    tiempoViajeDespuesTrabajo = models.IntegerField(blank=True, null=True)
     tHogarCentroAuto = models.IntegerField(null=True)
     tHogarTrabajoAuto = models.IntegerField(null=True)
     tHogarJardinAuto = models.IntegerField(null=True)
@@ -105,17 +103,23 @@ class Prestador(models.Model):
     nombre = models.CharField(max_length=100)
     def __str__(self):
         return u'{0}'.format(self.nombre)
+    class Meta:
+        ordering = ['id']
 
 class SectorAuto(models.Model):
     shapeid = models.CharField(max_length = 50,primary_key=True)
     x_centroide = models.IntegerField()
     y_centroide = models.IntegerField()
     shapePosition = models.IntegerField()
+    class Meta:
+        ordering = ['shapeid']
 class SectorCaminando(models.Model):
     shapeid = models.CharField(max_length = 50,primary_key=True)
     x_centroide = models.IntegerField()
     y_centroide = models.IntegerField()
     shapePosition = models.IntegerField()
+    class Meta:
+        ordering = ['shapeid']
 
 class SectorTiempoAuto(models.Model):
     sector_1 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sector_1')
@@ -125,6 +129,7 @@ class SectorTiempoAuto(models.Model):
 
     class Meta:
         unique_together = (('sector_1', 'sector_2'),)
+        ordering = ['id']
 class SectorTiempoCaminando(models.Model):
     sector_1 = models.ForeignKey(SectorCaminando, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_1')
     sector_2 = models.ForeignKey(SectorCaminando, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_2')
@@ -133,6 +138,7 @@ class SectorTiempoCaminando(models.Model):
 
     class Meta:
         unique_together = (('sector_1', 'sector_2'),)
+        ordering = ['id']
 
 class SectorTiempoOmnibus(models.Model):
     sectorO_1 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
@@ -140,12 +146,14 @@ class SectorTiempoOmnibus(models.Model):
     tiempo = models.FloatField()
     class Meta:
         unique_together = (('sectorO_1', 'sectorO_2'),)
-
+        ordering = ['id']
 class TipoTransporte(models.Model):
     id = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=100)
     def __str__(self):
         return u'{0}'.format(self.nombre)
+    class Meta:
+        ordering = ['id']
 
 class MedidasDeResumen(models.Model):
     persona = models.ForeignKey(Individuo, models.CASCADE)

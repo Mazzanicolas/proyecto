@@ -217,10 +217,42 @@ def downloadFile(request):
 def redirectTable(request):
     verDatos = request.GET.get('datosAVer',0)
     if(verDatos == '1'):
-        #response = redirect('individuosTable')
-        #return response
-        table = IndividuoTable(Individuo.objects.all())
-        return render(request, 'app/resumen.html', {'table': table})
+        response = redirect('individuosTable')
+        return response
+    elif(verDatos == '2'):
+        response = redirect('centrosTable')
+        return response
+    elif(verDatos == '3'):
+        response = redirect('anclasTable')
+        return response
+    elif(verDatos == '4'):
+        response = redirect('individuoCentroTable')
+        return response
+    elif(verDatos == '5'):
+        response = redirect('pediatrasTable')
+        return response
+    elif(verDatos == '6'):
+        response = redirect('prestadorTable')
+        return response
+    elif(verDatos == '7'):
+        response = redirect('sectorAutoTable')
+        return response
+    elif(verDatos == '8'):
+        response = redirect('sectorCaminandoTable')
+        return response
+    elif(verDatos == '9'):
+        response = redirect('sectorOmnibusTable')
+        return response
+    elif(verDatos == '10'):
+        response = redirect('sectorTiempoAutoTable')
+        return response
+    elif(verDatos == '11'):
+        response = redirect('sectorTiempoCaminandoTable')
+        return response
+    elif(verDatos == '12'):
+        response = redirect('sectorTiempoOmnibusTable')
+        return response
+
     print(request.GET)
     return
 def downloadShapeFile(request):

@@ -14,5 +14,20 @@ urlpatterns = [
     url(r'^plot/$', views.plot, name='plot'),
     url(r'^generate_shape/$', views.genShape, name='genrate_shape'),
     url(r'^redirectTable/$', views.redirectTable, name='redirectTable'),
-    url(r'^individuos/$', tables.CentrosListView.as_view(), name='individuosTable'),
+    url(r'^individuos/$', tables.IndividuoListView.as_view(), name='individuosTable'),
+    url(r'^centros/$', tables.CentrosListView.as_view(), name='centrosTable'),
+    url(r'^anclas/$', tables.AnclasListView.as_view(), name='anclasTable'),
+    url(r'^IndividuosCentros/$', tables.IndividuoCentroListView.as_view(), name='individuoCentroTable'),
+    url(r'^pediatras/$', tables.PediatraListView.as_view(), name='pediatrasTable'),
+    url(r'^prestadores/$', tables.PrestadorListView.as_view(), name='prestadorTable'),
+    url(r'^SectoresAutos/$', tables.SectorAutoListView.as_view(), name='sectorAutoTable'),
+    url(r'^SectoresCaminandos/$', tables.SectorCaminandoListView.as_view(), name='sectorCaminandoTable'),
+    url(r'^SectoresOmnibuss/$', tables.SectorOmnibusListView.as_view(), name='sectorOmnibusTable'),
+    url(r'^SectoresTiemposAutos/$', tables.SectorTiempoAutoListView.as_view(), name='sectorTiempoAutoTable'),
+    url(r'^SectoresTiemposCaminandos/$', tables.SectorTiempoCaminandoListView.as_view(), name='sectorTiempoCaminandoTable'),
+    url(r'^SectoresTiemposOmnibuss/$', tables.SectorTiempoOmnibusListView.as_view(), name='sectorTiempoOmnibusTable'),
+
+
+
+
 ]

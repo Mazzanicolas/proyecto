@@ -10,6 +10,7 @@ import app.utils as utils
 from app.forms import *
 from app.filters import *
 from django_tables2 import RequestConfig
+import math
 
 class PagedFilteredTableView(SingleTableView):
     filter_class = None
@@ -17,7 +18,7 @@ class PagedFilteredTableView(SingleTableView):
     context_filter_name = 'filter'
 
     def get_queryset(self, **kwargs):
-        qs = IndividuoTiempoCentro.objects.all()
+        qs = Individuo.objects.all()
         self.filter = self.filter_class(self.request.GET, queryset=qs)
         self.filter.form.helper = self.formhelper_class()
         return self.filter.qs
@@ -305,14 +306,16 @@ class IndividuoTableView(SingleTableView):
         context[self.context_filter_name] = self.filter
         return context
 class IndividuoListView(IndividuoTableView):
-    model = IndividuoTable
+    table_class = IndividuoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
     filter_class = IndividuoFilter
     formhelper_class = IndHelper
 
 class CentrosTable(tables.Table):
-      class Meta:
+    sector_auto = tables.Column(accessor = 'sector_auto.shapeid', verbose_name = "Sector Auto")
+    sector_caminando = tables.Column(accessor = 'sector_caminando.shapeid', verbose_name = "Sector Caminando")
+    class Meta:
         model = Centro
         attrs = {"class": "paleblue"}
 
@@ -337,8 +340,353 @@ class CentrosTableView(SingleTableView):
         context[self.context_filter_name] = self.filter
         return context
 class CentrosListView(CentrosTableView):
-    model = CentrosTable
+    table_class = CentrosTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
     filter_class = CentroFilter
     formhelper_class = CenHelper
+
+class AnclasTable(tables.Table):
+    sector_auto= tables.Column(accessor = 'sector_auto.shapeid', verbose_name = "Sector Auto")
+    sector_caminando = tables.Column(accessor = 'sector_caminando.shapeid', verbose_name = "Sector Caminando")
+    class Meta:
+        model = AnclaTemporal
+        attrs = {"class": "paleblue"}
+
+class AnclasTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = AnclaTemporal.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(AnclasTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(AnclasTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class AnclasListView(AnclasTableView):
+    table_class = AnclasTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = AnclasFilter
+    formhelper_class = AncHelper
+
+class IndividuoCentroTable(tables.Table):
+    individuo = tables.Column(accessor = 'individuo.id', verbose_name = "Individuo")
+    centro = tables.Column(accessor = 'centro.id_centro', verbose_name = "Centro")
+    class Meta:
+        model = IndividuoCentro
+        attrs = {"class": "paleblue"}
+
+class IndividuoCentroTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = IndividuoCentro.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(IndividuoCentroTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(IndividuoCentroTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class IndividuoCentroListView(IndividuoCentroTableView):
+    table_class = IndividuoCentroTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = IndividuoCentroFilter
+    formhelper_class = IndCenHelper
+
+class PediatraTable(tables.Table):
+    centro = tables.Column(accessor = 'centro.id_centro', verbose_name = "Centro")
+    class Meta:
+        model = Pediatra
+        exclude = ('id',)
+        attrs = {"class": "paleblue"}
+
+class PediatraTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = Pediatra.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(PediatraTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(PediatraTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class PediatraListView(PediatraTableView):
+    table_class = PediatraTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = PediatraFilter
+    formhelper_class = PedHelper
+
+class PrestadorTable(tables.Table):
+    class Meta:
+        model = Prestador
+        attrs = {"class": "paleblue"}
+
+class PrestadorTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = Prestador.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(PrestadorTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(PrestadorTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class PrestadorListView(PrestadorTableView):
+    table_class = PrestadorTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = PrestadorFilter
+    formhelper_class =PresHelper
+#####################################################SECTORES
+class SectorAutoTable(tables.Table):
+    class Meta:
+        model = SectorAuto
+        attrs = {"class": "paleblue"}
+
+class SectorAutoTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = SectorAuto.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(SectorAutoTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorAutoTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class SectorAutoListView(SectorAutoTableView):
+    table_class = SectorAutoTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = SectorAutoFilter
+    formhelper_class = SecAutHelper
+############################################
+class SectorCaminandoTable(tables.Table):
+    class Meta:
+        model = SectorCaminando
+        attrs = {"class": "paleblue"}
+
+class SectorCaminandoTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = SectorCaminando.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(SectorCaminandoTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorCaminandoTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class SectorCaminandoListView(SectorCaminandoTableView):
+    table_class = SectorCaminandoTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = SectorCaminandoFilter
+    formhelper_class = SecCamHelper
+#################################################################
+class SectorOmnibusTable(tables.Table):
+    class Meta:
+        model = SectorAuto
+        attrs = {"class": "paleblue"}
+
+class SectorOmnibusTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = SectorAuto.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(SectorOmnibusTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorOmnibusTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class SectorOmnibusListView(SectorOmnibusTableView):
+    table_class = SectorOmnibusTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = SectorOmnibusFilter
+    formhelper_class = SecOmnHelper
+###################################################################
+class SectorTiempoAutoTable(tables.Table):
+    sector_1 = tables.Column(accessor='sector_1.shapeid',verbose_name="Sector 1")
+    sector_2 = tables.Column(accessor='sector_2.shapeid',verbose_name="Sector 2")
+    tiempo = tables.Column(verbose_name = 'Tiempo (Minutos)', empty_values = ())
+    distancia = tables.Column(verbose_name = 'Distancia (Metros)')
+    class Meta:
+        model = SectorTiempoAuto
+        exclude = ('id',)
+        attrs = {"class": "paleblue"}
+    def render_tiempo(self,record):
+        return record.tiempo/60
+
+class SectorTiempoAutoTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = SectorTiempoAuto.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(SectorTiempoAutoTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorTiempoAutoTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class SectorTiempoAutoListView(SectorTiempoAutoTableView):
+    table_class = SectorTiempoAutoTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = SectorTiempoAutoFilter
+    formhelper_class = SecTieAutHelper
+##################################################################
+class SectorTiempoCaminandoTable(tables.Table):
+    sector_1 = tables.Column(accessor='sector_1.shapeid',verbose_name="Sector 1")
+    sector_2 = tables.Column(accessor='sector_2.shapeid',verbose_name="Sector 2")
+    tiempo = tables.Column(verbose_name = 'Tiempo (Minutos)', empty_values = ())
+    distancia = tables.Column(verbose_name = 'Distancia (Metros)')
+    class Meta:
+        model = SectorTiempoCaminando
+        exclude = ('id',)
+        attrs = {"class": "paleblue"}
+    def render_tiempo(self,record):
+        return math.ceil(record.tiempo/60)
+class SectorTiempoCaminandoTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = SectorTiempoCaminando.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(SectorTiempoCaminandoTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorTiempoCaminandoTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class SectorTiempoCaminandoListView(SectorTiempoCaminandoTableView):
+    table_class = SectorTiempoCaminandoTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = SectorTiempoCaminandoFilter
+    formhelper_class = SecTieCamHelper
+#########################################################
+class SectorTiempoOmnibusTable(tables.Table):
+    sectorO_1 = tables.Column(accessor='sector_1.shapeid',verbose_name="Sector 1")
+    sectorO_2 = tables.Column(accessor='sector_2.shapeid',verbose_name="Sector 2")
+    tiempo = tables.Column(verbose_name = 'Tiempo (Minutos)', empty_values = ())
+    class Meta:
+        model = SectorTiempoOmnibus
+        exclude = ('id',)
+        attrs = {"class": "paleblue"}
+    def render_tiempo(self,record):
+        return record.tiempo/60
+
+class SectorTiempoOmnibusTableView(SingleTableView):
+    filter_class = None
+    formhelper_class = None
+    context_filter_name = 'filter'
+
+    def get_queryset(self, **kwargs):
+        qs = SectorTiempoAuto.objects.all()
+        self.filter = self.filter_class(self.request.GET, queryset=qs)
+        self.filter.form.helper = self.formhelper_class()
+        return self.filter.qs
+
+    def get_table(self, **kwargs):
+        table = super(SectorTiempoOmnibusTableView, self).get_table()
+        RequestConfig(self.request, paginate={"per_page": self.paginate_by}).configure(table)
+        return table
+
+    def get_context_data(self, **kwargs):
+        context = super(SectorTiempoOmnibusTableView, self).get_context_data()
+        context[self.context_filter_name] = self.filter
+        return context
+class SectorTiempoOmnibusListView(SectorTiempoOmnibusTableView):
+    table_class = SectorTiempoOmnibusTable
+    template_name = 'app/filterTable.html'
+    paginate_by = 200
+    filter_class = SectorTiempoOmnibusFilter
+    formhelper_class = SecTieOmnHelper
