@@ -3,6 +3,26 @@ from .models import *
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTML,Field
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
+from django.contrib.auth.models import User
+
+class UserForm(forms.ModelForm):
+    password = forms.CharField(widget = forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ['username','email','password']
+
+class UserRegistryHelper(FormHelper):
+    form_method = 'POST'
+    layout = Layout(
+        Div(
+        Div(Field('email')),
+        Div(Field('username')),
+        Div(Field('password')),
+        Div(Div(Submit('submit', 'Crear',css_class='btn-primary')),
+        css_class="panel-body")
+            )
+        )
 
 class IndTieCenHelper(FormHelper):
     form_class = 'form-horizontal'

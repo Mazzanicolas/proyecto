@@ -26,7 +26,7 @@ urlpatterns = [
     url(r'^SectoresTiemposAutos/$', tables.SectorTiempoAutoListView.as_view(), name='sectorTiempoAutoTable'),
     url(r'^SectoresTiemposCaminandos/$', tables.SectorTiempoCaminandoListView.as_view(), name='sectorTiempoCaminandoTable'),
     url(r'^SectoresTiemposOmnibuss/$', tables.SectorTiempoOmnibusListView.as_view(), name='sectorTiempoOmnibusTable'),
-
+    url(r'^register/$', views.UserFormView.as_view(), name='register'),
 
 
 

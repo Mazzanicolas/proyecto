@@ -57,9 +57,22 @@
           <!--4-->
           <!--5-->
           <li><a id = 'descargar' href="#" data-toggle="modal" data-target="#downlaod">Descargar</a></li>
-          <!--5-->
+          <!--5-->       
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ username }}<span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Cerrar sesión</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="javascript:searchUser();">Modificar Usuario</a></li>
+                <li><a data-toggle="modal" href="#crearUsuario">Crear Usuario</a></li>
+              </ul>
+            </li>
           </ul>
-        </div>
+          
+          <!--a align="right" href="#" data-toggle="modal" data-target="#">Logueado como {{ username }}</a-->
+        </div>        
       </div>
     </nav>
     <div class="container" style="width:100%" id="progressBBy">

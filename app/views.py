@@ -21,12 +21,43 @@ import os
 import zipfile
 from io import BytesIO
 from app.shpModule import *
-
+from django.shortcuts import redirect
+from django.contrib.auth import authenticate, login
+from django.views.generic import View
+from .forms import UserForm
 
 global shapeAuto
 global shapeCaminando
 global recordsAuto
 global recordsCaminando
+
+class UserFormView(View):
+    form_class = UserForm
+    template_name = 'app/registration_form.html'
+
+    def get(self, request):
+        form =  self.form_class(None)
+        helper = UserRegistryHelper()
+        return render(request, self.template_name,{'form':form,'helper':helper})
+    
+    def post(self,request):
+        form =  self.form_class(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            username = form.cleaned_data['username']
+            password  = form.cleaned_data['password']
+            user.set_password(password)
+            user.save()
+
+            user = authenticate(username=username,password=password)
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('index')
+        
+        return render(request, self.template_name,{'form':form})
+
 
 sf = shapefile.Reader('app/files/shapeAuto.shp')
 shapeAuto = sf.shapes()
@@ -176,7 +207,8 @@ def index(request):
     ejecutarHelper = EjecutarHelper()
     simularForm = SimularForm()
     simularHelper = SimularHelper()
-    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper }
+    username = request.user.username
+    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username }
     response = render(request, 'app/index2.html',context)
     response.set_cookie(key = 'tiempoMaximo',  value = maxT)
     response.set_cookie(key = 'tiempoConsulta',value = consT)
