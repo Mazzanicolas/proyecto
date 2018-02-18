@@ -93,7 +93,7 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
     horaInicio = int(dictTiemposSettings.get('horaInicio',0))*100
     horaFin = int(dictTiemposSettings.get('horaFin',23))*100
     result = []
-    daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
+    daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
     if(simParam):
         listaCentros = Centro.objects.all()
     else:
@@ -101,7 +101,8 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
         if(p == '-1'):
             listaCentros = Centro.objects.all()
         else:
-            listaCentros = Centro.objects.filter(prestador__id = int(p))
+            prestadorIdList = [int(x) for x in dictTiemposSettings['centroPrest']]
+            listaCentros = Centro.objects.filter(prestador__id__in = prestadorIdList)
     for individuo in individuos:
         print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
@@ -111,12 +112,15 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',0) == '1')
             prestador = int(simParam.get('mutualista','-1'))
             if(prestador != -2):
-                prestador = Prestador.objects.get(id=prestador).id if(prestador!= -1) else individuo.prestador.id
+                prestadorObject = Prestador.objects.get(id=prestador).id
+                prestador = prestadorObject if(prestador!= -1) else individuo.prestador.id
+                
         else:
             tipoTrans = individuo.tipo_transporte
             tieneTrabajo = individuo.tieneTrabajo
             tieneJardin = individuo.tieneJardin
-            prestador = individuo.prestador.id
+            prestadorObject = individuo.prestador
+            prestador = prestadorObject.id
         for centro in listaCentros:
             tiempos = IndividuoTiempoCentro.objects.filter(individuo = individuo, centro = centro,dia__in = diasFilter,hora__gte = horaInicio,hora__lte = horaFin)
             tiemposViaje = utils.getTiempos(individuo = individuo,centro = centro,tipoTrans = tipoTrans.id)
@@ -131,7 +135,7 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
                 tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, 
                             pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, 
                             tieneJardin = tieneJardin,dictTiemposSettings=dictTiemposSettings)
-                result.append([individuo.id,prestador,centroId,centro.prestador.id,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
+                result.append([individuo.id,prestadorObject.nombre,centroId,centro.prestador.nombre,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
     have_lock = False
     my_lock = redis.Redis().lock(sessionKey)
@@ -161,7 +165,8 @@ def suzuki(individuos,simParam,sessionKey,dictTiemposSettings):
         if(p == '-1'):
             listaCentros = Centro.objects.all()
         else:
-            listaCentros = Centro.objects.filter(prestador__id = int(p))
+            prestadorIdList = [int(x) for x in dictTiemposSettings['centroPrest']]
+            listaCentros = Centro.objects.filter(prestador__id__in = prestadorIdList)
     for individuo in individuos:
         print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()

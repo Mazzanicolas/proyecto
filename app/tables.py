@@ -18,7 +18,7 @@ class PagedFilteredTableView(SingleTableView):
     context_filter_name = 'filter'
 
     def get_queryset(self, **kwargs):
-        qs = Individuo.objects.all()
+        qs = IndividuoTiempoCentro.objects.all()
         self.filter = self.filter_class(self.request.GET, queryset=qs)
         self.filter.form.helper = self.formhelper_class()
         return self.filter.qs
@@ -51,7 +51,7 @@ class TestPersonTable(ExportMixin, tables.Table):
     currentUser = -1
     request = None
     tiempos = dict()
-    daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado'}
+    daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
     individuo = tables.Column(accessor = 'individuo.id',verbose_name='Individuo')
     centro = tables.Column(accessor='centro.id_centro',verbose_name='Centro')
     dia = tables.Column(verbose_name = 'Dia', empty_values = ())

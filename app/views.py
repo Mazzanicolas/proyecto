@@ -7,6 +7,7 @@ import math
 import shapefile
 import time
 import csv
+from app.forms import EjecutarForm,SimularForm,EjecutarHelper,SimularHelper
 from celery import result
 from django.shortcuts import redirect
 from proyecto.celery import app
@@ -57,7 +58,7 @@ def redirectConsulta(request):
         print("*****************************")
         newCalcTimes()
     getReq = request.GET
-    if(getReq.get('checkRango', '0') == '-1'):
+    if(getReq.get('checkRango', '0') == '-1' or getReq.get('generarResumen',0) == '1'):
         return generateCsvResults(request)
     response = redirect('consultaConFiltro')
     return response
@@ -95,7 +96,7 @@ def redirectSim(request):
         print("**************************************************")
         newCalcTimes()
     getReq = request.GET
-    if(getReq.get('checkRango','0') == '-1'):
+    if(getReq.get('checkRango','0') == '-1' or getReq.get('generarResumen',0) == '1'):
         return generateCsvResults(request)
     response = redirect('Simulacion')
     if(getReq.get('checkB',0) == '-1'):
@@ -171,7 +172,11 @@ def index(request):
             consT = tiempoCons
         if(tiempoLlega):
             tiempoL = tiempoLlega
-    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL}
+    ejecutarForm = EjecutarForm()
+    ejecutarHelper = EjecutarHelper()
+    simularForm = SimularForm()
+    simularHelper = SimularHelper()
+    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper }
     response = render(request, 'app/index2.html',context)
     response.set_cookie(key = 'tiempoMaximo',  value = maxT)
     response.set_cookie(key = 'tiempoConsulta',value = consT)
@@ -187,6 +192,10 @@ def guardarArchivo(nombre, archivo):
 
 def generateCsvResults(request):
     deleteConsultaResults(request)
+    indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
+    print(indvList)
+    print(dictParam)
+    print(dictSettings)
     asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
     request.session['asyncKey'] = asyncKey.id   
     response = redirect('index')

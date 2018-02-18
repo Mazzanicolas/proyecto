@@ -145,7 +145,6 @@ def cargarIndividuoAnclas(requestf,shapeAuto,recordsAuto, shapeCaminando,records
     print("Matriz Carteasiana generada")
 
 def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando):
-    print("WOW!")
     res, lineas = checkTiempos(tipo,request)
     if not res:
         return lineas

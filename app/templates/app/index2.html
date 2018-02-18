@@ -26,6 +26,7 @@
 		<meta charset="UTF-8">
 		<title>Proyecto 2017</title>
     {% load static %}
+    {% load crispy_forms_tags %}
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
     <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
     <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
@@ -187,172 +188,7 @@
     <div class="modal-dialog">
     <!-- Modal content-->
     <form action='redirectSim/'  method="GET">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Simular</h4>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning">
-            <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
-          </div>
-          <div hidden><label class="checkbox-inline"><input type="checkbox" name = simular id="simul" value="1" checked> Simular </label></div>
-          <!--Transporte-->
-          <div class="panel panel-default">
-            <div class="panel-body">
-              Transporte
-            </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM" value="-1" checked> Utilizar predeterminadas</label></br>
-              <div id="transportesContainer" hidden="true">
-                <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio1" value="1"> Auto </label>
-                <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio2" value="0"> Caminando </label>
-                <label class="radio-inline"><input type="radio" name="tipoTransporte" id="inlineRadio3" value="2"> Omnibus </label></br>
-              </div>
-            </div>
-          <!--Transporte-->
-          </div>
-          <!--Anclas-->
-          <div class="panel panel-default">
-            <div class="panel-body"> Anclas Temporales </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="1" checked> Trabajo </label>
-              <label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="1" checked> Jardin </label></br>
-            </div>
-          </div>
-          <!--Anclas-->
-          <!--Mutualistas-->
-          <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">Mutualista&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por prestador." disabled>i</button></h3>
-              </div>
-              <div class="panel-body">
-              <div>
-             <label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="-1" checked> Por defecto </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="-2"> Ignorar </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="1"> ASSE </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="2"> Española </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="3"> Casa de Galicia </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="4"> CASMU </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="5"> Cirulo Catolico </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="6"> COSEM </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="7"> CUDAM </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="8"> Gremca </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="9"> H. Britanico </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="10"> H. Evangelico </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="11"> Medica Uruguaya </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="12"> MP </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="13"> SMI </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="14"> Universal </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="15"> IMM </label><label class="radio-inline">
-              <input type="radio" name="prestadorFiltro" value="16"> BPS </label>
-            </div>
-            </div>
-           </div>
-          <!--Mutualistas-->
-          <div class="panel panel-default">
-            <div class="panel-heading">
-             Dias
-           </div>
-           <div class="panel-body">
-               <label class="radio-inline"><input type="checkbox" name="dias" value="0" checked> L </label>
-               <label class="radio-inline"><input type="checkbox" name="dias" value="1" checked> M </label>
-               <label class="radio-inline"><input type="checkbox" name="dias" value="2" checked> Mi </label>
-               <label class="radio-inline"><input type="checkbox" name="dias" value="3" checked> J </label>
-               <label class="radio-inline"><input type="checkbox" name="dias" value="4" checked> V </label>
-               <label class="radio-inline"><input type="checkbox" name="dias" value="5" checked> S </label></br>
-           </div>
-         </div>
-            <div class="panel panel-default">
-             <div class="panel-heading">
-               <h3 class="panel-title">Rango Horario&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
-             </div>
-             <div class="panel-body">
-             <select class="form-control col-xs-6" name="horaInicio">
-               <option>0</option>
-               <option>1</option>
-               <option>2</option>
-               <option>3</option>
-               <option>4</option>
-               <option>5</option>
-               <option>6</option>
-               <option>7</option>
-               <option>8</option>
-               <option>9</option>
-               <option>10</option>
-               <option>11</option>
-               <option>12</option>
-               <option>13</option>
-               <option>14</option>
-               <option>15</option>
-               <option>16</option>
-               <option>17</option>
-               <option>18</option>
-               <option>19</option>
-               <option>20</option>
-               <option>21</option>
-               <option>22</option>
-               <option>23</option>
-             </select>
-             <select class="form-control col-xs-6" name="horaFin">
-               <option>23</option>
-               <option>22</option>
-               <option>21</option>
-               <option>20</option>
-               <option>19</option>
-               <option>18</option>
-               <option>17</option>
-               <option>16</option>
-               <option>15</option>
-               <option>14</option>
-               <option>13</option>
-               <option>12</option>
-               <option>11</option>
-               <option>10</option>
-               <option>9</option>
-               <option>8</option>
-               <option>7</option>
-               <option>6</option>
-               <option>5</option>
-               <option>4</option>
-               <option>3</option>
-               <option>2</option>
-               <option>1</option>
-               <option>0</option>
-             </select>
-           </div>
-           </div> 
-          <!--Anclas-->
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Lista de ID's&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Lista de ID's separados por coma para los que se quiere realizar el calculo." disabled>i</button></h3>
-            </div>
-              <div class="panel-body">
-              <div class="form-group row"><div class="col-xs-6">
-                <input  class="form-control" placeholder="Lista de ID's" name="idList"></div>
-              </div>
-            </div>
-          </div>
-          <!--Anclas-->
-          <div class="panel panel-default">
-            <div class="panel-body"> ¿Como quiere el resultado? </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" id="cbCSV2" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
-            </div>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-body"> Resultados a generar </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Simulación</label></br>
-              <label class="checkbox-inline"><input type="checkbox"id="cbCSV3" name="generarResumen" value="1"> Resumen</label></br>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Calcular</button>
-        </div>
-      </div>
+      {% crispy simularForm simularHelper %}
     </form>
     </div>
   </div>
@@ -362,178 +198,7 @@
     <div class="modal-dialog">
     <!-- Modal content-->
     <form action='redirectConsulta/'  method="GET">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Ejecutar</h4>
-        </div>
-        <div class="modal-body">
-          <div class="alert alert-warning">
-            <strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas.
-          </div>
-          <!--Transporte-->
-          <div class="panel panel-default">
-            <div class="panel-body">
-              Transporte
-            </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" id="cb" name="checkM2" value="-1" checked> Utilizar predeterminadas</label></br>
-              <div id="transportesContainer2" hidden="true">
-                <label class="radio-inline"><input type="checkbox" name="tipoTransporte" id="inlineRadio1" value="1" checked> Auto </label>
-                <label class="radio-inline"><input type="checkbox" name="tipoTransporte" id="inlineRadio2" value="0" checked> Caminando </label>
-                <label class="radio-inline"><input type="checkbox" name="tipoTransporte" id="inlineRadio3" value="2" checked> Omnibus </label></br>
-              </div>
-            </div>
-          <!--Transporte-->
-          </div>
-          <!--Anclas-->
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Trabaja&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por trabajo." disabled>i</button></h3>
-            </div>
-            <div class="panel-body">
-            <div>
-           <label class="radio-inline"><input type="radio" name="trabaja" value="0" checked> Por defecto </label><label class="radio-inline"><input type="radio" name="trabaja" value="1"> Si </label><label class="radio-inline"><input type="radio" name="trabaja" > No </label>
-          </div>
-          </div>
-         </div>
-         <div class="panel panel-default">
-           <div class="panel-heading">
-             <h3 class="panel-title">Asiste jardin&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por si asiste a jardin." disabled>i</button></h3>
-           </div>
-           <div class="panel-body">
-         <div>
-          <label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="0" checked> Por defecto </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes" value="1"> Si </label><label class="radio-inline"><input type="radio" name="jardinResumenes" id="jardinResumenes"> No </label>
-         </div>
-         </div>
-         </div>
-         <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Mutualista&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Filtrar por prestador." disabled>i</button></h3>
-          </div>
-          <div class="panel-body">
-          <div>
-         <label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="-1" checked> Por defecto </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="1"> ASSE </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="2"> Española </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="3"> Casa de Galicia </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="4"> CASMU </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="5"> Cirulo Catolico </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="6"> COSEM </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="7"> CUDAM </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="8"> Gremca </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="9"> H. Britanico </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="10"> H. Evangelico </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="11"> Medica Uruguaya </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="12"> MP </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="13"> SMI </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="14"> Universal </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="15"> IMM </label><label class="radio-inline">
-          <input type="radio" name="prestadorFiltro" value="16"> BPS </label>
-        </div>
-        </div>
-       </div>
-        <div class="panel panel-default">
-         <div class="panel-heading">
-          Dias
-        </div>
-        <div class="panel-body">
-            <label class="radio-inline"><input type="checkbox" name="dias" value="0" checked> L </label>
-            <label class="radio-inline"><input type="checkbox" name="dias" value="1" checked> M </label>
-            <label class="radio-inline"><input type="checkbox" name="dias" value="2" checked> Mi </label>
-            <label class="radio-inline"><input type="checkbox" name="dias" value="3" checked> J </label>
-            <label class="radio-inline"><input type="checkbox" name="dias" value="4" checked> V </label>
-            <label class="radio-inline"><input type="checkbox" name="dias" value="5" checked> S </label></br>
-        </div>
-      </div>
-         <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Rango Horario&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Rango de ids de los individuos para los que se quiere realizar el calculo." disabled>i</button></h3>
-          </div>
-          <div class="panel-body">
-          <select class="form-control col-xs-6" name="horaInicio">
-            <option>0</option>
-            <option>1</option>
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>7</option>
-            <option>8</option>
-            <option>9</option>
-            <option>10</option>
-            <option>11</option>
-            <option>12</option>
-            <option>13</option>
-            <option>14</option>
-            <option>15</option>
-            <option>16</option>
-            <option>17</option>
-            <option>18</option>
-            <option>19</option>
-            <option>20</option>
-            <option>21</option>
-            <option>22</option>
-            <option>23</option>
-          </select>
-          <select class="form-control col-xs-6" name="horaFin">
-            <option>23</option>
-            <option>22</option>
-            <option>21</option>
-            <option>20</option>
-            <option>19</option>
-            <option>18</option>
-            <option>17</option>
-            <option>16</option>
-            <option>15</option>
-            <option>14</option>
-            <option>13</option>
-            <option>12</option>
-            <option>11</option>
-            <option>10</option>
-            <option>9</option>
-            <option>8</option>
-            <option>7</option>
-            <option>6</option>
-            <option>5</option>
-            <option>4</option>
-            <option>3</option>
-            <option>2</option>
-            <option>1</option>
-            <option>0</option>
-          </select>
-        </div>
-        </div>  
-         <div class="panel panel-default">
-           <div class="panel-heading">
-             <h3 class="panel-title">Lista de ID's&nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Lista de ID's separados por coma para los que se quiere realizar el calculo." disabled>i</button></h3>
-           </div>
-             <div class="panel-body">
-             <div class="form-group row"><div class="col-xs-6">
-               <input  class="form-control" placeholder="Lista de ID's" name="idList"></div>
-             </div>
-           </div>
-         </div>
-          <div class="panel panel-default">
-            <div class="panel-body"> ¿Como quiere el resultado? </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" id="cbCSV" name="checkRango" value="-1" checked> Descargar como .csv</label></br>
-            </div>
-          </div>
-          <div class="panel panel-default">
-            <div class="panel-body"> Resultados a generar </div>
-            <div class="panel-footer">
-              <label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Ejecución</label></br>
-              <label class="checkbox-inline"><input type="checkbox" id="cbCSV0" name="generarResumen" value="1"> Resumen</label></br>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Calcular</button>
-        </div>
-      </div>
+      {% crispy ejecutarForm ejecutarHelper %}
     </form>
     </div>
   </div>
@@ -886,5 +551,38 @@
                         $('#horasContainerFiltros').show();
                     });
                 });
+
+                $(document).ready(function(){
+                $('#checkPrestador').change(function(){
+                    if(this.checked)
+                        $('#prestadorDiv').hide();
+                    else
+                        $('#prestadorDiv').show();
+                    });
+                });
+                $(document).ready(function(){
+                $('#checkDias').change(function(){
+                    if(this.checked)
+                        $('#diasDiv').hide();
+                    else
+                        $('#diasDiv').show();
+                    });
+                });
+                $(document).ready(function(){
+                  $('#checkTransporte').change(function(){
+                    if(this.checked)
+                        $('#transporteDiv').hide();
+                    else
+                        $('#transporteDiv').show();
+                    });
+                });
+                $(document).ready(function(){
+                $('#checkDias2').change(function(){
+                    if(this.checked)
+                        $('#diasDiv2').hide();
+                    else
+                        $('#diasDiv2').show();
+                    });
+                });                
   </script>
 </html>

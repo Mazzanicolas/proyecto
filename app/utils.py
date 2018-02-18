@@ -3,6 +3,9 @@ from shapely.geometry import Polygon, Point
 import os
 import glob
 
+def numbersToDays(numberList):
+    daysDict = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
+    return [daysDict[x] for x in numberList]
 def cleanAllFolderFiles(path):
     files = glob.glob(path+'*')
     for aFile in files:
@@ -15,8 +18,8 @@ def createFolderInUsers(directory):
 
 def generateParamDict(getReq):
     res = dict()
-    res['mutualista'] = getReq.get('prestador','-1')
-    if(getReq.get('checkM','0') == '-1'):
+    res['mutualista'] = getReq.get('prestadorFiltro','-1')
+    if(getReq.get('checkT','0') == '-1'):
         res['tipoTransporte'] ='-1'
     else:
         res['tipoTransporte'] = getReq.get('tipoTransporte','-1')
@@ -118,7 +121,7 @@ def getPrestadores():
         return None
 
 def getListOfDays(stringDays):
-    daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5}
+    daysList = {'L':0,'M':1,'Mi':2,'J':3,'V':4,'S':5,'D':6}
     daysByComma = stringDays.split('.')
     resDays = []
     for day in daysByComma:
@@ -250,29 +253,46 @@ def genSettingsDict(GET,COOKIES):
     settingsDict['tiempoMaximo'] = COOKIES.get('tiempoMaximo')
     settingsDict['tiempoConsulta'] = COOKIES.get('tiempoConsulta')
     settingsDict['tiempoLlega'] = COOKIES.get('tiempoLlega')
-    settingsDict['centroPrest'] = GET.get("prestadorFiltro")
+    if(GET.get('checkPrestador',None)):
+        settingsDict['centroPrest'] = '-1'
+    else:
+        #printprint(GET.getlist("prestadorFiltro",[]))
+        settingsDict['centroPrest'] = GET.getlist("prestadorFiltro",[])
     settingsDict['horaInicio'] = GET.get("horaInicio")
     settingsDict['horaFin'] = GET.get("horaFin")
-    settingsDict['dias'] = '.'.join(GET.getlist('dias'))
+    if(GET.get('checkDias',None)):
+        settingsDict['dias'] = '0.1.2.3.4.5.6'
+    else:
+        settingsDict['dias'] = '.'.join(GET.getlist('dias'))
     return settingsDict
 
 def getIndivList_ParamDict_SettingsDict(get,cookies):
     getData = get
+    dictSettings = genSettingsDict(get,cookies)
     if(getData.get("idList",None)):
         idStringList = getData.get("idList",None).split(",")
         try:
             idList = [int(x) for x in idStringList]
+            dictSettings['idList'] = idList
             indvList = Individuo.objects.filter(id__in = idList)
         except:
+            dictSettings['idList'] = ['Todos']
             indvList = Individuo.objects.all()
     else:
         indvList = Individuo.objects.all()
     if(getData.get("simular",'0') == '1' ):
         dictParam = generateParamDict(get)
     else:
-        transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
+        if(getData.get('checkT')):
+            transportList = TipoTransporte.objects.all().values_list('id', flat=True)            
+            dictSettings['transportList'] = transportList
+        else:
+            transportList = [int(x) for x in getData.getlist('tipoTransporte', [])]
+            dictSettings['transportList'] = transportList
         trabajaReq    = getData.get('trabaja', None)
-        jardinReq     =  getData.get('jardinResumenes', None)
+        jardinReq     =  getData.get('asisteJardin', None)
+        dictSettings['trabaja'] = trabajaReq
+        dictSettings['jardin'] = jardinReq
         trabaja       = [True] if trabajaReq else [False]
         jardin        = [True] if jardinReq else [False]
         if(jardinReq == '0'):
@@ -281,8 +301,67 @@ def getIndivList_ParamDict_SettingsDict(get,cookies):
             trabaja.append(False)
         indQuery = indvList.filter(tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
         dictParam = None
-    return indvList,dictParam,genSettingsDict(get,cookies)
+    return indvList,dictParam,dictSettings
 def minsToMil(time):
     hours = time/60
     mins  = time%60
     return int(hours)*100+mins
+def writeSettings(sessionKey,dictSettings,simParams):
+    with open("./app/files/consultOut/Parametros{}.txt".format(sessionKey), "w") as text_file:
+        if(simParams):
+            text_file.write("Parametros de Simulacion \n")
+            if(simParams['tipoTransporte'] == '-1'):
+                text_file.write("Tipo de Transporte: Por Defecto \n")
+            else:
+                text_file.write("Tipo de Transporte: {} \n".format(TipoTransporte.objects.get(id = int(simParams['tipoTransporte'])).nombre))
+            p = int(simParams['mutualista'])
+            if(p == -1):
+                text_file.write("Prestador a Simular: Por Defecto \n")
+            elif(p == -2):
+                text_file.write("Prestador a Simular: Ignorar \n")
+            else:
+                prestador = Prestador.objects.get(id = p)
+                text_file.write("Prestador a Simular: {} \n".format(prestador))
+            if(simParam.get('trabaja',0) == '1'):
+                text_file.write("Se utiliza el ancla temporal Trabajo \n")
+            if(simParam.get('jardin',0) == '1'):
+                text_file.write("Se utiliza el ancla temporal Jardin \n")
+            text_file.write("Filtros utilizados \n")
+        else:
+            text_file.write("Tipo de Transporte utilizados: {}".format(", ".join(dictSettings['transportList'])))
+            if(dictSettings['trabaja']):
+                text_file.write('Trabaja: Si')
+            else:
+                text_file.write('Trabaja: No')
+            if(dictSettings['jardin']):
+                text_file.write('Tiene Jardin: Si')
+            else:
+                text_file.write('Tiene Jardin: No')
+            if(p == '-1'):
+                text_file.write("Prestador: Por Defecto \n")
+            else:
+                p = dictTiemposSettings['centroPrest']
+                prestadores = Prestador.objects.filter(id__in = [int(x) for x in dictTiemposSettings['centroPrest']])
+                prestadores = ', '.join(prestadores)
+                text_file.write("Prestador: {} \n".format(prestadores))
+        dias = numbersToDays([int(x) for x in dictSettings['dias'].split('.')])
+        text_file.write("Dias: {} \n".format(', '.join(dias)))
+        text_file.write("Desde Las: {} \n".format(dictSettings['horaInicio']))
+        text_file.write("Hasta Las: {} \n".format(dictSettings['horaFin']))
+        text_file.write("Individuos: {} \n".format(', '.join(dictSettings['IdList'])))
+
+
+
+
+
+
+
+
+
+
+
+            
+
+
+
+    
