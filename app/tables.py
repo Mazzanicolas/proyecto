@@ -305,7 +305,7 @@ class IndividuoTableView(SingleTableView):
         context = super(IndividuoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class IndividuoListView(IndividuoTableView):
+class IndividuoListView(ExportMixin,IndividuoTableView):
     table_class = IndividuoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -339,7 +339,7 @@ class CentrosTableView(SingleTableView):
         context = super(CentrosTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class CentrosListView(CentrosTableView):
+class CentrosListView(ExportMixin,CentrosTableView):
     table_class = CentrosTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -373,7 +373,7 @@ class AnclasTableView(SingleTableView):
         context = super(AnclasTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class AnclasListView(AnclasTableView):
+class AnclasListView(ExportMixin,AnclasTableView):
     table_class = AnclasTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -407,7 +407,7 @@ class IndividuoCentroTableView(SingleTableView):
         context = super(IndividuoCentroTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class IndividuoCentroListView(IndividuoCentroTableView):
+class IndividuoCentroListView(ExportMixin,IndividuoCentroTableView):
     table_class = IndividuoCentroTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -441,7 +441,7 @@ class PediatraTableView(SingleTableView):
         context = super(PediatraTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class PediatraListView(PediatraTableView):
+class PediatraListView(ExportMixin,PediatraTableView):
     table_class = PediatraTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -473,7 +473,7 @@ class PrestadorTableView(SingleTableView):
         context = super(PrestadorTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class PrestadorListView(PrestadorTableView):
+class PrestadorListView(ExportMixin,PrestadorTableView):
     table_class = PrestadorTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -505,7 +505,7 @@ class SectorAutoTableView(SingleTableView):
         context = super(SectorAutoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorAutoListView(SectorAutoTableView):
+class SectorAutoListView(ExportMixin,SectorAutoTableView):
     table_class = SectorAutoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -537,7 +537,7 @@ class SectorCaminandoTableView(SingleTableView):
         context = super(SectorCaminandoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorCaminandoListView(SectorCaminandoTableView):
+class SectorCaminandoListView(ExportMixin,SectorCaminandoTableView):
     table_class = SectorCaminandoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -569,7 +569,7 @@ class SectorOmnibusTableView(SingleTableView):
         context = super(SectorOmnibusTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorOmnibusListView(SectorOmnibusTableView):
+class SectorOmnibusListView(ExportMixin,SectorOmnibusTableView):
     table_class = SectorOmnibusTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -608,7 +608,7 @@ class SectorTiempoAutoTableView(SingleTableView):
         context = super(SectorTiempoAutoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorTiempoAutoListView(SectorTiempoAutoTableView):
+class SectorTiempoAutoListView(ExportMixin, SectorTiempoAutoTableView):
     table_class = SectorTiempoAutoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -646,7 +646,7 @@ class SectorTiempoCaminandoTableView(SingleTableView):
         context = super(SectorTiempoCaminandoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorTiempoCaminandoListView(SectorTiempoCaminandoTableView):
+class SectorTiempoCaminandoListView(ExportMixin,SectorTiempoCaminandoTableView):
     table_class = SectorTiempoCaminandoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -684,7 +684,7 @@ class SectorTiempoOmnibusTableView(SingleTableView):
         context = super(SectorTiempoOmnibusTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorTiempoOmnibusListView(SectorTiempoOmnibusTableView):
+class SectorTiempoOmnibusListView(ExportMixin,SectorTiempoOmnibusTableView):
     table_class = SectorTiempoOmnibusTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
