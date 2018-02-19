@@ -1,20 +1,22 @@
 <html>
     <head>
-        
-    {% load crispy_forms_tags %}
-            {% load static %}
-            <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
-            <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
-            <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
+        <title>Login</title>
+        {% load crispy_forms_tags %}
+        {% load static %}
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+        <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
+        <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
     </head>
-    <body>
-        <div class="container">
-            <h1>Log in</h1>
+    <body style="background-color:#e6e6e6; font-family:helvetica;">
+        <div class="container" align="center" style="width:300px;">
+            <br>
+            <h1><b>Log in</b></h1>
             <form method="POST">
                 {% csrf_token %}
                 {% crispy form %}
-                <button type="submit">Login</button>
             </form>
-        </div>
+        </div>        
     </body>
 </html>
+
+
