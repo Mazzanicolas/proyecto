@@ -307,7 +307,7 @@ def minsToMil(time):
     mins  = time%60
     return int(hours)*100+mins
 def writeSettings(sessionKey,dictSettings,simParams):
-    with open("./app/files/consultOut/Parametros{}.txt".format(sessionKey), "w") as text_file:
+    with open("./app/files/consultOut/Parametros{}.txt".format(str(sessionKey)), "w") as text_file:
         if(simParams):
             text_file.write("Parametros de Simulacion \n")
             if(simParams['tipoTransporte'] == '-1'):
@@ -322,33 +322,40 @@ def writeSettings(sessionKey,dictSettings,simParams):
             else:
                 prestador = Prestador.objects.get(id = p)
                 text_file.write("Prestador a Simular: {} \n".format(prestador))
-            if(simParam.get('trabaja',0) == '1'):
+            if(simParams.get('trabaja',0) == '1'):
                 text_file.write("Se utiliza el ancla temporal Trabajo \n")
-            if(simParam.get('jardin',0) == '1'):
+            else:
+                text_file.write("No Se utiliza el ancla temporal Trabajo \n")
+            if(simParams.get('jardin',0) == '1'):
                 text_file.write("Se utiliza el ancla temporal Jardin \n")
+            else:
+                text_file.write("No Se utiliza el ancla temporal Jardin \n")
             text_file.write("Filtros utilizados \n")
         else:
-            text_file.write("Tipo de Transporte utilizados: {}".format(", ".join(dictSettings['transportList'])))
+            text_file.write("Filtros utilizados \n")
+            transportList = [x.nombre for x in TipoTransporte.objects.filter(id__in = dictSettings['transportList'])]
+            text_file.write("Tipo de Transporte utilizados: {}\n".format(", ".join(transportList)))
             if(dictSettings['trabaja']):
-                text_file.write('Trabaja: Si')
+                text_file.write('Trabaja: Si\n')
             else:
-                text_file.write('Trabaja: No')
+                text_file.write('Trabaja: No\n')
             if(dictSettings['jardin']):
-                text_file.write('Tiene Jardin: Si')
+                text_file.write('Tiene Jardin: Si\n')
             else:
-                text_file.write('Tiene Jardin: No')
+                text_file.write('Tiene Jardin: No\n')
+            p = dictSettings['centroPrest']
             if(p == '-1'):
                 text_file.write("Prestador: Por Defecto \n")
             else:
-                p = dictTiemposSettings['centroPrest']
-                prestadores = Prestador.objects.filter(id__in = [int(x) for x in dictTiemposSettings['centroPrest']])
-                prestadores = ', '.join(prestadores)
+                prestadores = Prestador.objects.filter(id__in = [int(x) for x in p])
+                prestadores = ', '.join([x.nombre for x in prestadores])
                 text_file.write("Prestador: {} \n".format(prestadores))
         dias = numbersToDays([int(x) for x in dictSettings['dias'].split('.')])
         text_file.write("Dias: {} \n".format(', '.join(dias)))
         text_file.write("Desde Las: {} \n".format(dictSettings['horaInicio']))
         text_file.write("Hasta Las: {} \n".format(dictSettings['horaFin']))
-        text_file.write("Individuos: {} \n".format(', '.join(dictSettings['IdList'])))
+        idList = [str(x) for x in dictSettings['idList']]
+        text_file.write("Individuos: {} \n".format(', '.join(idList)))
 
 
 

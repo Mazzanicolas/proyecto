@@ -227,9 +227,7 @@ def guardarArchivo(nombre, archivo):
 def generateCsvResults(request):
     deleteConsultaResults(request)
     indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
-    print(indvList)
-    print(dictParam)
-    print(dictSettings)
+    utils.writeSettings(request.session.session_key,dictSettings,dictParam)
     asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
     request.session['asyncKey'] = asyncKey.id   
     response = redirect('index')
@@ -253,6 +251,10 @@ def downloadFile(request):
         fdir, fname = os.path.split(resumenPath)
         zip_path    = os.path.join(zip_subdir, 'Resumen.csv')
         zf.write(resumenPath, zip_path)
+    parameterPath = './app/files/consultOut/Parametros'+sessionKey+'.txt'
+    fdir, fname = os.path.split(parameterPath)
+    zip_path    = os.path.join(zip_subdir, 'Parametros.txt')
+    zf.write(parameterPath, zip_path)
     zf.close()
     resp = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename

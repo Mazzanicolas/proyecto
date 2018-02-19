@@ -3,7 +3,7 @@ from app.models import *
 from app.checkeo_errores import *
 import app.utils
 import csv
-from app.task import saveTiemposToBd
+from app.task import saveTiemposToDB
 from django.http import HttpResponse, StreamingHttpResponse
 import time
 
@@ -149,6 +149,7 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
     res, lineas = checkTiempos(tipo,request)
     if not res:
         return lineas
+    saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'delegator')
     
 
 def cargarTiemposBus(request):

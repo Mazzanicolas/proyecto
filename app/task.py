@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task, group, result
 from celery.result import allow_join_result
 import time
-from app.models import Individuo, Settings,IndividuoCentro, TipoTransporte, Prestador, AnclaTemporal, Centro,Pediatra,IndividuoTiempoCentro,MedidasDeResumen
+from app.models import *
 import app.utils as utils
 from django.contrib.sessions.models import Session
 from django.contrib.sessions.backends.db import SessionStore
@@ -112,8 +112,8 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',0) == '1')
             prestador = int(simParam.get('mutualista','-1'))
             if(prestador != -2):
-                prestadorObject = Prestador.objects.get(id=prestador).id
-                prestador = prestadorObject if(prestador!= -1) else individuo.prestador.id
+                prestadorObject = Prestador.objects.get(id=prestador) if(prestador!= -1) else individuo.prestador
+                prestador = prestadorObject.id if(prestador!= -1) else individuo.prestador.id
                 
         else:
             tipoTrans = individuo.tipo_transporte
@@ -126,6 +126,7 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             tiemposViaje = utils.getTiempos(individuo = individuo,centro = centro,tipoTrans = tipoTrans.id)
             if(prestador == -2):
                 prestador = centro.prestador.id
+                prestadorObject = centro.prestador
             samePrest = prestador == centro.prestador.id
             #individuo.prestador = prestador
             #individuo.tipoTransporte = tipoTrans
@@ -383,7 +384,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             resultLlega = "Si" if (BoolLlega) else "No"
             return resultTimpo,resultLlegaG,resultLlega
 @shared_task
-def saveTiemposToBd(lineas,tipo):
+def saveTiemposToDB(lineas,tipo):
     if(tipo == 0):
         sep = ';'
         print("soyCaminando")
