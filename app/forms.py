@@ -389,14 +389,9 @@ class SuperLogin(AuthenticationForm):
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.layout = Layout(
+            HTML('<br><br>'),
             Field('username', placeholder="username"),
             Field('password', placeholder="password"),
+            Div(Div(Submit('submit', 'Login',css_class='btn-primary btn-block')))
         )
-    #helper = FormHelper()
-    #helper.form_class = 'form-horizontal'
-    #helper.form_method = 'POST'
-    #helper.layout = Layout(Div('username'), Div('password'))
-class LoginHelper(FormHelper):
-    form_class = 'form-horizontal'
-    form_method = 'POST'
-    layout = Layout(HTML("PUTASETEWAFWESAFAESWERSWDRESWE"),Div('username'), Div('password'))
+
