@@ -4,7 +4,9 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTML,Field
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 
+REDIRECT_FIELD_NAME = 'next'
 class UserForm(forms.ModelForm):
     password = forms.CharField(widget = forms.PasswordInput)
 
@@ -255,8 +257,6 @@ class SimularForm(EjecutarForm):
 
 class EjecutarHelper(FormHelper):
     form_class = 'form-horizontal'
-    label_class = 'col-lg-2'
-    field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout( Div(
         Div(HTML('<div style="font-size:180%"> Ejecutar</div>', ),css_class = "modal-header" ),
@@ -383,3 +383,20 @@ class SimularHelper(FormHelper):
     css_class = "modal-content"),
         
     )
+class SuperLogin(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super(SuperLogin, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Field('username', placeholder="username"),
+            Field('password', placeholder="password"),
+        )
+    #helper = FormHelper()
+    #helper.form_class = 'form-horizontal'
+    #helper.form_method = 'POST'
+    #helper.layout = Layout(Div('username'), Div('password'))
+class LoginHelper(FormHelper):
+    form_class = 'form-horizontal'
+    form_method = 'POST'
+    layout = Layout(HTML("PUTASETEWAFWESAFAESWERSWDRESWE"),Div('username'), Div('password'))

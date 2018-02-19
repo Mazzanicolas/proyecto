@@ -1,5 +1,7 @@
 <html>
     <head>
+        
+    {% load crispy_forms_tags %}
             {% load static %}
             <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
             <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
@@ -10,7 +12,7 @@
             <h1>Log in</h1>
             <form method="POST">
                 {% csrf_token %}
-                {{ form.as_p }}
+                {% crispy form %}
                 <button type="submit">Login</button>
             </form>
         </div>

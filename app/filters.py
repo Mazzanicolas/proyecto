@@ -2,7 +2,6 @@ import django_filters
 from django import forms
 from django.forms import widgets
 from app.models import *
-
 class IndividuoTiempoCentroFilter(django_filters.FilterSet):
     DIAS = (
     (0, 'L'),

@@ -382,3 +382,44 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
             resultLlega = "Si" if (BoolLlega) else "No"
             return resultTimpo,resultLlegaG,resultLlega
+@shared_task
+def saveTiemposToBd(lineas,tipo):
+    if(tipo == 0):
+        sep = ';'
+        print("soyCaminando")
+        SectorTiempoCaminando.objects.all().delete()
+    else:
+        print("soyAuto")
+        sep = ','
+        print(tipo)
+        SectorTiempoAuto.objects.all().delete()
+    id = 0
+    tiempos = []
+    init = time.time()
+    for caso in lineas:
+        caso = caso[0].split(sep)
+        sector1 = caso[0]
+        sector2 = caso[1]
+        t = float(caso[2])
+        dist = float(caso[3])
+        if(tipo == 0):
+            tiempo = SectorTiempoCaminando(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
+        else:
+            tiempo = SectorTiempoAuto(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
+        tiempos.append(tiempo)
+        id +=1
+        if(id % 10000 == 0):
+            print(id)
+            print(time.time() - init)
+            init = time.time()
+            if(tipo == 1):
+                guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
+            else:
+                guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
+            tiempos = []
+    if(tiempos):
+        if(tipo == 1):
+            guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
+        else:
+            guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
+    print("Se cargo correctamente el archivo")
