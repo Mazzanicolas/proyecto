@@ -82,6 +82,8 @@ def genShape(request):
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
     return resp
 
+def redirectIndex(request):
+    return redirect('index')
 
 def redirectConsulta(request):
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and

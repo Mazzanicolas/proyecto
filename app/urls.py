@@ -1,7 +1,9 @@
 from django.conf.urls import url
-
 from . import views
 from . import tables
+from django.contrib.auth.views import login,logout
+from django.views.generic import RedirectView
+
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^consulta/$', tables.FilteredPersonListView.as_view(), name='consultaConFiltro'),
@@ -27,7 +29,8 @@ urlpatterns = [
     url(r'^SectoresTiemposCaminandos/$', tables.SectorTiempoCaminandoListView.as_view(), name='sectorTiempoCaminandoTable'),
     url(r'^SectoresTiemposOmnibuss/$', tables.SectorTiempoOmnibusListView.as_view(), name='sectorTiempoOmnibusTable'),
     url(r'^register/$', views.UserFormView.as_view(), name='register'),
-
+    url(r'^login/$', login, {'template_name':'accounts/login.html'}, name='login'),
+    url(r'^logout/$', logout, {'next_page':'login'}),
 
 
 ]

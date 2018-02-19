@@ -1,0 +1,18 @@
+<html>
+    <head>
+            {% load static %}
+            <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+            <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
+            <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Log in</h1>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </body>
+</html>
