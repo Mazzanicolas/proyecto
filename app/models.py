@@ -113,7 +113,16 @@ class SectorAuto(models.Model):
     shapePosition = models.IntegerField()
     class Meta:
         ordering = ['shapeid']
+
 class SectorCaminando(models.Model):
+    shapeid = models.CharField(max_length = 50,primary_key=True)
+    x_centroide = models.IntegerField()
+    y_centroide = models.IntegerField()
+    shapePosition = models.IntegerField()
+    class Meta:
+        ordering = ['shapeid']
+
+class SectorOmnibus(models.Model):
     shapeid = models.CharField(max_length = 50,primary_key=True)
     x_centroide = models.IntegerField()
     y_centroide = models.IntegerField()
@@ -141,8 +150,8 @@ class SectorTiempoCaminando(models.Model):
         ordering = ['id']
 
 class SectorTiempoOmnibus(models.Model):
-    sectorO_1 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
-    sectorO_2 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sectorO_2')
+    sectorO_1 = models.ForeignKey(SectorOmnibus, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
+    sectorO_2 = models.ForeignKey(SectorOmnibus, models.SET_NULL, blank=True, null=True,related_name='sectorO_2')
     tiempo = models.FloatField()
     class Meta:
         unique_together = (('sectorO_1', 'sectorO_2'),)

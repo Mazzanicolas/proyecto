@@ -150,7 +150,7 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
     if not res:
         return lineas
     saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'delegator')
-    
+
 
 def cargarTiemposBus(request):
     res, lineas = checkTiemposBus(request)
@@ -162,7 +162,6 @@ def cargarTiemposBus(request):
     for i in range(len(lineas)):
         for j in range(len(lineas[i])):
             if i == j:
-                print(i,j)
                 t = SectorTiempoAuto.objects.get(sector_1__shapeid = str(i), sector_2__shapeid = str(j)).tiempo
             else:
                 #t = float(lineas[i][j])
@@ -174,6 +173,7 @@ def cargarTiemposBus(request):
             tiempos.append(tiempo)
             id +=1
             if(id % 100000 == 0):
+                print(id)
                 guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
                 tiempos = []
     if(tiempos != list()):

@@ -1,6 +1,6 @@
 from shapely.geometry import Polygon, Point
 import shapefile
-from omnibus import parada_mas_cercana, load, busqueda, get_parada
+from newOmnibus import *
 
 '''
     A partir de un shape dado devuelve una lista con el centroide de cada sector
@@ -47,18 +47,30 @@ def buscar_duplicados(centroides_file):
                 a += 1
     print(a)
 
-def calcular_tiempos(nodos,sectores,out_file,start=0,end=1063):
-    res = [[(0,0,0) for _ in range(len(sectores))] for _ in range(len(sectores))]
-    for i in range(len(sectores)):
-        nodo_origen = get_parada(nodos,sectores[i][-1])
+def calcular_tiempos(nodos,sectores,dict_sectores,out_file,start=0,end=1063):
+    #res = [[(0,0,0) for _ in range(len(sectores))] for _ in range(start,end)]
+    res = list()
+    for i in range(start,end):
+        aux = list()
+        nodo_origen = dict_sectores[sectores[i][-1]]#get_parada(nodos,sectores[i][-1])
         for j in range(len(sectores)):
             if i != j:
-                nodo_destino = get_parada(nodos,sectores[j][-1])
-                res[i][j] = busqueda(nodo_origen,nodo_origen.coords,nodo_destino,nodo_destino.coords,nodos,0,0)
+                nodo_destino = dict_sectores[sectores[j][-1]]#get_parada(nodos,sectores[j][-1])
+                #res[start-i][j] = busqueda(nodo_origen,nodo_destino,nodos)
+                aux.append(busqueda(nodo_origen,nodo_destino,nodos))
+            else:
+                aux.append([0,0,0])
+        res.append(aux)
         print(i)
     with open(out_file,'w') as f:
         #f.write('\n'.join(list(map(lambda x: ','.join(list(map(lambda y: str(y),x))),res))))
         f.write('\n'.join(list(map(lambda x: ','.join(list(map(lambda y: "{};{};{}".format(*y),x))),res))))
+
+def nodos_de_centroides(nodos,sectores):
+	res = dict()
+	for sector in sectores:
+		res[sector[-1]] = get_parada(nodos,sector[-1])
+	return res
 
 def main():
     # sf = shapefile.Reader('../app/files/shapeAuto.shp')
@@ -68,9 +80,10 @@ def main():
     # buscar_duplicados('centroides.csv')
     sectores = open('centroides.csv').read().split('\n')
     sectores = list(map(lambda x: x.split(','),sectores))
-    nodos = load('test_nodos_cercanos.csv')
+    nodos = load('omnibus_final_ver.csv')
+    dict_sectores = nodos_de_centroides(nodos,sectores)
     print("done loading")
-    calcular_tiempos(nodos,sectores,'matrizOmnibus.csv')
+    calcular_tiempos(nodos,sectores,dict_sectores,'test.csv',0,1)
 
 if __name__ == '__main__':
     main()
