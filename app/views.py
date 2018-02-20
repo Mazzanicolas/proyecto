@@ -16,7 +16,7 @@ from app.task import delegator
 import app.utils as utils
 import app.load as load
 from django.contrib.sessions.models import Session
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 import os
 import zipfile
 from io import BytesIO
@@ -25,22 +25,29 @@ from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
 from django.views.generic import View
 from .forms import UserForm
-
+from  django.utils.decorators import classonlymethod
 global shapeAuto
 global shapeCaminando
 global recordsAuto
 global recordsCaminando
 
+
 class UserFormView(View):
     form_class = UserForm
     template_name = 'app/registration_form.html'
-
+    
     def get(self, request):
+        if not request.user.is_authenticated and not request.user.is_superuser:
+            print("orazio el kaker")
+            return HttpResponseForbidden()
         form =  self.form_class(None)
         helper = UserRegistryHelper()
-        return render(request, self.template_name,{'form':form,'helper':helper})
+        return render(request, self.template_name,{'form':form,'helper':helper})  
     
     def post(self,request):
+        if not request.user.is_authenticated and not request.user.is_superuser:
+            print("orazio el kaker 2")
+            return HttpResponseForbidden()
         form =  self.form_class(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -55,7 +62,9 @@ class UserFormView(View):
                 if user.is_active:
                     login(request, user)
                     return redirect('index')
-        
+        if not request.user.is_authenticated and not request.user.is_superuser:
+            print("orazio el kaker 3")
+            return HttpResponseForbidden()
         return render(request, self.template_name,{'form':form})
 
 
@@ -65,6 +74,41 @@ recordsAuto = sf.records()
 sf = shapefile.Reader('app/files/shapeCaminando.shp')
 shapeCaminando = sf.shapes()
 recordsCaminando = sf.records()
+
+def secureUserCreation(request):
+
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return HttpResponseForbidden()
+    if request.method == "GET":
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden()
+        form =  UserForm()
+        helper = UserRegistryHelper()
+        return render(request, 'app/registration_form.html',{'form':form,'helper':helper})  
+    
+        
+    if request.method == "POST":
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden()       
+        
+        form =  UserForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            username = form.cleaned_data['username']
+            password  = form.cleaned_data['password']
+            user.set_password(password)
+            user.save()
+
+            user = authenticate(username=username,password=password)
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return redirect('index')
+        if not request.user.is_authenticated or not request.user.is_superuser:
+            return HttpResponseForbidden()
+        return render(request, 'app/registration_form.html',{'form':form})
+    
 
 #( ͡° ͜ʖ ͡°)
 def genShape(request):
@@ -86,6 +130,8 @@ def redirectIndex(request):
     return redirect('index')
 
 def redirectConsulta(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and
             Centro.objects.count() > 0):
         print("*****************************")
@@ -105,6 +151,8 @@ def progress(request):
     return JsonResponse(data)
 
 def cancelarConsulta(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     print("CANCELAR CONSULTA")
     deleteConsultaResults(request)
     return redirect('index')
@@ -124,6 +172,8 @@ def deleteConsultaResults(request):
     request.session.save()
 
 def redirectSim(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and 
             Individuo.objects.count() > 0 and Centro.objects.count() > 0):
         print("**************************************************")
@@ -145,6 +195,8 @@ def redirectSim(request):
     return response
 
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     init()
     if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
         load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
@@ -234,6 +286,8 @@ def generateCsvResults(request):
     return response
 
 def downloadFile(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     sessionKey = request.session.session_key
     zip_subdir   = "Resultados"
     zip_filename = "%s.zip" % zip_subdir
@@ -261,6 +315,8 @@ def downloadFile(request):
     return resp
 
 def redirectTable(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     verDatos = request.GET.get('datosAVer',0)
     if(verDatos == '1'):
         response = redirect('individuosTable')
@@ -303,6 +359,8 @@ def redirectTable(request):
     return
 
 def downloadShapeFile(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     path = './app/files/consultOut/IndividualResult'
     filenames    = generarShape(request, request.session.session_key, path)
     resp = zipFile("Shapefiles",filenames)
@@ -328,6 +386,8 @@ def zipFile(zip_subdir, filenames):
     return resp
 
 def plot(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     return render(request,'app/plot.html')
 
 def newCalcTimes():

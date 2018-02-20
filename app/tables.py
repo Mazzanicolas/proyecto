@@ -11,6 +11,7 @@ from app.forms import *
 from app.filters import *
 from django_tables2 import RequestConfig
 import math
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class PagedFilteredTableView(SingleTableView):
     filter_class = None
@@ -131,7 +132,7 @@ class SimPersonTable(TestPersonTable):
         attrs = {"class": "paleblue"}
         exclude = ('id',)
         sequence = ('individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','llega')
-class FilteredPersonListView(ExportMixin,PagedFilteredTableView):
+class FilteredPersonListView(LoginRequiredMixin,ExportMixin,PagedFilteredTableView):
     table_class = TestPersonTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -305,7 +306,7 @@ class IndividuoTableView(SingleTableView):
         context = super(IndividuoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class IndividuoListView(ExportMixin,IndividuoTableView):
+class IndividuoListView(LoginRequiredMixin,ExportMixin,IndividuoTableView):
     table_class = IndividuoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -339,7 +340,7 @@ class CentrosTableView(SingleTableView):
         context = super(CentrosTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class CentrosListView(ExportMixin,CentrosTableView):
+class CentrosListView(LoginRequiredMixin,ExportMixin,CentrosTableView):
     table_class = CentrosTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -373,7 +374,7 @@ class AnclasTableView(SingleTableView):
         context = super(AnclasTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class AnclasListView(ExportMixin,AnclasTableView):
+class AnclasListView(LoginRequiredMixin,ExportMixin,AnclasTableView):
     table_class = AnclasTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -407,7 +408,7 @@ class IndividuoCentroTableView(SingleTableView):
         context = super(IndividuoCentroTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class IndividuoCentroListView(ExportMixin,IndividuoCentroTableView):
+class IndividuoCentroListView(LoginRequiredMixin,ExportMixin,IndividuoCentroTableView):
     table_class = IndividuoCentroTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -441,7 +442,7 @@ class PediatraTableView(SingleTableView):
         context = super(PediatraTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class PediatraListView(ExportMixin,PediatraTableView):
+class PediatraListView(LoginRequiredMixin,ExportMixin,PediatraTableView):
     table_class = PediatraTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -473,7 +474,7 @@ class PrestadorTableView(SingleTableView):
         context = super(PrestadorTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class PrestadorListView(ExportMixin,PrestadorTableView):
+class PrestadorListView(LoginRequiredMixin,ExportMixin,PrestadorTableView):
     table_class = PrestadorTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -505,7 +506,7 @@ class SectorAutoTableView(SingleTableView):
         context = super(SectorAutoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorAutoListView(ExportMixin,SectorAutoTableView):
+class SectorAutoListView(LoginRequiredMixin,ExportMixin,SectorAutoTableView):
     table_class = SectorAutoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -537,7 +538,7 @@ class SectorCaminandoTableView(SingleTableView):
         context = super(SectorCaminandoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorCaminandoListView(ExportMixin,SectorCaminandoTableView):
+class SectorCaminandoListView(LoginRequiredMixin,ExportMixin,SectorCaminandoTableView):
     table_class = SectorCaminandoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -569,7 +570,7 @@ class SectorOmnibusTableView(SingleTableView):
         context = super(SectorOmnibusTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorOmnibusListView(ExportMixin,SectorOmnibusTableView):
+class SectorOmnibusListView(LoginRequiredMixin,ExportMixin,SectorOmnibusTableView):
     table_class = SectorOmnibusTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -608,7 +609,7 @@ class SectorTiempoAutoTableView(SingleTableView):
         context = super(SectorTiempoAutoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorTiempoAutoListView(ExportMixin, SectorTiempoAutoTableView):
+class SectorTiempoAutoListView(LoginRequiredMixin,ExportMixin, SectorTiempoAutoTableView):
     table_class = SectorTiempoAutoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -646,7 +647,7 @@ class SectorTiempoCaminandoTableView(SingleTableView):
         context = super(SectorTiempoCaminandoTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorTiempoCaminandoListView(ExportMixin,SectorTiempoCaminandoTableView):
+class SectorTiempoCaminandoListView(LoginRequiredMixin,ExportMixin,SectorTiempoCaminandoTableView):
     table_class = SectorTiempoCaminandoTable
     template_name = 'app/filterTable.html'
     paginate_by = 200
@@ -684,7 +685,7 @@ class SectorTiempoOmnibusTableView(SingleTableView):
         context = super(SectorTiempoOmnibusTableView, self).get_context_data()
         context[self.context_filter_name] = self.filter
         return context
-class SectorTiempoOmnibusListView(ExportMixin,SectorTiempoOmnibusTableView):
+class SectorTiempoOmnibusListView(LoginRequiredMixin,ExportMixin,SectorTiempoOmnibusTableView):
     table_class = SectorTiempoOmnibusTable
     template_name = 'app/filterTable.html'
     paginate_by = 200

@@ -29,7 +29,7 @@ urlpatterns = [
     url(r'^SectoresTiemposAutos/$', tables.SectorTiempoAutoListView.as_view(), name='sectorTiempoAutoTable'),
     url(r'^SectoresTiemposCaminandos/$', tables.SectorTiempoCaminandoListView.as_view(), name='sectorTiempoCaminandoTable'),
     url(r'^SectoresTiemposOmnibuss/$', tables.SectorTiempoOmnibusListView.as_view(), name='sectorTiempoOmnibusTable'),
-    url(r'^register/$', views.UserFormView.as_view(), name='register'),
+    url(r'^register/$', views.secureUserCreation, name='register'),
     url(r'^login/$', login, {'template_name':'accounts/login.html','authentication_form':SuperLogin}, name='login'),
     url(r'^logout/$', logout, {'next_page':'login'}),
 

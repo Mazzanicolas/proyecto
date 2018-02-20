@@ -35,7 +35,7 @@
     <!--NavBar-->
     <nav class="navbar navbar-default">
       <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><a class="navbar-brand" href="#">Proyecto 2017-2018</a>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"><a class="navbar-brand" href="/app">Proyecto 2017-2018</a>
           <ul class="nav navbar-nav">
           <!--1-->
           <li><a href="#" data-toggle="modal" data-target="#cargar_datos">Cargar</a></li>
@@ -64,8 +64,10 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ username }}<span class="caret"></span></a>
               <ul class="dropdown-menu">
                 <li><a href="logout/">Cerrar sesión</a></li>
+                {% if request.user.is_superuser %}
                 <li role="separator" class="divider"></li>
                 <li><a data-toggle="modal" href="register/">Crear Usuario</a></li>
+                {% endif %}
               </ul>
             </li>
           </ul>
