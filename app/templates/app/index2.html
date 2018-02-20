@@ -188,11 +188,9 @@
             <a class="btn btn-default" type="button" href="#" data-toggle="modal" data-target="#generar_shape" target="_blank">Descargar Shapes</a>
           </div>
         </div>
-        <div class="modal-footer">
-            
+        <div class="modal-footer">            
           </div>    
-      </div>
-            
+      </div>            
       </form>
     </div>
   </div>
@@ -238,52 +236,56 @@
          {% csrf_token %}
          <fieldset class="form-group">
            <p>Seleccione los datos a cargar</p>
-           <div class="panel-body">
-              <div class="form-check">
-                <label class="form-check-label">
-                  <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios7" value="option7">
-                  Tipos de transporte &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Tipos de transporte tooltip" disabled>i</button>
-                </label>
+           
+            <div class="panel panel-default">
+              <div class="panel-heading">Transportes</div>
+              <div class="panel-body">
+                  <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio1" value="option7">
+                  <b data-toggle="tooltip" title="Cargar nuevos tipos de transporte">Tipos de transporte</b>
+                  <div class="progress">
+                      <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
               </div>
             </div>
-           <div class="panel-body">
-               <div class="form-check">
-                 <label class="form-check-label">
-                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios3" value="option3">
-                   Matriz transporte privado &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Matriz transporte privado tooltip" disabled>i</button>
-                 </label>
-               </div>
-               <div class="form-check">
-               <label class="form-check-label">
-                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios4" value="option4">
-                   Matriz caminando &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Matriz caminando tooltip" disabled>i</button>
-                 </label>
-               </div>
-               <div class="form-check">
-                 <label class="form-check-label">
-                   <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios6" value="option6">
-                   Matriz omnibus &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Matriz omnibus tooltip" disabled>i</button>
-                 </label>
-               </div>
-             </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">Matrices</div>
+                <div class="panel-body">
+                    <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio2" value="option3">
+                    <b data-toggle="tooltip" title="Cargar matriz de transporte: Auto">Matriz transporte Auto</b>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio3" value="option4">
+                    <b data-toggle="tooltip" title="Cargar matriz de transporte: Caminando">Matriz transporte Caminando</b>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio4" value="option6">
+                    <b data-toggle="tooltip" title="Cargar matriz de transporte: Omnibus">Matriz transporte Omnibus</b>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+              </div>
 
            <div class="panel-body">
            <div class="form-check">
              <label class="form-check-label">
-               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="option1">
-               Conjunto de datos de prestadores &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Conjunto de datos de prestadores tooltip" disabled>i</button>
+               <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio5" value="option1">
+               <a data-toggle="tooltip" title="Cargar nuevos prestadores">Conjunto de datos de Prestadores</a>
              </label>
            </div>
            <div class="form-check">
              <label class="form-check-label">
-               <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios5" value="option5">
-               Conjunto de datos para centros &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="conjunto de datos para centros tooltip" disabled>i</button>
+               <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio6" value="option5">
+               <a data-toggle="tooltip" title="Cargar nuevos centros">Conjunto de datos para Centros</a>
              </label>
            </div>
            <div class="form-check">
               <label class="form-check-label">
-                  <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios2" value="option2">
-                  Conjunto de datos para personas  &nbsp;&nbsp;<button href="#aboutModal" data-toggle="modal" data-target="#myModal" class="btn-circle-micro" data-toggle="tooltip" data-placement="bottom" title="Conjunto de datos para personas tooltip" disabled>i</button>
+                  <input type="radio" class="form-check-input" name="optionsRadios" id="cargadoRadio7" value="option2">
+                  <a data-toggle="tooltip" title="Cargar nuevos datos de personas">Conjunto de datos para Personas</a>
                 </label>
               </div>
          </div>

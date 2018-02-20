@@ -33,5 +33,5 @@ urlpatterns = [
     url(r'^login/$', login, {'template_name':'accounts/login.html','authentication_form':SuperLogin}, name='login'),
     url(r'^logout/$', logout, {'next_page':'login'}),
 
-
+    url(r'^testing/$', views.testing, name='testing'),
 ]

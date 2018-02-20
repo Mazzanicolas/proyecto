@@ -32,6 +32,9 @@ global recordsAuto
 global recordsCaminando
 
 
+def testing(request):
+    return render(request,'app/index.html')
+
 class UserFormView(View):
     form_class = UserForm
     template_name = 'app/registration_form.html'

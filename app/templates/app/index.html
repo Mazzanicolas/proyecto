@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        </style>
+        <meta charset="UTF-8">
+        <title>Proyecto 2017</title>
+        {% load static %}
+        {% load crispy_forms_tags %}
+        <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+        <link rel="stylesheet" href="{% static 'app/bootstrap4/css/bootstrap.min.css' %}"></link>
+        <link rel="stylesheet" href="{% static 'app/customCss/customcss.css' %}"></link>
+    </head>
+
+    <body>
+        <div class="container-background">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#">Proyecto</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse">
+                <ul class="navbar-nav cl-effect-14-edited">
+                    <li class="nav-item active">
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#cargar_datos">Cargar</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#config">Configuración</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#verDatos">Datos</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#sim">Simular</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#fil">Ejecutar</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar">Descargar</a></li>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{ request.user.username }}
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="logout/">Cerrar sesión</a>
+                            {% if request.user.is_superuser %}
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" data-toggle="modal" href="register/">Crear Usuario</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                </ul>
+                </div>
+            </nav>            
+            <!--v-Content-v-->
+            <!--Cargar-->
+            <div class="modal fade" id="cargar_datos">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cargar Datos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Advertencia:</strong> Se remplazan los datos existentes en la base de datos.
+                        </div>
+                        <form action=''  method="post", enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <fieldset class="form-group">
+                                <legend style="text-align: center;">Transportes</legend>
+                                <div class="form-check" >
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option7">
+                                        Tipos de transporte
+                                    </label>                                    
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <!--Debuggfield-->
+                            <fieldset class="form-group">
+                                <legend style="text-align: center;">Matrices de Tiempo</legend>
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option3">
+                                        Matriz tiempos Auto
+                                    </label>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option4">
+                                        Matriz tiempos Omnibus
+                                    </label>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option6">
+                                        Matriz tiempos Caminando
+                                    </label>        
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                </div>                                
+                            </fieldset>
+                            <!--Debuggfield-->
+                            <fieldset class="form-group">
+                                <legend style="text-align: center;">Transportes</legend>
+                                <div class="form-check" >
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option1">
+                                        Conjunto de datos de Prestadores
+                                    </label>                                    
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option5">
+                                        Conjunto de datos para Centros
+                                    </label>                                    
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                    <label class="form-check-label">
+                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option2">
+                                        Conjunto de datos para Personas
+                                    </label>                                    
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <!--Debuggfield-->
+                            <br><br>
+                            <div class="form-group" style="text-align: center;">
+                                <label for="inputFile">Seleccione un archivo</label>
+                                <input type="file" class="form-control-file"  name = "inputFile" aria-describedby="fileHelp">
+                                <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary">Cargar datos</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <!--Cargar-->
+            <!--^-Content-^-->
+        </div>
+  </body>
+
+  {% load static %}
+  <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
+  <script src="{% static 'app/bootstrap4/js/bootstrap.min.js' %}"></script>
+    <script>
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip(); 
+        });
+    </script>
+</html>

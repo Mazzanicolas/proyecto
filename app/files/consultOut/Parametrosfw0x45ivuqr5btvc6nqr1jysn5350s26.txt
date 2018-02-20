@@ -1,0 +1,10 @@
+Parametros de Simulacion 
+Tipo de Transporte: CAMINANDO 
+Prestador a Simular: MEDICA URUGUAYA 
+No Se utiliza el ancla temporal Trabajo 
+No Se utiliza el ancla temporal Jardin 
+Filtros utilizados 
+Dias: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo 
+Desde Las: 15 
+Hasta Las: 23 
+Individuos: 1, 2, 3 

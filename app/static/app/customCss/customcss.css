@@ -1,0 +1,89 @@
+.container-background {
+    width: 100%;  
+    min-height: 100vh;
+    background: #9053c7;
+    background: -webkit-linear-gradient(-135deg, #c850c0, #4158d0);
+    background: -o-linear-gradient(-135deg, #c850c0, #4158d0);
+    background: -moz-linear-gradient(-135deg, #c850c0, #4158d0);
+    background: linear-gradient(-135deg, #c850c0, #4158d0);
+}
+/*Effect init*/
+*,
+*:after,
+*::before {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+nav a {
+    position: relative;
+    font-weight: 300;
+    text-shadow: 0 0 1px rgba(255,255,255,0.3);
+    font-size: 1em;
+}
+/* Effect 14: border switch */
+.cl-effect-14-edited a {
+    padding: 0 20px;
+    height: 45px;
+    line-height: 45px;
+}
+
+.cl-effect-14-edited a::before,
+.cl-effect-14-edited a::after {
+    position: absolute;
+    width: 45px;
+    height: 2px;
+    background: #7486dd;
+    content: '';
+    opacity: 0.2;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+    pointer-events: none;
+}
+
+.cl-effect-14-edited a::before {
+    top: 0;
+    left: 0;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    transform: rotate(90deg);
+    -webkit-transform-origin: 0 0;
+    -moz-transform-origin: 0 0;
+    transform-origin: 0 0;
+}
+
+.cl-effect-14-edited a::after {
+    right: 0;
+    bottom: 0;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    transform: rotate(90deg);
+    -webkit-transform-origin: 100% 0;
+    -moz-transform-origin: 100% 0;
+    transform-origin: 100% 0;
+}
+
+.cl-effect-14-edited a:hover::before,
+.cl-effect-14-edited a:hover::after,
+.cl-effect-14-edited a:focus::before,
+.cl-effect-14-edited a:focus::after {
+    opacity: 1;
+}
+
+.cl-effect-14-edited a:hover::before,
+.cl-effect-14-edited a:focus::before {
+    left: 50%;
+    -webkit-transform: rotate(0deg) translateX(-50%);
+    -moz-transform: rotate(0deg) translateX(-50%);
+    transform: rotate(0deg) translateX(-50%);
+}
+
+.cl-effect-14-edited a:hover::after,
+.cl-effect-14-edited a:focus::after {
+    right: 50%;
+    -webkit-transform: rotate(0deg) translateX(50%);
+    -moz-transform: rotate(0deg) translateX(50%);
+    transform: rotate(0deg) translateX(50%);
+}
