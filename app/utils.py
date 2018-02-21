@@ -16,6 +16,13 @@ def createFolderInUsers(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+def getOrCreateSettigs(id,value):
+    currentSettingsQuery = Settings.objects.filter(setting=id)[:]
+    if(currentSettingsQuery):
+        return currentSettingsQuery[0]
+    currentSettings = Settings(setting=id,value=value)
+    currentSettings.save()
+
 def generateParamDict(getReq):
     res = dict()
     res['mutualista'] = getReq.get('prestadorFiltro','-1')

@@ -32,8 +32,101 @@ global recordsAuto
 global recordsCaminando
 
 
+def progressMatrizAuto(request):
+    progressDone  = Settings.objects.get(setting='currentMatrizAuto')
+    progressTotal = Settings.objects.get(setting='totalMatrizAuto')
+    done = calculatePercetage(progressDone.value,progressTotal.value)
+    data = {"progressStatus":done}
+    return JsonResponse(data)
+
+def calculatePercetage(lhs,rhs):
+    return lhs/rhs
+
+def initSettingsStatus():
+    firstTime = Settings.objects.filter(setting='firstTime')[:]
+    if(not firstTime):
+        return
+    utils.getOrCreateSettigs('firstTime',1)
+    utils.getOrCreateSettigs('currentMatrizAuto',0)
+    utils.getOrCreateSettigs('totalMatrizAuto',0)
+    utils.getOrCreateSettigs('statusMatrizAuto',-1)
+
+
 def testing(request):
-    return render(request,'app/index.html')
+    initSettingsStatus()
+    if not request.user.is_authenticated:
+        return redirect('login')
+    init()
+    if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
+        load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
+    if(not Settings.objects.filter(setting = "tiempoMaximo")):
+        s = Settings(setting = "tiempoMaximo",value = "60")
+        s.save()
+    if(not Settings.objects.filter(setting = "tiempoConsulta")):
+        s = Settings(setting = "tiempoConsulta",value = "30")
+        s.save()
+    if (not Settings.objects.filter(setting = "tiempoLlega")):
+        s = Settings(setting = "tiempoLlega",value = "30")
+        s.save()
+    post = request.POST
+    cookies = request.COOKIES
+    if(cookies and 'tiempoMaximo' in cookies):
+        maxT = cookies.get("tiempoMaximo")
+    else:
+        maxT = Settings.objects.get(setting = "tiempoMaximo").value
+    if(cookies and 'tiempoConsulta' in cookies):
+        consT = cookies.get("tiempoConsulta")
+    else:
+        consT = Settings.objects.get(setting = "tiempoConsulta").value
+    if(cookies and "tiempoLlega" in cookies):
+        tiempoL = cookies.get("tiempoLlega")
+    else:
+        tiempoL = Settings.objects.get(setting = "tiempoLlega").value
+    if(post):
+        tiempoMax = post.get("tiempoTransporte",None)
+        tiempoCons = post.get("tiempoConsulta",None)
+        tiempoLlega = post.get("tiempoLlega",None)
+        radioCargado = post.get("optionsRadios",None)
+        radioMatrix =  radioCargado
+        if(radioCargado):
+            if(radioCargado == "option1"):
+                lineas = load.cargarMutualistas(request)
+            elif(radioCargado == "option2"):
+                lineas = load.cargarIndividuoAnclas(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            elif(radioMatrix == "option3"):
+                lineas = load.cargarTiempos(1,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            elif(radioMatrix == "option4"):
+                lineas = load.cargarTiempos(0,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            elif(radioMatrix == "option5"):
+                lineas = load.cargarCentroPediatras(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            elif(radioMatrix == "option6"): # omnibus
+                lineas = load.cargarTiemposBus(request)
+            elif(radioMatrix == "option7"):
+                lineas = load.cargarTiposTransporte(request)
+            if lineas is not None:
+                pseudo_buffer = utils.Echo()
+                writer = csv.writer(pseudo_buffer)
+                response = StreamingHttpResponse((writer.writerow(row) for row in lineas),
+                                                 content_type="text/csv")
+                response['Content-Disposition'] = 'attachment; filename="errores.csv"'
+                return response
+        if(tiempoMax):
+            maxT = tiempoMax
+        if(tiempoCons):
+            consT = tiempoCons
+        if(tiempoLlega):
+            tiempoL = tiempoLlega
+    ejecutarForm = EjecutarForm() 
+    ejecutarHelper = EjecutarHelper()
+    simularForm = SimularForm()
+    simularHelper = SimularHelper()
+    username = request.user.username
+    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username }
+    response = render(request, 'app/index.html',context)
+    response.set_cookie(key = 'tiempoMaximo',  value = maxT)
+    response.set_cookie(key = 'tiempoConsulta',value = consT)
+    response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
+    return response
 
 class UserFormView(View):
     form_class = UserForm

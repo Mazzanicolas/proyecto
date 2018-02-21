@@ -34,4 +34,5 @@ urlpatterns = [
     url(r'^logout/$', logout, {'next_page':'login'}),
 
     url(r'^testing/$', views.testing, name='testing'),
+    url(r'^testing/progressMatrizAuto/$', views.progressMatrizAuto, name='progressMatrizAuto'),
 ]

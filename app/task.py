@@ -386,10 +386,12 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
 @shared_task
 def saveTiemposToDB(lineas,tipo):
     if(tipo == 0):
+        tipoId = 'Caminando'
         sep = ';'
         print("soyCaminando")
         SectorTiempoCaminando.objects.all().delete()
     else:
+        tipoId = 'Auto'
         print("soyAuto")
         sep = ','
         print(tipo)
@@ -397,6 +399,7 @@ def saveTiemposToDB(lineas,tipo):
     id = 0
     tiempos = []
     init = time.time()
+    bulkAmount = 10000
     for caso in lineas:
         caso = caso[0].split(sep)
         sector1 = caso[0]
@@ -409,7 +412,10 @@ def saveTiemposToDB(lineas,tipo):
             tiempo = SectorTiempoAuto(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
         tiempos.append(tiempo)
         id +=1
-        if(id % 10000 == 0):
+        if(id % bulkAmount == 0):
+            progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
+            progressDone.value  = progress.value + bulkAmount
+            progressDone.save()
             print(id)
             print(time.time() - init)
             init = time.time()
@@ -423,4 +429,10 @@ def saveTiemposToDB(lineas,tipo):
             guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
         else:
             guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
+    progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
+    progressDone.value  = progress.value + bulkAmount
+    progressDone.save()
+    status  = Settings.objects.get(setting='statusMatriz'+tipoId)
+    status.value  = 1
+    status.save()
     print("Se cargo correctamente el archivo")

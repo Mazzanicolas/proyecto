@@ -25,16 +25,16 @@
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#cargar_datos">Cargar</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#config">Configuración</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#configuracion">Configuración</a></li>
                     </li>
                     <li class="nav-item">
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#verDatos">Datos</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#sim">Simular</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#simular">Simular</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#fil">Ejecutar</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#ejecutar">Ejecutar</a></li>
                     </li>
                     <li class="nav-item">
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar">Descargar</a></li>
@@ -79,10 +79,7 @@
                                     <label class="form-check-label">
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option7">
                                         Tipos de transporte
-                                    </label>                                    
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-                                    </div>
+                                    </label>
                                 </div>
                             </fieldset>
                             <!--Debuggfield-->
@@ -93,22 +90,28 @@
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option3">
                                         Matriz tiempos Auto
                                     </label>
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    <div class="progress" id="progressBarMatrizAutoContainer" style="visibility: hidden;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizAuto">
+                                            <div id="progressBarMatrizAutoPercentage">0%</div>
+                                        </div>
                                     </div>
                                     <label class="form-check-label">
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option4">
                                         Matriz tiempos Omnibus
                                     </label>
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    <div class="progress" id="progressBarMatrizOmnibusContainer" style="visibility: hidden;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizOmnibus">
+                                            <div id="progressBarMatrizOmnibusPercentage">0%</div>
+                                        </div>
                                     </div>
                                     <label class="form-check-label">
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option6">
                                         Matriz tiempos Caminando
                                     </label>        
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    <div class="progress" id="progressBarMatrizCaminandoContainer" style="visibility: hidden;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizCaminando">
+                                            <div id="progressBarMatrizCaminandoPercentage">0%</div>
+                                        </div>
                                     </div>
                                 </div>                                
                             </fieldset>
@@ -118,24 +121,30 @@
                                 <div class="form-check" >
                                     <label class="form-check-label">
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option1">
-                                        Conjunto de datos de Prestadores
+                                        Conjunto de datos de Prestadores&nbsp;<span class="badge badge-success">Cargado</span>
                                     </label>                                    
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    <div class="progress" id="progressBarDatosPrestadoresContainer" style="visibility: hidden;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPrestadores">
+                                            <div id="progressBarDatosPrestadoresPercentage">0%</div>
+                                        </div>
                                     </div>
                                     <label class="form-check-label">
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option5">
-                                        Conjunto de datos para Centros
+                                        Conjunto de datos para Centros&nbsp;<span class="badge badge-success">Cargado</span>
                                     </label>                                    
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    <div class="progress" id="progressBarDatosCentrosContainer" style="visibility: hidden;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosCentros">
+                                            <div id="progressBarDatosCentrosPercentage">0%</div>
+                                        </div>
                                     </div>
                                     <label class="form-check-label">
                                     <input type="radio" class="form-check-input" name="optionsRadios" value="option2">
-                                        Conjunto de datos para Personas
+                                        Conjunto de datos para Personas&nbsp;<span class="badge badge-success">Cargado</span>
                                     </label>                                    
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                                    <div class="progress" id="progressBarDatosPersonasContainer" style="visibility: hidden;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPersonas">
+                                            <div id="progressBarDatosPersonasPercentage">0%</div>
+                                        </div>
                                     </div>
                                 </div>
                             </fieldset>
@@ -149,23 +158,206 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary">Cargar datos</button>
+                        <button type="submit" class="btn btn-primary">Cargar Datos</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                     </div>
                     </div>
                 </div>
             </div>
             <!--Cargar-->
+            <!--Configuracion-->
+            <div class="modal fade" id="configuracion">
+                <div class="modal-dialog modal-lg" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Configuración</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Advertencia:</strong> Algunas opciones necesitan un recalculo de los resultados.
+                        </div>
+                        <form action=''  method="POST">
+                            {% csrf_token %}
+                            <div class="col-md-8 mb-3">
+                                <label for="validationServerUsername">Tiempo Maximo de Transporte</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control is-valid" id="tiempoTransporteValidation" name = tiempoTransporte placeholder="{{tiempoMaximo}}" aria-describedby="inputGroupPrepend3" style="text-align:right;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">minutos</span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                    El tiempo debe ser un numero.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label for="validationServerUsername">Tiempo de Consulta</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control is-valid" id="tiempoConsultaValidation" name = tiempoConsulta placeholder="{{tiempoConsulta}}" aria-describedby="inputGroupPrepend3" style="text-align:right;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">minutos</span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                    El tiempo debe ser un numero.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8 mb-3">
+                                <label for="validationServerUsername">Tiempo en el que se considera que una persona llega</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control is-valid" id="tiempoLlegaValidation" name = tiempoLlega placeholder="{{tiempoLlega}}" aria-describedby="inputGroupPrepend3" style="text-align:right;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">minutos</span>
+                                    </div>
+                                    <div class="invalid-feedback">
+                                    El tiempo debe ser un numero.
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <!--Configuracion-->
+            <!--Datos-->
+            <div class="modal fade" id="verDatos">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ver Datos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label>Seleccione una tabla</label>
+                        <form action='redirectTable/'  method="GET">
+                            <select class="form-control" name="datosAVer">
+                                <option value = 1>Individuos</option>
+                                <option value = 2>Centros</option>
+                                <option value = 3>Anclas</option>
+                                <option value = 4>Tiempos</option>
+                                <option value = 5>Pediatras</option>
+                                <option value = 6>Prestadores</option>
+                                <option value = 7>Sectores Autos</option>
+                                <option value = 8>Sectores Caminando</option>
+                                <option value = 9>Sectores Omnibus</option>
+                                <option value = 10>Tiempos Sectores Autos</option>
+                                <option value = 11>Tiempos Sectores Caminando</option>
+                                <option value = 12>Tiempos Sectores Omnibus</option>
+                            </select>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Ver Tabla</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <!--Datos-->
+            <!--Simular-->
+            <div id="simular" class="modal fade" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                    <form action='redirectSim/'  method="GET">
+                        {% crispy simularForm simularHelper %}
+                    </form>
+                </div>
+            </div>
+            <!--Simular-->
+            <!--Ejecutar-->
+            <div class="modal fade" id="ejecutar">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Ejecutar</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Advertencia:</strong> Esta operacion puede demorar varias horas.
+                            </div>
+                            <form action='redirectConsulta/'  method="GET">
+                                {% crispy ejecutarForm ejecutarHelper %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Ejecutar-->
+            <!--Descargar-->
+            <div class="modal fade" id="downlaod">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Descargar archivos calculados</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!--_DEBUG-->
+                        <p style="text-align:center;">
+                            <a class="btn btn-primary" href="descargar/" target="_blank" aria-expanded="false">
+                                Descargar Resultados (.csv)
+                            </a>
+                            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#shapesOptionsContainer" aria-expanded="false" aria-controls="DescargarResultados">
+                                Descargar Shapes (.shp .dbf .shx)
+                            </button>
+                        </p>
+                        <div class="collapse" id="shapesOptionsContainer">
+                            <form action='descargarShape/' method="GET">
+                                <div class="card card-block">
+                                    <ul  style=" margin-top: 20px;">
+                                        <p style=" margin-left: 40px;">
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_llega"> Generar Shape Llega en base a las restricciones</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_resumen_llega"> Generar Shape Llega Resumido en base a las restricciones</label></li>
+                                        </p>
+                                        <p style=" margin-left: 40px;">
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogares">Generar Shape de Hogares</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_jardines">Generar Shape de Jardines</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_trabajos">Generar Shape de Trabajos</label></li>
+                                        </p>
+                                        <p style=" margin-left: 40px;">
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_autos">Generar Shape de Centros Optimos Auto</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_omnibus">Generar Shape de Centros Optimos Omnibus</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_caminando">Generar Shape de Centros Optimos Caminando</label></li>
+                                        </p>
+                                        <p style=" margin-left: 40px;">
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogar_autos">Generar Shape [Hogar - Centro Optimo Auto]</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogar_omnibus">Generar Shape [Hogar - Centro Optimo Omnibus]</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogar_caminando">Generar Shape [Hogar - Centro Optimo Caminando]</label></li>
+                                        </p>
+                                    </ul>
+                                    <button class="btn btn-primary" href="descargarShape/" target="_blank"> Generar Shapes</button>
+                                </div>
+                            </form>
+                        </div>
+                        <!--_DEBUG-->
+                    </div>
+                    <div class="modal-footer">                        
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <!--Descargar-->
             <!--^-Content-^-->
         </div>
-  </body>
+    </body>
 
-  {% load static %}
-  <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
-  <script src="{% static 'app/bootstrap4/js/bootstrap.min.js' %}"></script>
-    <script>
-        $(document).ready(function(){
-            $('[data-toggle="tooltip"]').tooltip(); 
-        });
-    </script>
+    {% load static %}
+    <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
+    <script src="{% static 'app/bootstrap4/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'app/customJs/customjs.js' %}"></script>
 </html>

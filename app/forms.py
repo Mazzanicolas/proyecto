@@ -259,14 +259,12 @@ class EjecutarHelper(FormHelper):
     form_class = 'form-horizontal'
     form_method = 'GET'
     layout = Layout( Div(
-        Div(HTML('<div style="font-size:180%"> Ejecutar</div>', ),css_class = "modal-header" ),
         Div(
-            Div(HTML("<strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas."),css_class = "alert alert-warning"),
             Div(
-                Div( HTML('<div style="font-size:130%"> Transporte</div>', ),css_class ="panel-footer" ),
-                Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
-                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv',css_class = "panel-body", style="display: none;"), css_class ="panel-body"),
-                    css_class = "panel panel-default"
+                Div( HTML('<h5> Transporte<h5>', ) ),
+                Div(HTML('<div><label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
+                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv', style="display: none;"), css_class ="panel-body"),
+                    #css_class = "panel panel-default"
             ),
             Div(
                 Div( HTML('<div style="font-size:130%"> Trabaja</div>', ),css_class ="panel-footer" ),
@@ -312,10 +310,7 @@ class EjecutarHelper(FormHelper):
             ),
         css_class = "modal-body"
         ),
-        Div(Div(Submit('submit', 'Calcular',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),css_class="panel-footer"),
+        Div(Div(Submit('submit', 'Calcular',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),css_class="panel-footer"),
 
     css_class = "modal-content"),
         
