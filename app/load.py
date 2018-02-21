@@ -149,6 +149,7 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
     res, lineas = checkTiempos(tipo,request)
     if not res:
         return lineas
+<<<<<<< Updated upstream
     status  = Settings.objects.get(setting='statusMatrizAuto')
     status.value  = 0
     status.save()
@@ -161,6 +162,10 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
     asyncKey = saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'delegator')
     utils.getOrCreateSettigs('asyncKey',asyncKey)
 
+=======
+    saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'CalculationQueue')
+    
+>>>>>>> Stashed changes
 
 def cargarTiemposBus(request):
     res, lineas = checkTiemposBus(request)

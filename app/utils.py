@@ -361,8 +361,12 @@ def writeSettings(sessionKey,dictSettings,simParams):
         text_file.write("Dias: {} \n".format(', '.join(dias)))
         text_file.write("Desde Las: {} \n".format(dictSettings['horaInicio']))
         text_file.write("Hasta Las: {} \n".format(dictSettings['horaFin']))
-        idList = [str(x) for x in dictSettings['idList']]
-        text_file.write("Individuos: {} \n".format(', '.join(idList)))
+       
+        if(dictSettings.get('idList',None)):
+            idList = [str(x) for x in dictSettings.get('idList',None)]
+            text_file.write("Individuos: {} \n".format(', '.join(idList)))
+        else:
+          text_file.write("Individuos: Todos")
 
 
 
