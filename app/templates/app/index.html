@@ -60,108 +60,110 @@
             <!--Cargar-->
             <div class="modal fade" id="cargar_datos">
                 <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Cargar Datos</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-warning" role="alert">
-                            <strong>Advertencia:</strong> Se remplazan los datos existentes en la base de datos.
-                        </div>
-                        <form action=''  method="post", enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <fieldset class="form-group">
-                                <legend style="text-align: center;">Transportes</legend>
-                                <div class="form-check" >
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option7">
-                                        Tipos de transporte
-                                    </label>
-                                </div>
-                            </fieldset>
-                            <!--Debuggfield-->
-                            <fieldset class="form-group">
-                                <legend style="text-align: center;">Matrices de Tiempo</legend>
-                                <div class="form-check">
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option3">
-                                        Matriz tiempos Auto
-                                    </label>
-                                    <div class="progress" id="progressBarMatrizAutoContainer" style="visibility: hidden;">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizAuto">
-                                            <div id="progressBarMatrizAutoPercentage">0%</div>
-                                        </div>
-                                    </div>
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option4">
-                                        Matriz tiempos Omnibus
-                                    </label>
-                                    <div class="progress" id="progressBarMatrizOmnibusContainer" style="visibility: hidden;">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizOmnibus">
-                                            <div id="progressBarMatrizOmnibusPercentage">0%</div>
-                                        </div>
-                                    </div>
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option6">
-                                        Matriz tiempos Caminando
-                                    </label>        
-                                    <div class="progress" id="progressBarMatrizCaminandoContainer" style="visibility: hidden;">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizCaminando">
-                                            <div id="progressBarMatrizCaminandoPercentage">0%</div>
-                                        </div>
-                                    </div>
-                                </div>                                
-                            </fieldset>
-                            <!--Debuggfield-->
-                            <fieldset class="form-group">
-                                <legend style="text-align: center;">Transportes</legend>
-                                <div class="form-check" >
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option1">
-                                        Conjunto de datos de Prestadores&nbsp;<span class="badge badge-success">Cargado</span>
-                                    </label>                                    
-                                    <div class="progress" id="progressBarDatosPrestadoresContainer" style="visibility: hidden;">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPrestadores">
-                                            <div id="progressBarDatosPrestadoresPercentage">0%</div>
-                                        </div>
-                                    </div>
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option5">
-                                        Conjunto de datos para Centros&nbsp;<span class="badge badge-success">Cargado</span>
-                                    </label>                                    
-                                    <div class="progress" id="progressBarDatosCentrosContainer" style="visibility: hidden;">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosCentros">
-                                            <div id="progressBarDatosCentrosPercentage">0%</div>
-                                        </div>
-                                    </div>
-                                    <label class="form-check-label">
-                                    <input type="radio" class="form-check-input" name="optionsRadios" value="option2">
-                                        Conjunto de datos para Personas&nbsp;<span class="badge badge-success">Cargado</span>
-                                    </label>                                    
-                                    <div class="progress" id="progressBarDatosPersonasContainer" style="visibility: hidden;">
-                                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPersonas">
-                                            <div id="progressBarDatosPersonasPercentage">0%</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </fieldset>
-                            <!--Debuggfield-->
-                            <br><br>
-                            <div class="form-group" style="text-align: center;">
-                                <label for="inputFile">Seleccione un archivo</label>
-                                <input type="file" class="form-control-file"  name = "inputFile" aria-describedby="fileHelp">
-                                <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+                    <form action=''  method="POST", enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Cargar Datos</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Cargar Datos</button>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    </div>
-                    </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Advertencia:</strong> Se remplazan los datos existentes en la base de datos.
+                            </div>
+                            
+                                <fieldset class="form-group">
+                                    <legend style="text-align: center;">Transportes</legend>
+                                    <div class="form-check" >
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option7">
+                                            Tipos de transporte
+                                        </label>
+                                    </div>
+                                </fieldset>
+                                <!--Debuggfield-->
+                                <fieldset class="form-group">
+                                    <legend style="text-align: center;">Matrices de Tiempo</legend>
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option3">
+                                            Matriz tiempos Auto
+                                        </label>
+                                        <div class="progress" id="progressBarMatrizAutoContainer" style="visibility: hidden;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizAuto">
+                                                <div id="progressBarMatrizAutoPercentage">0%</div>
+                                            </div>
+                                        </div>
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option4">
+                                            Matriz tiempos Omnibus
+                                        </label>
+                                        <div class="progress" id="progressBarMatrizOmnibusContainer" style="visibility: hidden;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizOmnibus">
+                                                <div id="progressBarMatrizOmnibusPercentage">0%</div>
+                                            </div>
+                                        </div>
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option6">
+                                            Matriz tiempos Caminando
+                                        </label>        
+                                        <div class="progress" id="progressBarMatrizCaminandoContainer" style="visibility: hidden;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizCaminando">
+                                                <div id="progressBarMatrizCaminandoPercentage">0%</div>
+                                            </div>
+                                        </div>
+                                    </div>                                
+                                </fieldset>
+                                <!--Debuggfield-->
+                                <fieldset class="form-group">
+                                    <legend style="text-align: center;">Transportes</legend>
+                                    <div class="form-check" >
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option1">
+                                            Conjunto de datos de Prestadores&nbsp;<span class="badge badge-success">Cargado</span>
+                                        </label>                                    
+                                        <div class="progress" id="progressBarDatosPrestadoresContainer" style="visibility: hidden;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPrestadores">
+                                                <div id="progressBarDatosPrestadoresPercentage">0%</div>
+                                            </div>
+                                        </div>
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option5">
+                                            Conjunto de datos para Centros&nbsp;<span class="badge badge-success">Cargado</span>
+                                        </label>                                    
+                                        <div class="progress" id="progressBarDatosCentrosContainer" style="visibility: hidden;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosCentros">
+                                                <div id="progressBarDatosCentrosPercentage">0%</div>
+                                            </div>
+                                        </div>
+                                        <label class="form-check-label">
+                                        <input type="radio" class="form-check-input" name="optionsRadios" value="option2">
+                                            Conjunto de datos para Personas&nbsp;<span class="badge badge-success">Cargado</span>
+                                        </label>                                    
+                                        <div class="progress" id="progressBarDatosPersonasContainer" style="visibility: hidden;">
+                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPersonas">
+                                                <div id="progressBarDatosPersonasPercentage">0%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <!--Debuggfield-->
+                                <br><br>
+                                <div class="form-group" style="text-align: center;">
+                                    <label for="inputFile">Seleccione un archivo</label>
+                                    <input type="file" class="form-control-file"  name = "inputFile" aria-describedby="fileHelp">
+                                    <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
+                                </div>
+                            
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary" value="Upload">Cargar Datos</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                        </div>
+                    </form>
                 </div>
             </div>
             <!--Cargar-->

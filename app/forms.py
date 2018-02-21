@@ -258,16 +258,15 @@ class SimularForm(EjecutarForm):
 class EjecutarHelper(FormHelper):
     form_class = 'form-horizontal'
     form_method = 'GET'
-    layout = Layout( Div(
-        Div(
+    layout = Layout(# Div(
+       # Div(
             Div(
-                Div( HTML('<h5> Transporte<h5>', ) ),
+                Div(HTML('<h5>Transporte<h5>')),
                 Div(HTML('<div><label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
-                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv', style="display: none;"), css_class ="panel-body"),
-                    #css_class = "panel panel-default"
+                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv', style="display: none;"), css_class ="panel-body")
             ),
             Div(
-                Div( HTML('<div style="font-size:130%"> Trabaja</div>', ),css_class ="panel-footer" ),
+                Div(HTML('<h5>Trabaja<h5>'),css_class ="panel-footer" ),
                 Div(InlineRadios('trabaja'), css_class = "panel-body"),
                 css_class = "panel panel-default"
             ),
@@ -308,11 +307,11 @@ class EjecutarHelper(FormHelper):
                 Div(HTML('<label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Ejecutar </label></br><label class="checkbox-inline"><input type="checkbox"id="cbCSV0" name="generarResumen" value="1"> Resumen</label></br>'), css_class = "panel-body"),
                 css_class = "panel panel-default"
             ),
-        css_class = "modal-body"
-        ),
-        Div(Div(Submit('submit', 'Calcular',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),css_class="panel-footer"),
+        #css_class = "modal-body"
+        #),
+        Div(Div(Submit('submit', 'Calcular',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),css_class="panel-footer")#,
 
-    css_class = "modal-content"),
+    #css_class = "modal-content"),
         
     )
 class SimularHelper(FormHelper):
