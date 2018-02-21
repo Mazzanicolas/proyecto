@@ -261,17 +261,10 @@ class EjecutarHelper(FormHelper):
     layout = Layout( Div(
         Div(
             Div(
-<<<<<<< Updated upstream
                 Div( HTML('<h5> Transporte<h5>', ) ),
                 Div(HTML('<div><label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
                     Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv', style="display: none;"), css_class ="panel-body"),
                     #css_class = "panel panel-default"
-=======
-                Div( HTML('<div style="font-size:130%"> Transporte</div>', ),css_class ="panel-footer" ),
-                Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
-                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv',css_class = "panel-body"), css_class ="panel-body"),
-                    css_class = "panel panel-default"
->>>>>>> Stashed changes
             ),
             Div(
                 Div( HTML('<div style="font-size:130%"> Trabaja</div>', ),css_class ="panel-footer" ),
