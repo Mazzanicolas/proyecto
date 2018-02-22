@@ -2,23 +2,25 @@
 window.onload = askMatrizAutoStatusCheck();
 
 function getMatrizAutoStatus(progressLoop) {
+    console.log("Entro");
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-        var obj = JSON.parse(this.responseText);
-        var crrnt = (obj['progressStatus']).toFixed(1);
-        document.getElementById("progressBarMatrizAuto").style.width = crrnt.toString()+"%";
-        document.getElementById("progressBarMatrizAutoPercentage").innerHTML = crrnt.toString()+"%";
-        progressLoop = setTimeout(function() { getMatrizAutoStatus(progressLoop); }, 15000);
-        if(crrnt>99){
-            document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
-            document.getElementById('descargar').style.visibility = 'visible';                  
-            clearTimeout(progressLoop);
-        }
-        if(crrnt<0){
-            document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
-            clearTimeout(progressLoop);
-        }
+            console.log("Entro 200 ok");
+            var obj = JSON.parse(this.responseText);
+            var crrnt = (obj['progressStatus']).toFixed(1);
+            document.getElementById("progressBarMatrizAuto").style.width = crrnt.toString()+"%";
+            document.getElementById("progressBarMatrizAutoPercentage").innerHTML = crrnt.toString()+"%";
+            progressLoop = setTimeout(function() { getMatrizAutoStatus(progressLoop); }, 15000);
+            if(crrnt>99){
+                document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
+                document.getElementById('descargar').style.visibility = 'visible';                  
+                clearTimeout(progressLoop);
+            }
+            if(crrnt<0){
+                document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
+                clearTimeout(progressLoop);
+            }
         }
     };
     xhttp.open("GET", "progressMatrizAuto/", true);
@@ -75,5 +77,14 @@ $(document).ready(function(){
             $('#prestadorDiv').hide();
         else
             $('#prestadorDiv').show();
+    });
+});
+
+$(document).ready(function(){
+    $('#checkDias').change(function(){
+        if(this.checked)
+            $('#diasDiv').hide();
+        else
+            $('#diasDiv').show();
     });
 });

@@ -282,13 +282,11 @@ class EjecutarHelper(FormHelper):
             Div(
                 Div(HTML('<h5>Dias</h5>')),
                 Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDias" name = "checkDias" value = "-1" checked> Todos </label></div>'),
-                    Div(InlineCheckboxes('dias'),id='diasDiv',css_class ="panel-body", style="display: none;")),
-                    css_class = "panel panel-default"
+                    Div(InlineCheckboxes('dias'),id='diasDiv', style="display: none;"))
             ),
             Div(
-                Div( HTML('<div style="font-size:130%"> Rango Horario</div>', ),css_class = "panel-footer"),
-                Div(Div('horaInicio', css_class = "panel-body"),Div('horaFin', css_class = "panel-body")),
-                css_class = "panel panel-default"
+                Div(HTML('<h5>Rango Horario</h5>')),
+                Div(Div('horaInicio'),Div('horaFin'))
             ),
             Div(
                 Div( HTML('<div style="font-size:130%">Lista de IDs </div>', ),css_class ="panel-footer" ),
