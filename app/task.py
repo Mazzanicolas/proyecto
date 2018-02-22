@@ -419,13 +419,14 @@ def saveTiemposToDB(tipo):
     lineas = csv.reader(csvFile)
     progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
     progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas) 
-    csvFile.seek(1)
+    csvFile.seek(0)
     progressTotal.save()
     for caso in lineas:
         if(id == -1):
             id +=1
             continue
-        caso = caso[0].split(sep)
+        if(sep==';'):
+            caso = caso[0].split(sep)
         sector1 = caso[0]
         sector2 = caso[1]
         t = float(caso[2])

@@ -4,19 +4,43 @@
         {% load crispy_forms_tags %}
         {% load static %}
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
-        <link rel="stylesheet" href="{% static 'app/css/bootstrap.min.css' %}"></link>
-        <link rel="stylesheet" href="{% static 'app/css/main.css' %}"></link>
+        <link rel="stylesheet" href="{% static 'app/bootstrap4/css/bootstrap.min.css' %}"></link>
+        <link rel="stylesheet" href="{% static 'app/customCss/customcss.css' %}"></link>
     </head>
-    <body style="background-color:#e6e6e6; font-family:helvetica;">
-        <div class="container" align="center" style="width:300px;">
-            <br>
-            <h1><b>Log in</b></h1>
-            <form method="POST">
-                {% csrf_token %}
-                {% crispy form %}
-            </form>
-        </div>        
+    <body class="container-background" style="font-family:helvetica;">
+        <div id="wrapperLogIn" style="margin-top:-60px;">
+            <div id="containerLogIn">
+                <div class="modal-dialog modal-lg" role="document" align="center" style="width: 700px;">
+                    <div class="modal-content">
+                        <div class="container" align="center" style="margin-top:25px;"> 
+                            <h1><b>Log in</b></h1>
+                        </div>
+                        <div id="sub-title">
+                            <div id="sub-left">
+                                <div class="login100-pic js-tilt" data-tilt="" style="will-change: transform; transform: perspective(300px) rotateX(0deg) rotateY(0deg);">
+                                    <img src="{% static 'app/img/logo.png' %}" alt="IMG">
+                                </div>
+                            </div>
+                            <div id="sub-right">
+                                <div style="width:250px;">
+                                    <form method="POST">
+                                        {% csrf_token %}
+                                        {% crispy form %}
+                                    </form>
+                                </div>
+                            </div>
+                        <div class="clear-both"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
+    <script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
+    <script src="{% static 'app/customJs/tilt.min.js' %}"></script>
+    <script>
+        $('.js-tilt').tilt({
+            scale: 1.1
+        })
+    </script>
 </html>
-
 

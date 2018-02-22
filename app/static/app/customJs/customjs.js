@@ -155,8 +155,8 @@ var bar = new ProgressBar.Circle(container, {
 });
 */
   
-  //bar.set(0);
-  bar.animate(0.5); 
+//bar.set(0);
+bar.animate(0); 
 /*Consultas XML*/
 window.onload = askMatrizAutoStatusCheck();
 
