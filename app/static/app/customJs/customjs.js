@@ -68,3 +68,12 @@ $(document).ready(function(){
             $('#transporteDiv').show();
     });
 });
+
+$(document).ready(function(){
+    $('#checkPrestador').change(function(){
+        if(this.checked)
+            $('#prestadorDiv').hide();
+        else
+            $('#prestadorDiv').show();
+    });
+});

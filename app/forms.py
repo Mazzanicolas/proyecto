@@ -264,28 +264,25 @@ class EjecutarHelper(FormHelper):
             Div(
                 Div(HTML('<h5>Transporte<h5>')),
                 Div(HTML('<div><label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
-                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv', style="display: none;"), css_class ="panel-body")
+                    Div(InlineCheckboxes('tipoTransporte'),id='transporteDiv', style="display: none;"))
             ),
             Div(
-                Div(HTML('<h5>Trabaja<h5>'),css_class ="panel-footer" ),
-                Div(InlineRadios('trabaja'), css_class = "panel-body"),
-                css_class = "panel panel-default"
+                Div(HTML('<h5>Trabaja<h5>')),
+                Div(InlineRadios('trabaja'))
             ),
             Div(
-                Div( HTML('<div style="font-size:130%"> Jardin</div>', ),css_class ="panel-footer" ),
-                Div(InlineRadios('asisteJardin'), css_class = "panel-body"),
-                css_class = "panel panel-default"
+                Div(HTML('<h5>Jardin</h5>')),
+                Div(InlineRadios('asisteJardin'))
             ),
             Div(
-                Div( HTML('<div style="font-size:130%"> Prestadores</div>', ),css_class ="panel-footer" ),
+                Div(HTML('<h5>Prestadores</h5>')),
                 Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkPrestador" name = "checkPrestador" value = "-1" checked> Por defecto </label></div>'),
-                    Div(InlineCheckboxes('prestadorFiltro'),id='prestadorDiv',css_class = "panel-body", style="display: none;"), css_class ="panel-body"),
-                    css_class = "panel panel-default"
+                    Div(InlineCheckboxes('prestadorFiltro'),id='prestadorDiv', style="display: none;"))
             ),
             Div(
-                Div( HTML('<div style="font-size:130%"> Dias </div>', ),css_class = "panel-footer"),
+                Div(HTML('<h5>Dias</h5>')),
                 Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDias" name = "checkDias" value = "-1" checked> Todos </label></div>'),
-                    Div(InlineCheckboxes('dias'),id='diasDiv',css_class ="panel-body", style="display: none;"), css_class ="panel-body" ),
+                    Div(InlineCheckboxes('dias'),id='diasDiv',css_class ="panel-body", style="display: none;")),
                     css_class = "panel panel-default"
             ),
             Div(
