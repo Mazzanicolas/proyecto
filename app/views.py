@@ -241,10 +241,6 @@ def redirectIndex(request):
 def redirectConsulta(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and Individuo.objects.count() > 0 and
-            Centro.objects.count() > 0):
-        print("*****************************")
-        newCalcTimes()
     getReq = request.GET
     if(getReq.get('checkRango', '0') == '-1' or getReq.get('generarResumen',0) == '1'):
         return generateCsvResults(request)
@@ -283,10 +279,6 @@ def deleteConsultaResults(request):
 def redirectSim(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    if(IndividuoCentro.objects.count() < Individuo.objects.count()*Centro.objects.count() and 
-            Individuo.objects.count() > 0 and Centro.objects.count() > 0):
-        print("**************************************************")
-        newCalcTimes()
     getReq = request.GET
     if(getReq.get('checkRango','0') == '-1' or getReq.get('generarResumen',0) == '1'):
         return generateCsvResults(request)
