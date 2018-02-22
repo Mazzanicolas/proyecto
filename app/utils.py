@@ -2,6 +2,7 @@ from app.models import *
 from shapely.geometry import Polygon, Point
 import os
 import glob
+import shapefile
 
 def numbersToDays(numberList):
     daysDict = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
@@ -53,7 +54,7 @@ def newGetSector(lugar, transporte):
     elif(transporte == 'CAMINANDO' or transporte == 0):
         return lugar.sector_caminando
     else:
-        return lugar.sector_auto
+        return lugar.sector_bus
 
 def printCentroids(shapeAuto):
     for shape in shapeAuto:
@@ -83,23 +84,13 @@ def parsear_hora(hora):
     m = '{:<02d}'.format(int(m))
     return int(h + m)
 
-def getSectorForPoint(ancal,tipo,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando):
-    if(tipo == "Auto" or tipo == 1 ):
-        shapes = shapeAuto
-        records = recordsAuto
-        tipo = "Auto"
-    else:
-        records = recordsCaminando
-        tipo = "Caminando"
-        shapes = shapeCaminando
+def getSectorForPoint(ancal,shapes,records,SectorClass):
     point = Point(ancal.x_coord,ancal.y_coord)
     for i in range(len(shapes)):
         polygon = Polygon(shapes[i].points)
         if(point.within(polygon)):
-            if(tipo == "Auto" or tipo == 1 ):
-                return SectorAuto.objects.get(shapeid =records[i][0])
-            else:
-                return SectorCaminando.objects.get(shapeid = records[i][0])
+            return SectorClass.objects.get(shapeid =records[i][0])
+
 def calcularTiempoViaje(anclas,transporte):
     tiempoViaje = 0
     hora = 0

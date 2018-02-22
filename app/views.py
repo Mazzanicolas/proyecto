@@ -26,11 +26,6 @@ from django.contrib.auth import authenticate, login
 from django.views.generic import View
 from .forms import UserForm
 from  django.utils.decorators import classonlymethod
-global shapeAuto
-global shapeCaminando
-global recordsAuto
-global recordsCaminando
-
 
 def progressMatrizAuto(request):
     progressDone  = Settings.objects.get(setting='currentMatrizAuto')
@@ -47,7 +42,7 @@ def calculatePercetage(lhs,rhs):
     return int(lhs)/int(rhs)
 def cancelarCentro(request):
     asyncTask = result.AsyncResult(id = Setting.objects.get(key = 'AsyncKeyCentro'))
-    asyncTask.revoke(terminate = True)\
+    asyncTask.revoke(terminate = True)
 
 def initSettingsStatus():
     firstTime = list(Settings.objects.filter(setting='firstTime'))
@@ -82,8 +77,8 @@ def testing(request):
     initSettingsStatus()
     if not request.user.is_authenticated:
         return redirect('login')
-    if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
-        load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
+    if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()) or not SectorOmnibus.objects.all() :
+        load.cargarSectores()
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
         s = Settings(setting = "tiempoMaximo",value = "60")
         s.save()
@@ -117,13 +112,13 @@ def testing(request):
             if(radioCargado == "option1"):
                 lineas = load.cargarMutualistas(request)
             elif(radioCargado == "option2"):
-                lineas = load.cargarIndividuoAnclas(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarIndividuoAnclas(request)
             elif(radioMatrix == "option3"):
-                lineas = load.cargarTiempos(1,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarTiempos(1,request)
             elif(radioMatrix == "option4"):
-                lineas = load.cargarTiempos(0,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarTiempos(0,request)
             elif(radioMatrix == "option5"):
-                lineas = load.cargarCentroPediatras(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarCentroPediatras(request)
             elif(radioMatrix == "option6"): # omnibus
                 lineas = load.cargarTiemposBus(request)
             elif(radioMatrix == "option7"):
@@ -188,13 +183,6 @@ class UserFormView(View):
             return HttpResponseForbidden()
         return render(request, self.template_name,{'form':form})
 
-
-sf = shapefile.Reader('app/files/shapeAuto.shp')
-shapeAuto = sf.shapes()
-recordsAuto = sf.records()
-sf = shapefile.Reader('app/files/shapeCaminando.shp')
-shapeCaminando = sf.shapes()
-recordsCaminando = sf.records()
 
 def secureUserCreation(request):
 
@@ -353,13 +341,13 @@ def index(request):
             if(radioCargado == "option1"):
                 lineas = load.cargarMutualistas(request)
             elif(radioCargado == "option2"):
-                lineas = load.cargarIndividuoAnclas(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarIndividuoAnclas(request)
             elif(radioMatrix == "option3"):
-                lineas = load.cargarTiempos(1,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarTiempos(1,request)
             elif(radioMatrix == "option4"):
-                lineas = load.cargarTiempos(0,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarTiempos(0,request)
             elif(radioMatrix == "option5"):
-                lineas = load.cargarCentroPediatras(request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+                lineas = load.cargarCentroPediatras(request)
             elif(radioMatrix == "option6"): # omnibus
                 lineas = load.cargarTiemposBus(request)
             elif(radioMatrix == "option7"):

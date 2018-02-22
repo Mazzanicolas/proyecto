@@ -168,7 +168,6 @@ def checkCentroPediatras(request,dict_prestadores):
 
 def checkIndividuoAnclas(requestf,prestadores,tipos_transporte):
     errores = list()
-
     csvfile = requestf.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     l = csv.reader(csvf, delimiter=',', quotechar='"')

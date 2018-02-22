@@ -10,7 +10,22 @@ from django.contrib.sessions.backends.db import SessionStore
 import redis
 import csv
 import math
+import shapefile
 
+global TIEMPO_ARBITRARIAMENTE_ALTO
+TIEMPO_ARBITRARIAMENTE_ALTO = 70 * 60
+global newVELOCIDAD_CAMINANDO
+newVELOCIDAD_CAMINANDO = 5000/60 # 5000 metros en 60 minutos
+global TIEMPO_ESPERA
+TIEMPO_ESPERA = 5*60 # 5 minutos en segundos
+global TIEMPO_VIAJE
+TIEMPO_VIAJE = 45 # 45 segundos entre paradas
+global RADIO_CERCANO
+RADIO_CERCANO = 500 # distancia maxima en metros para que dos paradas se consideren cercanas
+global TIEMPO_CAMBIO_PARADA
+TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
+                                                                          # con los valores por defecto es 3 minutos.
+                                                                        
 @shared_task()
 def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
@@ -384,8 +399,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             resultLlega = "Si" if (BoolLlega) else "No"
             return resultTimpo,resultLlegaG,resultLlega
 @shared_task
-def saveTiemposToDB(lineas,tipo):
-    print("AWDAWDAWDWADWA")
+def saveTiemposToDB(tipo):
     if(tipo == 0):
         tipoId = 'Caminando'
         sep = ';'
@@ -397,11 +411,20 @@ def saveTiemposToDB(lineas,tipo):
         sep = ','
         print(tipo)
         SectorTiempoAuto.objects.all().delete()
-    id = 0
+    id = -1
     tiempos = []
     init = time.time()
     bulkAmount = 10000
+    csvFile = open("./app/files/RawCsv/tiempos"+tipoId+".csv", 'r')
+    lineas = csv.reader(csvFile)
+    progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
+    progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas) 
+    csvFile.seek(1)
+    progressTotal.save()
     for caso in lineas:
+        if(id == -1):
+            id +=1
+            continue
         caso = caso[0].split(sep)
         sector1 = caso[0]
         sector2 = caso[1]
@@ -411,8 +434,8 @@ def saveTiemposToDB(lineas,tipo):
             tiempo = SectorTiempoCaminando(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
         else:
             tiempo = SectorTiempoAuto(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
-        tiempos.append(tiempo)
         id +=1
+        tiempos.append(tiempo)
         if(id % bulkAmount == 0):
             progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
             progressDone.value  = int(progressDone.value) + bulkAmount
@@ -475,7 +498,16 @@ def saveTiemposBusToDB(lineas):
         status.save()
     print("Se cargo correctamente el archivo")
 @shared_task
-def saveCentrosToDB(lineas,dict_prestadores,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando):
+def saveCentrosToDB(lineas,dict_prestadores):
+    sf = shapefile.Reader('app/files/shapeAuto.shp')
+    shapeAuto = sf.shapes()
+    recordsAuto = sf.records()
+    sf = shapefile.Reader('app/files/shapeCaminando.shp')
+    shapeCaminando = sf.shapes()
+    recordsCaminando = sf.records()
+    sf = shapefile.Reader('app/files/shapeBus.shp')
+    shapeBus = sf.shapes()
+    recordsBus = sf.records()
     Pediatra.objects.all().delete()
     Centro.objects.all().delete()
     horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
@@ -484,14 +516,16 @@ def saveCentrosToDB(lineas,dict_prestadores,shapeAuto,recordsAuto,shapeCaminando
         #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
         id_centro = int(caso[0])
         prestador = dict_prestadores.get(caso[1],1000)
-        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,prestador)
-        centro.sector_auto = utils.getSectorForPoint(centro,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-        centro.sector_caminando = utils.getSectorForPoint(centro,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,None,prestador)
+        centro.sector_auto      = utils.getSectorForPoint(centro, shapeAuto,recordsAuto, SectorAuto)
+        centro.sector_caminando = utils.getSectorForPoint(centro, shapeCaminando,recordsCaminando, SectorCaminando)
+        centro.sector_bus       = utils.getSectorForPoint(centro, shapeBus, recordsBus, SectorOmnibus)
         centro.save()
         ## Pediatra
         #Centro, Dia, Hora, Cantidad de pediatras
         contador_dias = 5
         pediatras = list()
+        print("Se completo el centro: "+str(id_centro))
         for i in range(6):
             for j in horas:
                 if(contador_dias > len(caso)): # Nunca deberia pasar, pero supongo?
@@ -504,7 +538,7 @@ def saveCentrosToDB(lineas,dict_prestadores,shapeAuto,recordsAuto,shapeCaminando
                 except:
                     print(caso[contador_dias])
                     print(caso)
-                pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = parsear_hora(j), cantidad_pediatras = cantPediatras))
+                pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = utils.parsear_hora(j), cantidad_pediatras = cantPediatras))
                 contador_dias +=1
         Pediatra.objects.bulk_create(pediatras)
         progressDone  = Settings.objects.get(setting='currentMatrizCentro')
@@ -515,7 +549,16 @@ def saveCentrosToDB(lineas,dict_prestadores,shapeAuto,recordsAuto,shapeCaminando
     status.save()
     print("Se cargo correctamente el archivo")
 @shared_task
-def saveCentrosToDB(lineas,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando):
+def saveIndividuosToDB(lineas):
+    sf = shapefile.Reader('app/files/shapeAuto.shp')
+    shapeAuto = sf.shapes()
+    recordsAuto = sf.records()
+    sf = shapefile.Reader('app/files/shapeCaminando.shp')
+    shapeCaminando = sf.shapes()
+    recordsCaminando = sf.records()
+    sf = shapefile.Reader('app/files/shapeBus.shp')
+    shapeBus = sf.shapes()
+    recordsBus = sf.records()
     Individuo.objects.all().delete()
     AnclaTemporal.objects.all().delete()
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
@@ -528,8 +571,9 @@ def saveCentrosToDB(lineas,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando
         #Duda Tecnica -Contemplar casos donde no hay jardin y/o trabajo
         if(caso[5] == "1"):
             anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,utils.parsear_hora(caso[7]) ,utils.parsear_hora(caso[8]) ,caso[6] ,None,None)
-            anclaJardin.sector_auto = utils.getSectorForPoint(anclaJardin,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-            anclaJardin.sector_caminando = utils.getSectorForPoint(anclaJardin,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            anclaJardin.sector_auto      = utils.getSectorForPoint(anclaJardin, shapeAuto,recordsAuto, SectorAuto)
+            anclaJardin.sector_caminando = utils.getSectorForPoint(anclaJardin,shapeCaminando,recordsCaminando, SectorCaminando)
+            anclaJardin.sector_bus       = utils.getSectorForPoint(anclaJardin, shapeBus, recordsBus, SectorOmnibus)
             anclaJardin.save()
             idAncla +=1
             tieneJardin = True
@@ -538,8 +582,9 @@ def saveCentrosToDB(lineas,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando
             anclaJardin = None
         if(caso[12] == "1"):
             anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",utils.parsear_hora(caso[17]),utils.parsear_hora(caso[18]),caso[16],None,None)
-            anclaTrabajo.sector_auto = utils.getSectorForPoint(anclaTrabajo,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-            anclaTrabajo.sector_caminando = utils.getSectorForPoint(anclaTrabajo,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            anclaTrabajo.sector_auto      = utils.getSectorForPoint(anclaTrabajo, shapeAuto,recordsAuto, SectorAuto)
+            anclaTrabajo.sector_caminando = utils.getSectorForPoint(anclaTrabajo,shapeCaminando,recordsCaminando, SectorCaminando)
+            anclaTrabajo.sector_bus       = utils.getSectorForPoint(anclaTrabajo, shapeBus, recordsBus, SectorOmnibus)
             anclaTrabajo.save()
             idAncla +=1
             tieneTrabajo = True
@@ -547,8 +592,9 @@ def saveCentrosToDB(lineas,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando
             tieneTrabajo = False
             anclaTrabajo = None
         anclaHogar   = AnclaTemporal(idAncla,float(caso[22]),float(caso[23]),"hogar",None,None,"L-D",None,None)
-        anclaHogar.sector_auto = utils.getSectorForPoint(anclaHogar,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-        anclaHogar.sector_caminando = utils.getSectorForPoint(anclaHogar,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+        anclaHogar.sector_auto      = utils.getSectorForPoint(anclaHogar, shapeAuto,recordsAuto, SectorAuto)
+        anclaHogar.sector_caminando = utils.getSectorForPoint(anclaHogar,shapeCaminando,recordsCaminando, SectorCaminando)
+        anclaHogar.sector_bus       = utils.getSectorForPoint(anclaHogar, shapeBus, recordsBus, SectorOmnibus)
         anclaHogar.save()
         idAncla +=1
         ## Individuo
@@ -600,9 +646,9 @@ def newCalcTimes():
         secTrabajoCaminando = utils.newGetSector(trabajo,0)
         secJardinCaminando  = utils.newGetSector(jardin,0)
         #####
-        secHogarBus   = utils.newGetSector(individuo.hogar,1)
-        secTrabajoBus = utils.newGetSector(trabajo,1)
-        secJardinBus  = utils.newGetSector(jardin,1)
+        secHogarBus   = utils.newGetSector(individuo.hogar,2)
+        secTrabajoBus = utils.newGetSector(trabajo,2)
+        secJardinBus  = utils.newGetSector(jardin,2)
         ####
         tHogarTrabajoAuto  = utils.calcularTiempoViaje([secHogarAuto, secTrabajoAuto],1)
         tHogarJardinAuto   =  utils.calcularTiempoViaje([secHogarAuto, secJardinAuto],1)
@@ -627,7 +673,7 @@ def newCalcTimes():
             aux = time.time()
             secCentroAuto      = utils.newGetSector(centro,1)
             secCentroCaminando = utils.newGetSector(centro,0)
-            secCentroBus       = utils.newGetSector(centro,1)
+            secCentroBus       = utils.newGetSector(centro,2)
 
             tHogarCentroAuto   = utils.calcularTiempoViaje([secHogarAuto, secCentroAuto],1)
             tJardinCentroAuto  = utils.calcularTiempoViaje([secJardinAuto, secCentroAuto],1)
@@ -671,7 +717,7 @@ def newCalcTimes():
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempos')
     status.value  = 1
     status.save()
-    
+
 def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCentroCaminando):
     if(auxOptimo.centroOptimoAuto is None):
         auxOptimo.centroOptimoAuto      = centro
