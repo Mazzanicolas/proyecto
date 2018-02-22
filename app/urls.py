@@ -6,7 +6,7 @@ from django.contrib.auth.views import login,logout
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
+    #url(r'^$', views.index, name='index'),
     url(r'^consulta/$', tables.FilteredPersonListView.as_view(), name='consultaConFiltro'),
     url(r'^Simulacion/$', tables.SimPersonView.as_view(), name='Simulacion'),
     url(r'^redirectConsulta/$', views.redirectConsulta, name='redirectConsulta'),
@@ -34,6 +34,6 @@ urlpatterns = [
     url(r'^logout/$', logout, {'next_page':'login'}),
     url(r'cancelarCentro/$', views.cancelarCentro, name='cancelarCentro'),
     url(r'CalculateTimeMatrix/$', views.calcularTiemposMatrix, name='calculateTimeMatrix'),
-    url(r'^testing/$', views.testing, name='testing'),
+    url(r'^$', views.testing, name='index'),
     url(r'^testing/progressMatrizAuto/$', views.progressMatrizAuto, name='progressMatrizAuto'),
 ]
