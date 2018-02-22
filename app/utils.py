@@ -371,19 +371,49 @@ def writeSettings(sessionKey,dictSettings,simParams):
             text_file.write("Individuos: {} \n".format(', '.join(idList)))
         else:
           text_file.write("Individuos: Todos")
+def checkStatusesForTiemposMatrix():
+    have_lock   = False
+    my_lock     = redis.Redis().lock('IndividuosTiempos')
+    timAutLock  = getLock('Autos')
+    timCamLock  = getLock('Caminandos')
+    timBusLock  = getLock('Bus')
+    timCentLock = getLock('Centros')
+    timIndvLock = getLock('Individuos')
+    try:
+        have_lock   = my_lock.acquire(blocking=False)
+        if have_lock:
+            timAut  = timAutLock.acquire(blocking=False)
+            timCam  = timCamLock.acquire(blocking=False) 
+            timBus  = timBusLock.acquire(blocking=False) 
+            timCent = timCentLock.acquire(blocking=False) 
+            timIndv = timIndvLock.acquire(blocking=False)
+            if(timAut and timCam and timBus and timCent and timIndv):
+                status  = Settings.objects.get(setting='statusMatrizIndividuoTiempos')
+                status.value  = 0
+                status.save()
+                return True
+        return False
+    finally:
+       haveLockList = [ [ timAut, timAutLock ] , [ timCam, timCamLock ] , [ timBus, timBusLock ] , [ timCent, timCentLock ] , [ timIndv, timIndvLock ] , [ have_lock, my_lock ] ] 
+       releaseAllLocks(haveLockList)
 
-
-
-
-
-
-
-
-
-
-
-            
-
-
-
-    
+def getLock(key):
+    return redis.Redis().lock(key)
+def releaseLock(haveLock,lock):
+    if(haveLock):
+        lock.release()
+def releaseAllLocks(locksTupleList):
+    for tuple in locksTupleList:
+        releaseLock(tuple[0],tuple[1])
+def getSimpleLock(key):
+    have_lock = False
+    my_lock = redis.Redis().lock(key)
+    try:
+        have_lock = my_lock.acquire(blocking=False)
+        if have_lock:
+            return True
+        else:
+            return False
+    finally:    
+        if have_lock:
+            my_lock.release()

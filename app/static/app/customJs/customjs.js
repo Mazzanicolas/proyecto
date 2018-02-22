@@ -12,6 +12,7 @@ function getMatrizAutoStatus(progressLoop) {
             document.getElementById("progressBarMatrizAuto").style.width = crrnt.toString()+"%";
             document.getElementById("progressBarMatrizAutoPercentage").innerHTML = crrnt.toString()+"%";
             progressLoop = setTimeout(function() { getMatrizAutoStatus(progressLoop); }, 15000);
+            console.log(crrnt);
             if(crrnt>99){
                 document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
                 document.getElementById('descargar').style.visibility = 'visible';                  

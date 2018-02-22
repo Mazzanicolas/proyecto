@@ -32,7 +32,8 @@ urlpatterns = [
     url(r'^register/$', views.secureUserCreation, name='register'),
     url(r'^login/$', login, {'template_name':'accounts/login.html','authentication_form':SuperLogin}, name='login'),
     url(r'^logout/$', logout, {'next_page':'login'}),
-
+    url(r'cancelarCentro/$', views.cancelarCentro, name='cancelarCentro'),
+    url(r'CalculateTimeMatrix/$', views.calcularTiemposMatrix, name='calculateTimeMatrix'),
     url(r'^testing/$', views.testing, name='testing'),
     url(r'^testing/progressMatrizAuto/$', views.progressMatrizAuto, name='progressMatrizAuto'),
 ]

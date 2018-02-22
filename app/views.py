@@ -36,6 +36,8 @@ def progressMatrizAuto(request):
     progressDone  = Settings.objects.get(setting='currentMatrizAuto')
     progressTotal = Settings.objects.get(setting='totalMatrizAuto')
     done = calculatePercetage(progressDone.value,progressTotal.value)
+    print(done)
+    print(progressDone.value)
     data = {"progressStatus":done}
     return JsonResponse(data)
 
@@ -43,6 +45,9 @@ def calculatePercetage(lhs,rhs):
     if(int(rhs) <= 0 ):
         return 0
     return int(lhs)/int(rhs)
+def cancelarCentro(request):
+    asyncTask = result.AsyncResult(id = Setting.objects.get(key = 'AsyncKeyCentro'))
+    asyncTask.revoke(terminate = True)\
 
 def initSettingsStatus():
     firstTime = list(Settings.objects.filter(setting='firstTime'))
@@ -53,13 +58,30 @@ def initSettingsStatus():
     utils.getOrCreateSettigs('currentMatrizAuto',0)
     utils.getOrCreateSettigs('totalMatrizAuto',0)
     utils.getOrCreateSettigs('statusMatrizAuto',-1)
+    utils.getOrCreateSettigs('currentMatrizCaminando',0)
+    utils.getOrCreateSettigs('totalMatrizCaminando',0)
+    utils.getOrCreateSettigs('statusMatrizCaminando',-1)
+    utils.getOrCreateSettigs('currentMatrizBus',0)
+    utils.getOrCreateSettigs('totalMatrizBus',0)
+    utils.getOrCreateSettigs('statusMatrizBus',-1)
+    utils.getOrCreateSettigs('currentMatrizIndividuo',0)
+    utils.getOrCreateSettigs('totalMatrizIndividuo',0)
+    utils.getOrCreateSettigs('statusMatrizIndividuo',-1)
+    utils.getOrCreateSettigs('currentMatrizCentro',0)
+    utils.getOrCreateSettigs('totalMatrizCentro',0)
+    utils.getOrCreateSettigs('statusMatrizCentro',-1)
+    utils.getOrCreateSettigs('currentMatrizIndividuoCentro',0)
+    utils.getOrCreateSettigs('totalMatrizIndividuoCentro',0)
+    utils.getOrCreateSettigs('statusMatrizIndividuoCentro',-1)
+    utils.getOrCreateSettigs('currentMatrizIndividuoTiempoCentro',0)
+    utils.getOrCreateSettigs('totalMatrizIndividuoTiempoCentro',0)
+    utils.getOrCreateSettigs('statusMatrizIndividuoTiempoCentro',-1)
 
 
 def testing(request):
     initSettingsStatus()
     if not request.user.is_authenticated:
         return redirect('login')
-    init()
     if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
         load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
@@ -296,7 +318,6 @@ def redirectSim(request):
 def index(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    init()
     if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
         load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
@@ -489,127 +510,24 @@ def plot(request):
         return redirect('login')
     return render(request,'app/plot.html')
 
-def newCalcTimes():
-    tiempoMaximo   = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
-    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
-    individuos     = Individuo.objects.select_related().all()
-    prestadores    = Prestador.objects.select_related().all()
-    centros        = Centro.objects.select_related().all()
-    pedi           = Pediatra.objects.select_related()
-    for individuo in individuos:
-        print(individuo.id)
-        prest      = prestadores#[individuo.prestador]#arreglar
-        transporte = individuo.tipo_transporte.id
-        trabajo    = individuo.trabajo
-        jardin     = individuo.jardin
-        secHogarAuto   = utils.newGetSector(individuo.hogar,1)
-        secTrabajoAuto = utils.newGetSector(trabajo,1)
-        secJardinAuto  = utils.newGetSector(jardin,1)
-        ######
-        secHogarCaminando   = utils.newGetSector(individuo.hogar,0)
-        secTrabajoCaminando = utils.newGetSector(trabajo,0)
-        secJardinCaminando  = utils.newGetSector(jardin,0)
-        #####
-        secHogarBus   = utils.newGetSector(individuo.hogar,1)
-        secTrabajoBus = utils.newGetSector(trabajo,1)
-        secJardinBus  = utils.newGetSector(jardin,1)
-        ####
-        tHogarTrabajoAuto  = utils.calcularTiempoViaje([secHogarAuto, secTrabajoAuto],1)
-        tHogarJardinAuto   =  utils.calcularTiempoViaje([secHogarAuto, secJardinAuto],1)
-        tJardinTrabajoAuto = utils.calcularTiempoViaje([secJardinAuto, secTrabajoAuto],1)
-        tTrabajoJardinAuto = utils.calcularTiempoViaje([secJardinAuto, secHogarAuto],1)
-        tTrabajoHogarAuto  = utils.calcularTiempoViaje([secTrabajoAuto, secHogarAuto],1)
-#######################
-        tHogarTrabajoCaminando  = utils.calcularTiempoViaje([secHogarCaminando, secTrabajoCaminando],0)
-        tHogarJardinCaminando   =  utils.calcularTiempoViaje([secHogarCaminando, secJardinCaminando],0)
-        tJardinTrabajoCaminando = utils.calcularTiempoViaje([secJardinCaminando, secTrabajoCaminando],0)
-        tTrabajoJardinCaminando = utils.calcularTiempoViaje([secJardinCaminando, secHogarCaminando],0)
-        tTrabajoHogarCaminando  = utils.calcularTiempoViaje([secTrabajoCaminando, secHogarCaminando],0)
-#######################
-        tHogarTrabajoBus  = utils.calcularTiempoViaje([secHogarBus, secTrabajoBus],2)
-        tHogarJardinBus   =  utils.calcularTiempoViaje([secHogarBus, secJardinBus],2)
-        tJardinTrabajoBus = utils.calcularTiempoViaje([secJardinBus, secTrabajoBus],2)
-        tTrabajoJardinBus = utils.calcularTiempoViaje([secJardinBus, secHogarBus],2)
-        tTrabajoHogarBus  = utils.calcularTiempoViaje([secTrabajoBus, secHogarBus],2)
-        tiemposCentros = []
-        auxOptimo = IndividuoCentroOptimo(individuo = individuo)
-        for centro in centros:
-            aux = time.time()
-            secCentroAuto      = utils.newGetSector(centro,1)
-            secCentroCaminando = utils.newGetSector(centro,0)
-            secCentroBus       = utils.newGetSector(centro,1)
-            horas              = Pediatra.objects.filter(centro = centro)
-            tHogarCentroAuto   = utils.calcularTiempoViaje([secHogarAuto, secCentroAuto],1)
-            tJardinCentroAuto  = utils.calcularTiempoViaje([secJardinAuto, secCentroAuto],1)
-            tCentroHogarAuto   = utils.calcularTiempoViaje([secCentroAuto, secHogarAuto],1)
-            tCentroJardinAuto  = utils.calcularTiempoViaje([secCentroAuto, secJardinAuto],1)
-####################
-            tHogarCentroCaminando  = utils.calcularTiempoViaje([secHogarCaminando, secCentroCaminando],0)
-            tJardinCentroCaminando = utils.calcularTiempoViaje([secJardinCaminando, secCentroCaminando],0)
-            tCentroHogarCaminando  = utils.calcularTiempoViaje([secCentroCaminando, secHogarCaminando],0)
-            tCentroJardinCaminando = utils.calcularTiempoViaje([secCentroCaminando, secJardinCaminando],0)
-#########################
-            tHogarCentroBus  = utils.calcularTiempoViaje([secHogarBus, secCentroBus],2)
-            tJardinCentroBus = utils.calcularTiempoViaje([secJardinBus, secCentroBus],2)
-            tCentroHogarBus  = utils.calcularTiempoViaje([secCentroBus, secHogarBus],2)
-            tCentroJardinBus = utils.calcularTiempoViaje([secCentroBus, secJardinBus],2)
+def calcularTiemposMatrix(request):
+    if(not utils.checkStatusesForTiemposMatrix()):
+        return redirect('index')
+    progressDone  = Settings.objects.get(setting='currentIndividuoTiempos')
+    progressTotal = Settings.objects.get(setting='totalIndividuoTiempos')
+    progressDone.value  = 0
+    progressTotal.value = len(Individuo.objects.count())*2 
+    progressDone.save()
+    progressTotal.save()
+    asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
+    utils.getOrCreateSettigs('asyncKeyIndividuoTiempos',asyncKey)
+    return redirect('index')
 
-            listaHoras = []
-            ini = time.time()
-            q = IndividuoCentro(individuo          = individuo , centro = centro, tHogarTrabajoAuto = tHogarTrabajoAuto/60,
-                                tHogarJardinAuto   = tHogarJardinAuto/60,tJardinTrabajoAuto  = tJardinTrabajoAuto/60,
-                                tTrabajoJardinAuto = tTrabajoJardinAuto/60,tTrabajoHogarAuto = tTrabajoHogarAuto/60,
-                                tHogarCentroAuto   = tHogarCentroAuto/60,tJardinCentroAuto   = tJardinCentroAuto/60,
-                                tCentroHogarAuto   = tCentroHogarAuto/60,tCentroJardinAuto   = tCentroJardinAuto/60,
-            tHogarTrabajoCaminando = tHogarTrabajoCaminando/60,
-                                tHogarJardinCaminando   = tHogarJardinCaminando/60,tJardinTrabajoCaminando  = tJardinTrabajoCaminando/60,
-                                tTrabajoJardinCaminando = tTrabajoJardinCaminando/60,tTrabajoHogarCaminando = tTrabajoHogarCaminando/60,
-                                tHogarCentroCaminando   = tHogarCentroCaminando/60,tJardinCentroCaminando   = tJardinCentroCaminando/60,
-                                tCentroHogarCaminando   = tCentroHogarCaminando/60,tCentroJardinCaminando   = tCentroJardinCaminando/60,
-            tHogarTrabajoBus = tHogarTrabajoBus/60,
-                                tHogarJardinBus   = tHogarJardinBus/60,tJardinTrabajoBus  = tJardinTrabajoBus/60,
-                                tTrabajoJardinBus = tTrabajoJardinBus/60,tTrabajoHogarBus = tTrabajoHogarBus/60,
-                                tHogarCentroBus   = tHogarCentroBus/60,tJardinCentroBus   = tJardinCentroBus/60,
-                                tCentroHogarBus   = tCentroHogarBus/60,tCentroJardinBus   = tCentroJardinBus/60)
-            tiemposCentros.append(q)
-            auxOptimo = setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroBus, tHogarCentroCaminando)
-        IndividuoCentro.objects.bulk_create(tiemposCentros)
-        auxOptimo.save()
-        print("Termino el individuo: "+str(individuo.id))
-
-def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCentroCaminando):
-    if(auxOptimo.centroOptimoAuto is None):
-        auxOptimo.centroOptimoAuto      = centro
-        auxOptimo.centroOptimoOmnibus   = centro
-        auxOptimo.centroOptimoCaminando = centro
-        auxOptimo.tHogarCentroAuto      = tHogarCentroAuto
-        auxOptimo.tHogarCentroOmnibus   = tHogarCentroOmnibus
-        auxOptimo.tHogarCentroCaminando = tHogarCentroCaminando
-        return auxOptimo
-
-    if(auxOptimo.tHogarCentroAuto  > tHogarCentroAuto):
-        auxOptimo.centroOptimoAuto = centro
-        auxOptimo.tHogarCentroAuto = tHogarCentroAuto
-
-    if(auxOptimo.tHogarCentroOmnibus  > tHogarCentroOmnibus):
-        auxOptimo.centroOptimoOmnibus = centro
-        auxOptimo.tHogarCentroOmnibus = tHogarCentroOmnibus
-
-    if(auxOptimo.tHogarCentroCaminando  > tHogarCentroCaminando):
-        auxOptimo.centroOptimoCaminando = centro
-        auxOptimo.tHogarCentroCaminando = tHogarCentroCaminando
-    return auxOptimo
-
-def init():
-    if(IndividuoTiempoCentro.objects.count() < Individuo.objects.count() * Pediatra.objects.count() and Centro.objects.count() > 0 and Individuo.objects.count() > 0):
-        individuos = Individuo.objects.all()
-        centros = Centro.objects.all()
-        for individuo in individuos:
-            print("IndividuoCentro: "+str(individuo.id))
-            for centro in centros:
-                consultas = Pediatra.objects.filter(centro = centro)
-                listaHoras = []
-                for consulta in consultas:
-                    q = IndividuoTiempoCentro(individuo = individuo,centro=centro,dia = consulta.dia,hora = consulta.hora,cantidad_pediatras = consulta.cantidad_pediatras)
-                    listaHoras.append(q)
-                IndividuoTiempoCentro.objects.bulk_create(listaHoras)
+def checkCompletedMatrixs():
+    timAutStatus = utils.getOrCreateSettigs('statusMatrizAuto',-1)
+    timCamStatus = utils.getOrCreateSettigs('statusMatrizCaminando',-1)
+    timBusStatus = utils.getOrCreateSettigs('statusMatrizBus',-1)
+    IndvStatus   = utils.getOrCreateSettigs('statusMatrizIndividuo',-1)
+    centStatus   = utils.getOrCreateSettigs('statusMatrizCentro',-1)
+    if( timAutStatus.value == timCamStatus.value == timBusStatus.value == IndvStatus.value == centStatus.value == '1'):
+        return True

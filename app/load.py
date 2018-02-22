@@ -28,38 +28,18 @@ def cargarCentroPediatras(request,shapeAuto,recordsAuto, shapeCaminando,recordsC
     res, lineas = checkCentroPediatras(request,dict_prestadores)
     if not res:
         return lineas
-    Pediatra.objects.all().delete()
-    Centro.objects.all().delete()
-    horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
-    for caso in lineas:
-        ## Centro
-        #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
-        id_centro = int(caso[0])
-        prestador = dict_prestadores.get(caso[1],1000)
-        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,prestador)
-        centro.sector_auto = utils.getSectorForPoint(centro,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-        centro.sector_caminando = utils.getSectorForPoint(centro,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-        centro.save()
-        ## Pediatra
-        #Centro, Dia, Hora, Cantidad de pediatras
-        contador_dias = 5
-        pediatras = list()
-        for i in range(6):
-            for j in horas:
-                if(contador_dias > len(caso)): # Nunca deberia pasar, pero supongo?
-                    break
-                try:
-                    if ((caso[contador_dias]) == '0' or caso[contador_dias] == ''):
-                        cantPediatras = 0
-                    else:
-                        cantPediatras = int(caso[contador_dias].rstrip('0').replace('.','')) # "10.0" -> "10." -> "10" -> 10
-                except:
-                    print(caso[contador_dias])
-                    print(caso)
-                pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = parsear_hora(j), cantidad_pediatras = cantPediatras))
-                contador_dias +=1
-        Pediatra.objects.bulk_create(pediatras)
-    print("Se cargo correctamente el archivo")
+    status  = Settings.objects.get(setting='statusMatrizCentro')
+    status.value  = 0
+    status.save()
+    progressDone  = Settings.objects.get(setting='currentMatrizCentro')
+    progressTotal = Settings.objects.get(setting='totalMatrizCentro')
+    progressDone.value  = 0
+    progressTotal.value = len(lineas) 
+    progressDone.save()
+    progressTotal.save()
+    asyncTask = saveTiemposToDB.apply_async(args=[lineas,dict_prestadores,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando],queue = 'CalculationQueue')
+    asyncKey = asyncTask.id
+    utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
 
 def cargarMutualistas(request):
     res, lineas = checkMutualistas(request)
@@ -102,103 +82,53 @@ def cargarIndividuoAnclas(requestf,shapeAuto,recordsAuto, shapeCaminando,records
     res, lineas = checkIndividuoAnclas(requestf,prestadores,tipos_transporte)
     if not res:
         return lineas
-    Individuo.objects.all().delete()
-    AnclaTemporal.objects.all().delete()
-    idAncla = 0
-    for caso in lineas:
-        print("Individuo "+caso[0])
-        ## Ancla
-        #Coordenada X, Coordenada Y, Tipo, Hora inicio, Hora fin, Dias, Sector auto, Sector caminando
-        #Duda Tecnica -Contemplar casos donde no hay jardin y/o trabajo
-        if(caso[5] == "1"):
-            anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,utils.parsear_hora(caso[7]) ,utils.parsear_hora(caso[8]) ,caso[6] ,None,None)
-            anclaJardin.sector_auto = utils.getSectorForPoint(anclaJardin,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-            anclaJardin.sector_caminando = utils.getSectorForPoint(anclaJardin,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-            anclaJardin.save()
-            idAncla +=1
-            tieneJardin = True
-        else:
-            tieneJardin = False
-            anclaJardin = None
-        if(caso[12] == "1"):
-            anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",utils.parsear_hora(caso[17]),utils.parsear_hora(caso[18]),caso[16],None,None)
-            anclaTrabajo.sector_auto = utils.getSectorForPoint(anclaTrabajo,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-            anclaTrabajo.sector_caminando = utils.getSectorForPoint(anclaTrabajo,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-            anclaTrabajo.save()
-            idAncla +=1
-            tieneTrabajo = True
-        else:
-            tieneTrabajo = False
-            anclaTrabajo = None
-        anclaHogar   = AnclaTemporal(idAncla,float(caso[22]),float(caso[23]),"hogar",None,None,"L-D",None,None)
-        anclaHogar.sector_auto = utils.getSectorForPoint(anclaHogar,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-        anclaHogar.sector_caminando = utils.getSectorForPoint(anclaHogar,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
-        anclaHogar.save()
-        idAncla +=1
-        ## Individuo
-        #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
-        individuo  = Individuo(id = int(caso[0]),tipo_transporte = dicc_transporte.get(caso[19]),prestador = Prestador.objects.get(id =int(caso[1])),
-                    hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
-        individuo.save()
-    print("Se cargo correctamente el archivo")
+    status  = Settings.objects.get(setting='statusMatrizIndividuo')
+    status.value  = 0
+    status.save()
+    progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
+    progressTotal = Settings.objects.get(setting='totalMatrizIndividuo')
+    progressDone.value  = 0
+    progressTotal.value = len(lineas) 
+    progressDone.save()
+    progressTotal.save()
+    asyncKey = saveTiemposToDB.apply_async(args=[lineas,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando],queue = 'CalculationQueue')
+    utils.getOrCreateSettigs('asyncKeyIndividuo',asyncKey)
     print("Generando matriz cartesiana Individuo-Centro-Dia-Hora")
-    init()
     print("Matriz Carteasiana generada")
 
 def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCaminando):
     res, lineas = checkTiempos(tipo,request)
     if not res:
         return lineas
-    status  = Settings.objects.get(setting='statusMatrizAuto')
+    if(tipo == 0):
+        tipoId = "Caminando"
+    else:
+        tipoId = "Auto"
+    status  = Settings.objects.get(setting='statusMatriz'+tipoId)
     status.value  = 0
     status.save()
-    progressDone  = Settings.objects.get(setting='currentMatrizAuto')
-    progressTotal = Settings.objects.get(setting='totalMatrizAuto')
+    progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
+    progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
     progressDone.value  = 0
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
     asyncKey = saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'CalculationQueue')
-    utils.getOrCreateSettigs('asyncKey',asyncKey)
+    utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
 
 def cargarTiemposBus(request):
     res, lineas = checkTiemposBus(request)
     if not res:
         return lineas
-    SectorTiempoOmnibus.objects.all().delete()
-    id = 0
-    tiempos = []
-    for i in range(len(lineas)):
-        for j in range(len(lineas[i])):
-            if i == j:
-                t = SectorTiempoAuto.objects.get(sector_1__shapeid = str(i), sector_2__shapeid = str(j)).tiempo
-            else:
-                #t = float(lineas[i][j])
-                l = list(map(lambda x: float(x),lineas[i][j].split(';')))
-                t = l[0]*TIEMPO_ESPERA + l[1]*TIEMPO_VIAJE + l[2]*TIEMPO_CAMBIO_PARADA
-                if t < 0:
-                    t = TIEMPO_ARBITRARIAMENTE_ALTO
-            tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = t)
-            tiempos.append(tiempo)
-            id +=1
-            if(id % 100000 == 0):
-                print(id)
-                guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
-                tiempos = []
-    if(tiempos != list()):
-        guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
-    print("Se cargo correctamente el archivo")
+    status  = Settings.objects.get(setting='statusMatrizBus')
+    status.value  = 0
+    status.save()
+    progressDone  = Settings.objects.get(setting='currentMatrizBus')
+    progressTotal = Settings.objects.get(setting='totalMatrizBus')
+    progressDone.value  = 0
+    progressTotal.value = len(lineas) 
+    progressDone.save()
+    progressTotal.save()
+    asyncKey = saveTiemposToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    utils.getOrCreateSettigs('asyncKeyBus',asyncKey)
 
-def init():
-    if(IndividuoTiempoCentro.objects.count() == 0 and Centro.objects.count() > 0 and Individuo.objects.count() > 0):
-        individuos = Individuo.objects.all()
-        centros = Centro.objects.all()
-        for individuo in individuos:
-            print("IndividuoCentro: "+str(individuo.id))
-            for centro in centros:
-                consultas = Pediatra.objects.filter(centro = centro)
-                listaHoras = []
-                for consulta in consultas:
-                    q = IndividuoTiempoCentro(individuo = individuo,centro=centro,dia = consulta.dia,hora = consulta.hora,cantidad_pediatras = consulta.cantidad_pediatras)
-                    listaHoras.append(q)
-                IndividuoTiempoCentro.objects.bulk_create(listaHoras)

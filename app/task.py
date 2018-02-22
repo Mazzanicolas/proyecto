@@ -420,6 +420,7 @@ def saveTiemposToDB(lineas,tipo):
             print(id)
             print(time.time() - init)
             init = time.time()
+            print("Wea "+str(progressDone.value))
             if(tipo == 1):
                 guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
             else:
@@ -437,3 +438,260 @@ def saveTiemposToDB(lineas,tipo):
     status.value  = 1
     status.save()
     print("Se cargo correctamente el archivo")
+@shared_task
+def saveTiemposBusToDB(lineas):
+    SectorTiempoOmnibus.objects.all().delete()
+    id = 0
+    tiempos = []
+    bulkAmount = 10000
+    for i in range(len(lineas)):
+        for j in range(len(lineas[i])):
+            if i == j:
+                t = SectorTiempoAuto.objects.get(sector_1__shapeid = str(i), sector_2__shapeid = str(j)).tiempo
+            else:
+                #t = float(lineas[i][j])
+                l = list(map(lambda x: float(x),lineas[i][j].split(';')))
+                t = l[0]*TIEMPO_ESPERA + l[1]*TIEMPO_VIAJE + l[2]*TIEMPO_CAMBIO_PARADA
+                if t < 0:
+                    t = TIEMPO_ARBITRARIAMENTE_ALTO
+            tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = t)
+            tiempos.append(tiempo)
+            id +=1
+            if(id % bulkAmount == 0):
+                print(id)
+                guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
+                tiempos = []
+                progressDone  = Settings.objects.get(setting='currentMatrizBus')
+                progressDone.value  = int(progressDone.value) + bulkAmount
+                progressDone.save()
+                print(id)
+    if(tiempos != list()):
+        guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
+        progressDone  = Settings.objects.get(setting='currentMatrizBus')
+        progressDone.value  = int(progressDone.value) + bulkAmount
+        progressDone.save()
+        status  = Settings.objects.get(setting='statusMatrizBus')
+        status.value  = 1
+        status.save()
+    print("Se cargo correctamente el archivo")
+@shared_task
+def saveCentrosToDB(lineas,dict_prestadores,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando):
+    Pediatra.objects.all().delete()
+    Centro.objects.all().delete()
+    horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
+    for caso in lineas:
+        ## Centro
+        #Id, Coordenada X, Coordenada Y, SectorAuto, SectorCaminando, Prestador
+        id_centro = int(caso[0])
+        prestador = dict_prestadores.get(caso[1],1000)
+        centro = Centro(id_centro,float(caso[3]),float(caso[4]),None,None,prestador)
+        centro.sector_auto = utils.getSectorForPoint(centro,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+        centro.sector_caminando = utils.getSectorForPoint(centro,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+        centro.save()
+        ## Pediatra
+        #Centro, Dia, Hora, Cantidad de pediatras
+        contador_dias = 5
+        pediatras = list()
+        for i in range(6):
+            for j in horas:
+                if(contador_dias > len(caso)): # Nunca deberia pasar, pero supongo?
+                    break
+                try:
+                    if ((caso[contador_dias]) == '0' or caso[contador_dias] == ''):
+                        cantPediatras = 0
+                    else:
+                        cantPediatras = int(caso[contador_dias].rstrip('0').replace('.','')) # "10.0" -> "10." -> "10" -> 10
+                except:
+                    print(caso[contador_dias])
+                    print(caso)
+                pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = parsear_hora(j), cantidad_pediatras = cantPediatras))
+                contador_dias +=1
+        Pediatra.objects.bulk_create(pediatras)
+        progressDone  = Settings.objects.get(setting='currentMatrizCentro')
+        progressDone.value  = int(progressDone.value) + 1
+        progressDone.save()
+    status  = Settings.objects.get(setting='statusMatrizCentro')
+    status.value  = 1
+    status.save()
+    print("Se cargo correctamente el archivo")
+@shared_task
+def saveCentrosToDB(lineas,shapeAuto,recordsAuto,shapeCaminando,recordsCaminando):
+    Individuo.objects.all().delete()
+    AnclaTemporal.objects.all().delete()
+    tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
+    dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
+    idAncla = 0
+    for caso in lineas:
+        print("Individuo "+caso[0])
+        ## Ancla
+        #Coordenada X, Coordenada Y, Tipo, Hora inicio, Hora fin, Dias, Sector auto, Sector caminando
+        #Duda Tecnica -Contemplar casos donde no hay jardin y/o trabajo
+        if(caso[5] == "1"):
+            anclaJardin  = AnclaTemporal(idAncla,float(caso[10]),float(caso[11]),"jardin" ,utils.parsear_hora(caso[7]) ,utils.parsear_hora(caso[8]) ,caso[6] ,None,None)
+            anclaJardin.sector_auto = utils.getSectorForPoint(anclaJardin,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            anclaJardin.sector_caminando = utils.getSectorForPoint(anclaJardin,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            anclaJardin.save()
+            idAncla +=1
+            tieneJardin = True
+        else:
+            tieneJardin = False
+            anclaJardin = None
+        if(caso[12] == "1"):
+            anclaTrabajo = AnclaTemporal(idAncla,float(caso[14]),float(caso[15]),"trabajo",utils.parsear_hora(caso[17]),utils.parsear_hora(caso[18]),caso[16],None,None)
+            anclaTrabajo.sector_auto = utils.getSectorForPoint(anclaTrabajo,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            anclaTrabajo.sector_caminando = utils.getSectorForPoint(anclaTrabajo,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+            anclaTrabajo.save()
+            idAncla +=1
+            tieneTrabajo = True
+        else:
+            tieneTrabajo = False
+            anclaTrabajo = None
+        anclaHogar   = AnclaTemporal(idAncla,float(caso[22]),float(caso[23]),"hogar",None,None,"L-D",None,None)
+        anclaHogar.sector_auto = utils.getSectorForPoint(anclaHogar,"Auto",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+        anclaHogar.sector_caminando = utils.getSectorForPoint(anclaHogar,"Caminando",shapeAuto,recordsAuto, shapeCaminando,recordsCaminando)
+        anclaHogar.save()
+        idAncla +=1
+        ## Individuo
+        #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
+        individuo  = Individuo(id = int(caso[0]),tipo_transporte = dicc_transporte.get(caso[19]),prestador = Prestador.objects.get(id =int(caso[1])),
+                    hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
+        individuo.save()
+        progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
+        progressDone.value  = int(progressDone.value) + 1
+        progressDone.save()
+    print("Se cargo correctamente el archivo")
+    status  = Settings.objects.get(setting='statusMatrizIndividuo')
+    status.value  = 1
+    status.save()
+
+@shared_task
+def calcularTiemposMatrix():
+    individuos = Individuo.objects.all()
+    centros = Centro.objects.all()
+    for individuo in individuos:
+        print("IndividuoCentro: "+str(individuo.id))
+        listaHoras = []
+        for centro in centros:
+            consultas = Pediatra.objects.filter(centro = centro)
+            for consulta in consultas:
+                q = IndividuoTiempoCentro(individuo = individuo,centro=centro,dia = consulta.dia,hora = consulta.hora,cantidad_pediatras = consulta.cantidad_pediatras)
+                listaHoras.append(q)
+            IndividuoTiempoCentro.objects.bulk_create(listaHoras)
+        progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempos')
+        progressDone.value  = int(progressDone.value) + 1
+        progressDone.save()
+    newCalcTimes()
+
+def newCalcTimes():
+    tiempoMaximo   = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
+    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
+    individuos     = Individuo.objects.select_related().all()
+    centros        = Centro.objects.select_related().all()
+    for individuo in individuos:
+        print(individuo.id)
+        transporte = individuo.tipo_transporte.id
+        trabajo    = individuo.trabajo
+        jardin     = individuo.jardin
+        secHogarAuto   = utils.newGetSector(individuo.hogar,1)
+        secTrabajoAuto = utils.newGetSector(trabajo,1)
+        secJardinAuto  = utils.newGetSector(jardin,1)
+        ######
+        secHogarCaminando   = utils.newGetSector(individuo.hogar,0)
+        secTrabajoCaminando = utils.newGetSector(trabajo,0)
+        secJardinCaminando  = utils.newGetSector(jardin,0)
+        #####
+        secHogarBus   = utils.newGetSector(individuo.hogar,1)
+        secTrabajoBus = utils.newGetSector(trabajo,1)
+        secJardinBus  = utils.newGetSector(jardin,1)
+        ####
+        tHogarTrabajoAuto  = utils.calcularTiempoViaje([secHogarAuto, secTrabajoAuto],1)
+        tHogarJardinAuto   =  utils.calcularTiempoViaje([secHogarAuto, secJardinAuto],1)
+        tJardinTrabajoAuto = utils.calcularTiempoViaje([secJardinAuto, secTrabajoAuto],1)
+        tTrabajoJardinAuto = utils.calcularTiempoViaje([secJardinAuto, secHogarAuto],1)
+        tTrabajoHogarAuto  = utils.calcularTiempoViaje([secTrabajoAuto, secHogarAuto],1)
+#######################
+        tHogarTrabajoCaminando  = utils.calcularTiempoViaje([secHogarCaminando, secTrabajoCaminando],0)
+        tHogarJardinCaminando   =  utils.calcularTiempoViaje([secHogarCaminando, secJardinCaminando],0)
+        tJardinTrabajoCaminando = utils.calcularTiempoViaje([secJardinCaminando, secTrabajoCaminando],0)
+        tTrabajoJardinCaminando = utils.calcularTiempoViaje([secJardinCaminando, secHogarCaminando],0)
+        tTrabajoHogarCaminando  = utils.calcularTiempoViaje([secTrabajoCaminando, secHogarCaminando],0)
+#######################
+        tHogarTrabajoBus  = utils.calcularTiempoViaje([secHogarBus, secTrabajoBus],2)
+        tHogarJardinBus   =  utils.calcularTiempoViaje([secHogarBus, secJardinBus],2)
+        tJardinTrabajoBus = utils.calcularTiempoViaje([secJardinBus, secTrabajoBus],2)
+        tTrabajoJardinBus = utils.calcularTiempoViaje([secJardinBus, secHogarBus],2)
+        tTrabajoHogarBus  = utils.calcularTiempoViaje([secTrabajoBus, secHogarBus],2)
+        tiemposCentros = []
+        auxOptimo = IndividuoCentroOptimo(individuo = individuo)
+        for centro in centros:
+            aux = time.time()
+            secCentroAuto      = utils.newGetSector(centro,1)
+            secCentroCaminando = utils.newGetSector(centro,0)
+            secCentroBus       = utils.newGetSector(centro,1)
+
+            tHogarCentroAuto   = utils.calcularTiempoViaje([secHogarAuto, secCentroAuto],1)
+            tJardinCentroAuto  = utils.calcularTiempoViaje([secJardinAuto, secCentroAuto],1)
+            tCentroHogarAuto   = utils.calcularTiempoViaje([secCentroAuto, secHogarAuto],1)
+            tCentroJardinAuto  = utils.calcularTiempoViaje([secCentroAuto, secJardinAuto],1)
+####################
+            tHogarCentroCaminando  = utils.calcularTiempoViaje([secHogarCaminando, secCentroCaminando],0)
+            tJardinCentroCaminando = utils.calcularTiempoViaje([secJardinCaminando, secCentroCaminando],0)
+            tCentroHogarCaminando  = utils.calcularTiempoViaje([secCentroCaminando, secHogarCaminando],0)
+            tCentroJardinCaminando = utils.calcularTiempoViaje([secCentroCaminando, secJardinCaminando],0)
+#########################
+            tHogarCentroBus  = utils.calcularTiempoViaje([secHogarBus, secCentroBus],2)
+            tJardinCentroBus = utils.calcularTiempoViaje([secJardinBus, secCentroBus],2)
+            tCentroHogarBus  = utils.calcularTiempoViaje([secCentroBus, secHogarBus],2)
+            tCentroJardinBus = utils.calcularTiempoViaje([secCentroBus, secJardinBus],2)
+
+            ini = time.time()
+            q = IndividuoCentro(individuo          = individuo , centro = centro, tHogarTrabajoAuto = tHogarTrabajoAuto/60,
+                                tHogarJardinAuto   = tHogarJardinAuto/60,tJardinTrabajoAuto  = tJardinTrabajoAuto/60,
+                                tTrabajoJardinAuto = tTrabajoJardinAuto/60,tTrabajoHogarAuto = tTrabajoHogarAuto/60,
+                                tHogarCentroAuto   = tHogarCentroAuto/60,tJardinCentroAuto   = tJardinCentroAuto/60,
+                                tCentroHogarAuto   = tCentroHogarAuto/60,tCentroJardinAuto   = tCentroJardinAuto/60,
+            tHogarTrabajoCaminando = tHogarTrabajoCaminando/60,
+                                tHogarJardinCaminando   = tHogarJardinCaminando/60,tJardinTrabajoCaminando  = tJardinTrabajoCaminando/60,
+                                tTrabajoJardinCaminando = tTrabajoJardinCaminando/60,tTrabajoHogarCaminando = tTrabajoHogarCaminando/60,
+                                tHogarCentroCaminando   = tHogarCentroCaminando/60,tJardinCentroCaminando   = tJardinCentroCaminando/60,
+                                tCentroHogarCaminando   = tCentroHogarCaminando/60,tCentroJardinCaminando   = tCentroJardinCaminando/60,
+            tHogarTrabajoBus = tHogarTrabajoBus/60,
+                                tHogarJardinBus   = tHogarJardinBus/60,tJardinTrabajoBus  = tJardinTrabajoBus/60,
+                                tTrabajoJardinBus = tTrabajoJardinBus/60,tTrabajoHogarBus = tTrabajoHogarBus/60,
+                                tHogarCentroBus   = tHogarCentroBus/60,tJardinCentroBus   = tJardinCentroBus/60,
+                                tCentroHogarBus   = tCentroHogarBus/60,tCentroJardinBus   = tCentroJardinBus/60)
+            tiemposCentros.append(q)
+            auxOptimo = setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroBus, tHogarCentroCaminando)
+        progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempos')
+        progressDone.value  = int(progressDone.value) + 1
+        progressDone.save()
+        IndividuoCentro.objects.bulk_create(tiemposCentros)
+        auxOptimo.save()
+        print("Termino el individuo: "+str(individuo.id))
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempos')
+    status.value  = 1
+    status.save()
+    
+def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCentroCaminando):
+    if(auxOptimo.centroOptimoAuto is None):
+        auxOptimo.centroOptimoAuto      = centro
+        auxOptimo.centroOptimoOmnibus   = centro
+        auxOptimo.centroOptimoCaminando = centro
+        auxOptimo.tHogarCentroAuto      = tHogarCentroAuto
+        auxOptimo.tHogarCentroOmnibus   = tHogarCentroOmnibus
+        auxOptimo.tHogarCentroCaminando = tHogarCentroCaminando
+        return auxOptimo
+
+    if(auxOptimo.tHogarCentroAuto  > tHogarCentroAuto):
+        auxOptimo.centroOptimoAuto = centro
+        auxOptimo.tHogarCentroAuto = tHogarCentroAuto
+
+    if(auxOptimo.tHogarCentroOmnibus  > tHogarCentroOmnibus):
+        auxOptimo.centroOptimoOmnibus = centro
+        auxOptimo.tHogarCentroOmnibus = tHogarCentroOmnibus
+
+    if(auxOptimo.tHogarCentroCaminando  > tHogarCentroCaminando):
+        auxOptimo.centroOptimoCaminando = centro
+        auxOptimo.tHogarCentroCaminando = tHogarCentroCaminando
+    return auxOptimo
+    
