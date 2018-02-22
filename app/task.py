@@ -385,6 +385,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             return resultTimpo,resultLlegaG,resultLlega
 @shared_task
 def saveTiemposToDB(lineas,tipo):
+    print("AWDAWDAWDWADWA")
     if(tipo == 0):
         tipoId = 'Caminando'
         sep = ';'
@@ -414,7 +415,7 @@ def saveTiemposToDB(lineas,tipo):
         id +=1
         if(id % bulkAmount == 0):
             progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-            progressDone.value  = progress.value + bulkAmount
+            progressDone.value  = int(progressDone.value) + bulkAmount
             progressDone.save()
             print(id)
             print(time.time() - init)
@@ -430,7 +431,7 @@ def saveTiemposToDB(lineas,tipo):
         else:
             guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
     progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-    progressDone.value  = progress.value + bulkAmount
+    progressDone.value  = int(progressDone.value) + bulkAmount
     progressDone.save()
     status  = Settings.objects.get(setting='statusMatriz'+tipoId)
     status.value  = 1

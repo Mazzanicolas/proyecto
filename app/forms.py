@@ -5,6 +5,7 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTM
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
+from .utils import getPrestadoresNombres,getPrestaresNombresFiltrosSimular
 
 REDIRECT_FIELD_NAME = 'next'
 class UserForm(forms.ModelForm):
@@ -247,13 +248,13 @@ class EjecutarForm(forms.Form):
     tipoTransporte = forms.ModelMultipleChoiceField(queryset = TipoTransporte.objects.all(),to_field_name = 'id',label = '')
     trabaja = forms.ChoiceField(choices=choices,label = '')
     asisteJardin = forms.ChoiceField(choices= choices, label = '')
-    prestadorFiltro = forms.ChoiceField(choices = [(x.id,x.nombre) for x in Prestador.objects.all()],label = '')
+    prestadorFiltro = forms.ChoiceField(choices = getPrestadoresNombres,label = '')
     dias = forms.MultipleChoiceField(choices = DIAS,label = '')
     horaInicio = forms.ChoiceField(choices = horas,label = '')
     horaFin = forms.ChoiceField(choices = horas[::-1],label = '')
     idList = forms.CharField(label = '',required = False)
 class SimularForm(EjecutarForm):
-    prestadorFiltro = forms.ChoiceField(choices = [(-1,"Por defecto"),(-2,"Ignorar")]+ [(x.id,x.nombre) for x in Prestador.objects.all()],label = '')
+    prestadorFiltro = forms.ChoiceField(choices = getPrestaresNombresFiltrosSimular,label = '')
 
 class EjecutarHelper(FormHelper):
     form_class = 'form-horizontal'

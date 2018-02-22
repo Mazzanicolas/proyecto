@@ -40,11 +40,14 @@ def progressMatrizAuto(request):
     return JsonResponse(data)
 
 def calculatePercetage(lhs,rhs):
-    return lhs/rhs
+    if(int(rhs) <= 0 ):
+        return 0
+    return int(lhs)/int(rhs)
 
 def initSettingsStatus():
-    firstTime = Settings.objects.filter(setting='firstTime')[:]
-    if(not firstTime):
+    firstTime = list(Settings.objects.filter(setting='firstTime'))
+    print(bool(Settings.objects.filter(setting='firstTime')))
+    if(firstTime):
         return
     utils.getOrCreateSettigs('firstTime',1)
     utils.getOrCreateSettigs('currentMatrizAuto',0)

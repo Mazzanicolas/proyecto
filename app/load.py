@@ -149,7 +149,6 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
     res, lineas = checkTiempos(tipo,request)
     if not res:
         return lineas
-
     status  = Settings.objects.get(setting='statusMatrizAuto')
     status.value  = 0
     status.save()
@@ -159,7 +158,7 @@ def cargarTiempos(tipo,request,shapeAuto,recordsAuto, shapeCaminando,recordsCami
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
-    asyncKey = saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'delegator')
+    asyncKey = saveTiemposToDB.apply_async(args=[lineas,tipo],queue = 'CalculationQueue')
     utils.getOrCreateSettigs('asyncKey',asyncKey)
 
 def cargarTiemposBus(request):

@@ -10,7 +10,11 @@ def cleanAllFolderFiles(path):
     files = glob.glob(path+'*')
     for aFile in files:
         os.remove(aFile)
-
+def getPrestadoresNombres():
+    puto = [(x.id,x.nombre) for x in Prestador.objects.all()]
+    return puto
+def getPrestaresNombresFiltrosSimular():
+    return [(-1,"Por defecto"),(-2,"Ignorar")]+ [(x.id,x.nombre) for x in Prestador.objects.all()]
 def createFolderInUsers(directory):
     directory = './app/files/users/'+direcotry
     if not os.path.exists(directory):
