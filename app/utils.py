@@ -3,6 +3,7 @@ from shapely.geometry import Polygon, Point
 import os
 import glob
 import shapefile
+import redis
 
 def numbersToDays(numberList):
     daysDict = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
@@ -379,7 +380,7 @@ def checkStatusesForTiemposMatrix():
             timCent = timCentLock.acquire(blocking=False) 
             timIndv = timIndvLock.acquire(blocking=False)
             if(timAut and timCam and timBus and timCent and timIndv):
-                status  = Settings.objects.get(setting='statusMatrizIndividuoTiempos')
+                status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')            
                 status.value  = 0
                 status.save()
                 return True

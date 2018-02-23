@@ -12,7 +12,7 @@ from celery import result
 from django.shortcuts import redirect
 from proyecto.celery import app
 from app.checkeo_errores import *
-from app.task import delegator
+from app.task import delegator,calcularTiemposMatrix
 import app.utils as utils
 import app.load as load
 from django.contrib.sessions.models import Session
@@ -490,17 +490,24 @@ def plot(request):
         return redirect('login')
     return render(request,'app/plot.html')
 
-def calcularTiemposMatrix(request):
-    if(not utils.checkStatusesForTiemposMatrix()):
-        return redirect('index')
-    progressDone  = Settings.objects.get(setting='currentIndividuoTiempos')
-    progressTotal = Settings.objects.get(setting='totalIndividuoTiempos')
+def calcularTiemposMatrixIndi(request):
+    
+   # if(not utils.checkStatusesForTiemposMatrix()):
+    #    return redirect('index')
+    print("PUTO")
+    progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
+    progressTotal = Settings.objects.get(setting='totalMatrizIndividuoTiempoCentro')
     progressDone.value  = 0
-    progressTotal.value = len(Individuo.objects.count())*2 
+    progressTotal.value = Individuo.objects.count()*2
     progressDone.save()
     progressTotal.save()
+    print("PUTO2")
+    IndividuoTiempoCentro.objects.all().delete()
+    IndividuoCentro.objects.all().delete()
     asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
-    utils.getOrCreateSettigs('asyncKeyIndividuoTiempos',asyncKey)
+    print("PUTO3")
+    utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
+    print("PUTO4")
     return redirect('index')
 
 def checkCompletedMatrixs():

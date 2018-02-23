@@ -224,7 +224,7 @@ def suzuki(individuos,simParam,sessionKey,dictTiemposSettings):
         totalHoras = utils.getTotalFromDict(dictHorasPorDia)
         totalConsultas = utils.getTotalFromDict(dictConsultasPorDia)
         totalCentros = len(centros)
-        centroOptimo = utils.getCentroOptimo(centros)
+        centroOptimo = getCentroOptimo(individuo).id_centro
        # centroOptimo = Centro.objects.get(id_centro = centroOptimo) if(centroOptimo) else centroOptimo
         leResumen = {'persona':individuo.id, 'cantidadTotalHoras':totalHoras,'cantidadHorasLunes':len(dictHorasPorDia[0]),
                     'cantidadHorasMartes':len(dictHorasPorDia[1]),'cantidadHorasMiercoles':len(dictHorasPorDia[2]), 'cantidadHorasJueves':len(dictHorasPorDia[3]),
@@ -251,10 +251,18 @@ def suzuki(individuos,simParam,sessionKey,dictTiemposSettings):
         if have_lock:
             my_lock.release()
     return resultList
+def getCentroOptimo(individuo):
+    if(individuo.tipo_transporte.id == 0):
+        return IndividuoCentroOptimo.objects.get(individuo = individuo).centroOptimoCaminando
+    elif(individuo.tipo_transporte.id == 2):
+        return IndividuoCentroOptimo.objects.get(individuo = individuo).centroOptimoOmnibus
+    else:
+        return IndividuoCentroOptimo.objects.get(individuo = individuo).centroOptimoAuto    
 def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemposSettings):
     tiempoMaximo = int(dictTiemposSettings.get('tiempoMaximo'))
     tiempoConsulta = int(dictTiemposSettings.get('tiempoConsulta'))
     tiReLle = int(dictTiemposSettings.get('tiempoLlega'))
+    horaSalida = 100
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin
@@ -267,7 +275,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
                 if(hora < jardin.hora_inicio):
                     resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and utils.minsToMil(tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']) <= trabajo.hora_inicio and hasPed ) else "No"
+                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroJardin']) <= jardin.hora_inicio and utils.minsToMil(tiempoConsulta + tiempos['tCentroJardin'] + tiempos['tJardinTrabajo']) <= trabajo.hora_inicio and hasPed  and samePrest) else "No"
                     return resultTimpo,resultLlega
                 else:
                     resultTimpo = utils.minsToMil(tiempos['tHogarJardin'] + tiempos['tJardinCentro'])
@@ -279,7 +287,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
             else:
                 resultTimpo = utils.minsToMil(tiempos['tHogarCentro'])
                 horaViajeMasConsulta = utils.minsToMil(hora + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo'])
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and hasPed ) else "No"
+                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= trabajo.hora_inicio and hasPed and samePrest ) else "No"
                 return resultTimpo,resultLlega
         else:
             if(tieneJardin and dia in utils.getListOfDays(jardin.dias)):
@@ -615,16 +623,18 @@ def saveIndividuosToDB(lineas):
 def calcularTiemposMatrix():
     individuos = Individuo.objects.all()
     centros = Centro.objects.all()
+    id = 0
     for individuo in individuos:
         print("IndividuoCentro: "+str(individuo.id))
         listaHoras = []
         for centro in centros:
             consultas = Pediatra.objects.filter(centro = centro)
             for consulta in consultas:
-                q = IndividuoTiempoCentro(individuo = individuo,centro=centro,dia = consulta.dia,hora = consulta.hora,cantidad_pediatras = consulta.cantidad_pediatras)
+                q = IndividuoTiempoCentro(id = id,individuo = individuo,centro=centro,dia = consulta.dia,hora = consulta.hora,cantidad_pediatras = consulta.cantidad_pediatras)
                 listaHoras.append(q)
-            IndividuoTiempoCentro.objects.bulk_create(listaHoras)
-        progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempos')
+                id = id+1
+        IndividuoTiempoCentro.objects.bulk_create(listaHoras)
+        progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
         progressDone.value  = int(progressDone.value) + 1
         progressDone.save()
     newCalcTimes()
@@ -709,13 +719,13 @@ def newCalcTimes():
                                 tCentroHogarBus   = tCentroHogarBus/60,tCentroJardinBus   = tCentroJardinBus/60)
             tiemposCentros.append(q)
             auxOptimo = setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroBus, tHogarCentroCaminando)
-        progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempos')
+        progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
         progressDone.value  = int(progressDone.value) + 1
         progressDone.save()
         IndividuoCentro.objects.bulk_create(tiemposCentros)
         auxOptimo.save()
         print("Termino el individuo: "+str(individuo.id))
-    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempos')
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
     status.value  = 1
     status.save()
 
