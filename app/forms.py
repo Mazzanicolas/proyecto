@@ -261,12 +261,12 @@ class EjecutarHelper(FormHelper):
     form_method = 'GET'
     layout = Layout(
             Div(
-                Div(HTML('<h5>Transporte<h5>'), style="margin-left: 40px;"),
+                Div(HTML('<h5>Transporte</h5>'), style="margin-left: 40px;"),
                 Div(HTML('<div><label class="checkbox-inline"><input type="checkbox" id = "checkTransporte" name = "checkT" value = "-1" checked> Por defecto </label></div>'),
                     Div(InlineCheckboxes('tipoTransporte',style="margin-left: 10px;text-transform:capitalize;"),id='transporteDiv', style="display: none;margin-left: 20px;"),style="margin-left: 80px;")
             ),
             Div(
-                Div(HTML('<h5>Trabaja<h5>'), style="margin-left: 40px;"),
+                Div(HTML('<h5>Trabaja</h5>'), style="margin-left: 40px;"),
                 Div(InlineRadios('trabaja',style="margin-left: 10px;"),style="margin-left: 65px;")
             ),
             Div(
@@ -280,8 +280,8 @@ class EjecutarHelper(FormHelper):
             ),
             Div(
                 Div(HTML('<h5>Dias</h5>'), style="margin-left: 40px;"),
-                Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDias" name = "checkDias" value = "-1" checked> Todos </label></div>'),
-                    Div(InlineCheckboxes('dias',style="margin-left: 10px;"),id='diasDiv', style="display: none;"),style="margin-left: 80px;")
+                Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDiasEjecutar" name = "checkDias" value = "-1" checked> Todos </label></div>'),
+                    Div(InlineCheckboxes('dias'),id='diasDivEjecutar', style="display: none;margin-left: 20px;"),style="margin-left: 80px;")
             ),
             Div(
                 Div(HTML('<h5>Rango Horario</h5>'), style="margin-left: 40px;"),
@@ -307,62 +307,48 @@ class SimularHelper(FormHelper):
     label_class = 'col-lg-2'
     field_class = 'col-lg-8'
     form_method = 'GET'
-    layout = Layout( Div(
-        Div(HTML('<div style="font-size:180%"> Simular </div>', ),css_class = "modal-header" ),
-        HTML(' <div hidden><label class="checkbox-inline"><input type="checkbox" name = simular id="simul" value="1" checked> Simular </label></div>'),
-        Div(
-            Div(HTML("<strong>¡Advertencia!</strong> Esta operacion puede demorar varias horas."),css_class = "alert alert-warning"),
+    layout = Layout(
             Div(
-                Div( HTML('<div style="font-size:130%"> Transporte</div>', ),css_class ="panel-footer" ),
-                Div(InlineRadios('tipoTransporte'),css_class = "panel-body"), 
-                css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%"> Anclas Temporales</div>', ),css_class ="panel-footer" ),
-                Div(HTML('<label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="1" checked> Trabajo </label>'),
-                    HTML('<label class="checkbox-inline"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="1" checked> Jardin </label></br>'),
-                    css_class = "panel-body"),
-                css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%"> Prestadores</div>', ),css_class ="panel-footer" ),
-                Div(InlineRadios('prestadorFiltro'),css_class = "panel-body"),
-                css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%"> Dias </div>', ),css_class = "panel-footer"),
-                Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDias2" name = "checkDias" value = "-1" checked> Todos </label></div>'),
-                    Div(InlineCheckboxes('dias'),id='diasDiv2',css_class ="panel-body", style="display: none;"), css_class ="panel-body" ),
-                    css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%"> Rango Horario</div>', ),css_class = "panel-footer"),
-                Div(Div('horaInicio', css_class = "panel-body"),Div('horaFin', css_class = "panel-body")),
-                css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%">Lista de IDs </div>', ),css_class ="panel-footer" ),
-                Div(Field('idList'), css_class = "panel-body"),
-                css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%"> ¿Como quiere el resultado? </div>', ),css_class ="panel-footer" ),
-                Div(HTML('<label class="checkbox-inline"><input type="checkbox" id="cbCSV2" name="checkRango" value="-1" checked> Descargar como .csv</label></br>'), css_class = "panel-body"),
-                css_class = "panel panel-default"
-            ),
-            Div(
-                Div( HTML('<div style="font-size:130%"> Resultados a generar </div>', ),css_class ="panel-footer" ),
-                Div(HTML('<label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Simulacion </label></br><label class="checkbox-inline"><input type="checkbox"id="cbCSV3" name="generarResumen" value="1"> Resumen</label></br>'), css_class = "panel-body"),
-                css_class = "panel panel-default"
-            ),
-        css_class = "modal-body"
-        ),
-        Div(Div(Submit('submit', 'Calcular',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),css_class="panel-footer"),
+                Div(HTML('<h5>Transporte</h5>'), style="margin-left: 40px;"),
+                Div(InlineRadios('tipoTransporte', style="margin-left: 10px;text-transform:capitalize;"),style="margin-left: 30px;")
 
-    css_class = "modal-content"),
+            ),
+            Div(
+                Div(HTML('<h5>Anclas Temporales</h5>'), style="margin-left: 40px;"),
+                Div(HTML('<label class="checkbox-inline"><input type="checkbox" name = anclaTra id="inlineCheckbox1" value="1" checked> Trabajo </label>'),
+                    HTML('<label class="checkbox-inline" style="margin-left: 10px;"><input type="checkbox" name = anclaJar id="inlineCheckbox2" value="1" checked> Jardin </label>'),style="margin-left: 65px;"
+                )
+
+            ),
+            Div(
+                Div(HTML('<h5>Prestadores</h5>'), style="margin-left: 40px;"),
+                Div(InlineRadios('prestadorFiltro'), style="margin-left: 50px;")
+
+            ),
+            Div(
+                Div(HTML('<h5>Dias</h5>'), style="margin-left: 40px;"),
+                Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDiasSimular" name = "checkDias" value = "-1" checked> Todos </label></div>'),
+                    Div(InlineCheckboxes('dias'),id='diasDivSimular', style="display: none;margin-left: 20px;"),style="margin-left: 80px;")
+            ),
+
+            Div(
+                Div(HTML('<h5>Rango Horario</h5>'), style="margin-left: 40px;"),
+                Div(Div('horaInicio', style="margin-left: 40px;margin-right:40px;"),Div('horaFin', style="margin-left:40px;margin-right:40px;"))
+            ),
+            Div(
+                Div(HTML("<h5>Lista de ID's</h5>"), style="margin-left: 40px;"),
+                Div(Field('idList', placeholder="Lista de ID's separadas por coma"), style="margin-left:40px;margin-right:40px;")
+            ),
+            Div(
+                Div(HTML('<h5>¿Como quiere el resultado?</h5>'), style="margin-left: 40px;"),
+                Div(HTML('<label class="checkbox-inline"><input type="checkbox" id="cbCSV1" name="checkRango" value="-1" checked> Descargar como .csv</label></br>'),style="margin-left: 80px;")
+                
+            ),
+            Div(
+                Div(HTML('<h5>Resultados a generar</h5>'), style="margin-left: 40px;"),
+                Div(HTML('<label class="checkbox-inline"><input type="checkbox" name="generarIndividual" value="1" checked> Simulación </label></br><label class="checkbox-inline"><input type="checkbox"id="cbCSV2" name="generarResumen" value="1"> Resumen</label></br>'),style="margin-left: 80px;")                
+            ),
+        Div(Div(Submit('submit', 'Calcular',css_class='btn-primary')), style="text-align: center;")
         
     )
 class SuperLogin(AuthenticationForm):
