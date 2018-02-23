@@ -328,7 +328,7 @@ class SimularHelper(FormHelper):
             Div(
                 Div(HTML('<h5>Dias</h5>'), style="margin-left: 40px;"),
                 Div(HTML('<div> <label class="checkbox-inline"><input type="checkbox" id = "checkDiasSimular" name = "checkDias" value = "-1" checked> Todos </label></div>'),
-                    Div(InlineCheckboxes('dias'),id='diasDivSimular', style="display: none;margin-left: 20px;"),style="margin-left: 80px;")
+                    Div(InlineCheckboxes('dias'),id='diasDivSimular', style="display: none;margin-left: 20px;"),style="margin-left: 65px;")
             ),
 
             Div(

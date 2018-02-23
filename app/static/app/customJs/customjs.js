@@ -1,3 +1,7 @@
+/* Init alertas */
+$('#alertCalculos').hide();
+
+
 /*Checkeo de errores, validacion*/
 
 $(document).ready(function(){
@@ -75,53 +79,22 @@ $(document).ready(function(){
           document.getElementById("cbCSV").disabled = false;
         });
     });
+
 $(document).ready(function(){
-    $(document.getElementById("cbCSV1")).change(function(){
+    $(document.getElementById("cbCSV2")).change(function(){
         if(this.checked){
-            document.getElementById("cbCSV2").disabled = true;
-            document.getElementById("cbCSV2").checked = true;
+            document.getElementById("cbCSV1").disabled = true;
+            document.getElementById("cbCSV1").checked = true;
         }
         else
-            document.getElementById("cbCSV2").disabled = false;
+            document.getElementById("cbCSV1").disabled = false;
     });
 });
 
-
-/*
-var bar = new ProgressBar.Circle(container, {
-    strokeWidth: 3,
-    color: '#FFEA82',
-    trailColor: '#eee',
-    trailWidth: 1,
-    easing: 'easeInOut',
-    duration: 1400,
-    svgStyle: null,
-    text: {
-      value: '',
-      alignToBottom: true
-    },
-    from: {color: '#e3e7f2'},
-    to: {color: '#6c69db'},
-    // Set default step function for all animate calls
-    step: (state, bar) => {
-      bar.path.setAttribute('stroke', state.color);
-      var value = Math.round(bar.value() * 100);
-      if (value === 0) {
-        bar.setText('');
-      } else {
-        bar.setText(value);
-      }  
-      bar.text.style.color = state.color;
-    }
-  });
-  bar.text.style.fontFamily = 'sans-serif';
-  bar.text.style.fontSize = '10rem';
-  bar.animate(1.0); */
-
-  var bar = new ProgressBar.Path('#heart-path', {
+/*  var bar = new ProgressBar.Path('#heart-path', {
     strokeWidth: 4,
     easing: 'easeInOut',
-    duration: 1400,
+    duration: 10000,
     text: {
         style: {
           // Text color.
@@ -139,57 +112,61 @@ var bar = new ProgressBar.Circle(container, {
       from: {color: '#FFEA82'},
       to: {color: '#ED6A5A'}
   });
-/*
-  var bar = new ProgressBar.Path('#heart-path', {
-  strokeWidth: 4,
-  easing: 'easeInOut',
-  duration: 1400,
-  text: {
-    style: {
-      // Text color.
-      // Default: same as stroke color (options.color)
-      color: '#999',
-      position: 'absolute',
-      right: '0',
-      top: '30px',
-      padding: 0,
-      margin: 0,
-      transform: null
-    },
-    autoStyleContainer: false
-  },
-  from: {color: '#FFEA82'},
-  to: {color: '#ED6A5A'},
-  step: (state, bar) => {
-    bar.setText(Math.round(bar.value() * 100) + ' %');
-  }
-});
 */
+var bar = new ProgressBar.Circle(container, {
+    color: '#d6d7d8',
+    // This has to be the same size as the maximum width to
+    // prevent clipping
+    strokeWidth: 5,
+    trailWidth: 1,
+    easing: 'easeInOut',
+    duration: 2500,
+    text: {
+      autoStyleContainer: false
+    },
+    from: { color: '#4158d0', width: 2 },
+    to: { color: '#c850c0', width: 5 },
+    // Set default step function for all animate calls
+    step: function(state, circle) {
+      circle.path.setAttribute('stroke', state.color);
+      circle.path.setAttribute('stroke-width', state.width);
   
+      var value = Math.round(circle.value() * 100);
+      if (value === 0) {
+        circle.setText('');
+      } else {
+        circle.setText(String(value)+'%');
+      }
+  
+    }
+  });
+  bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+  bar.text.style.fontSize = '3rem';
 //bar.set(0);
 bar.animate(0); 
 /*Consultas XML*/
+
 window.onload = askMatrizAutoStatusCheck();
 
-function getMatrizAutoStatus(progressLoop) {
-    console.log("Entro");
+function getMatrizAutoStatus(progressLoopMatrizAuto) {
+    console.log("Esto deberia salir solo una vez sino rip cargado auto")
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            console.log("Entro 200 ok");
             var obj = JSON.parse(this.responseText);
-            var crrnt = (obj['progressStatus']).toFixed(1);
-            document.getElementById("progressBarMatrizAuto").style.width = crrnt.toString()+"%";
-            document.getElementById("progressBarMatrizAutoPercentage").innerHTML = crrnt.toString()+"%";
-            progressLoop = setTimeout(function() { getMatrizAutoStatus(progressLoop); }, 15000);
+            var crrnt = ((obj['progressStatus']).toFixed(1)*100);
+            console.log(crrnt)
+            document.getElementById("progressBarMatrizAuto").style.width = (crrnt).toString()+"%";
+            document.getElementById("progressBarMatrizAutoPercentage").innerHTML = (crrnt).toString()+"%";
+            progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 15000);
             if(crrnt>99){
-                document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
-                document.getElementById('descargar').style.visibility = 'visible';                  
-                clearTimeout(progressLoop);
+                document.getElementById('matrizAutoStatus').style.visibility = 'hidden';
+                clearTimeout(progressLoopMatrizAuto);
             }
             if(crrnt<0){
+                bar.animate(0); 
                 document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
-                clearTimeout(progressLoop);
+                clearTimeout(progressLoopMatrizAuto);
             }
         }
     };
@@ -198,14 +175,15 @@ function getMatrizAutoStatus(progressLoop) {
     }
 
 function askMatrizAutoStatusCheck(){
-    var progressLoop = setTimeout(function() { getMatrizAutoStatus(progressLoop); }, 100);
+    var progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 100);
 }
 
 //
 window.onload = ask();
 
 function ask2(progressLoop) {
-    console.log("Entro 2")
+    console.log("Esto deberia salir solo una vez sino rip barra de cargado")
+    $('#alertCalculos').hide();
     var xhttp = new XMLHttpRequest();
     clearTimeout(progressLoop);
     xhttp.onreadystatechange = function() {
@@ -216,9 +194,12 @@ function ask2(progressLoop) {
         bar.animate(crrnt/100); 
         progressLoop = setTimeout(function() { ask2(progressLoop); }, 15000);
         if(crrnt>99){
+            document.getElementById('descargar').style.visibility = 'visible';
+            $('#alertCalculos').show();
             clearTimeout(progressLoop);
         }
         if(crrnt<0){
+            $('#alertCalculos').hide();
             clearTimeout(progressLoop);
         }
         }
@@ -230,3 +211,5 @@ function ask2(progressLoop) {
 function ask(){
     var progressLoop = setTimeout(function() { ask2(progressLoop); }, 100);
 }
+
+/*Alerts*/

@@ -96,21 +96,21 @@ nav a {
     height: 100%;
     left: 0;
     top: 0;
+    z-index: 0;
+}
+.alert{
     z-index: 10;
 }
-
 #container {
+    position: relative;
     margin-left:auto;
     margin-right:auto;
     margin-top:150px;
     width:80%;
     width: 280px;
-    height: 140px;
+    height: 280px;
   }
 
-  .login {
-    background: #9053c7;
-  }
 /*Log in*/
 #wrapperLogIn {
     position: fixed;
