@@ -47,11 +47,20 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-    $('#checkDias').change(function(){
+    $('#checkDiasEjecutar').change(function(){
         if(this.checked)
-            $('#diasDiv').hide();
+            $('#diasDivEjecutar').hide();
         else
-            $('#diasDiv').show();
+            $('#diasDivEjecutar').show();
+    });
+});
+
+$(document).ready(function(){
+    $('#checkDiasSimular').change(function(){
+        if(this.checked)
+            $('#diasDivSimular').hide();
+        else
+            $('#diasDivSimular').show();
     });
 });
 
@@ -67,7 +76,7 @@ $(document).ready(function(){
         });
     });
 $(document).ready(function(){
-    $(document.getElementById("cbCSV3")).change(function(){
+    $(document.getElementById("cbCSV1")).change(function(){
         if(this.checked){
             document.getElementById("cbCSV2").disabled = true;
             document.getElementById("cbCSV2").checked = true;
@@ -76,6 +85,8 @@ $(document).ready(function(){
             document.getElementById("cbCSV2").disabled = false;
     });
 });
+
+
 /*
 var bar = new ProgressBar.Circle(container, {
     strokeWidth: 3,

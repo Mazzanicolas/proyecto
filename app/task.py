@@ -262,7 +262,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     tiempoMaximo = int(dictTiemposSettings.get('tiempoMaximo'))
     tiempoConsulta = int(dictTiemposSettings.get('tiempoConsulta'))
     tiReLle = int(dictTiemposSettings.get('tiempoLlega'))
-    horaSalida = 100
+    horaSalida = 0
     hogar = individuo.hogar
     trabajo = individuo.trabajo
     jardin = individuo.jardin

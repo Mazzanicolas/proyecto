@@ -33,7 +33,7 @@ urlpatterns = [
     url(r'^login/$', login, {'template_name':'accounts/login.html','authentication_form':SuperLogin}, name='login'),
     url(r'^logout/$', logout, {'next_page':'login'}),
     url(r'cancelarCentro/$', views.cancelarCentro, name='cancelarCentro'),
-    url(r'CalculateTimeMatrixIndv/$', views.calcularTiemposMatrixIndi, name='calculateTimeMatrix'),
+    url(r'CalculateTimeMatrix/$', views.calcularTiemposMatrixIndi, name='calculateTimeMatrix'),
     url(r'^$', views.testing, name='index'),
     url(r'^testing/progressMatrizAuto/$', views.progressMatrizAuto, name='progressMatrizAuto'),
 ]
