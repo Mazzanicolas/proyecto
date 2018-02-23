@@ -54,12 +54,9 @@ class IndHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Individuo',
-        'individuo','trabajo','jardin'),
-        Tab('Prestadores', InlineCheckboxes('prestador')),
-        Tab('Transporte', InlineCheckboxes('transporte')),
-        ),
+        Div('Individuo','individuo','trabajo','jardin'),
+        Div('Prestadores', InlineCheckboxes('prestador')),
+        Div('Transporte', InlineCheckboxes('transporte')),
         Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
         HTML("""
             <br>    <br>
@@ -148,14 +145,8 @@ class SecAutHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Sector Auto',
-            Div('shapeid'),
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+                Div('shapeid'),        
+                Div(Submit('submit', 'Aplicar Filtro',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-6',)
     )
 class SecCamHelper(FormHelper):
     form_class = 'form-horizontal'

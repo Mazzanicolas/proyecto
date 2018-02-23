@@ -1,15 +1,24 @@
-{% load render_table from django_tables2 %}
-{% load querystring from django_tables2 %}
-{% load bootstrap3 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
-{% load static %}
-{% load django_tables2 crispy_forms_tags %}
-<a href="{% querystring '_export'='csv' %}"> download as csv</a>
-{% crispy filter.form filter.form.helper %}
-<script src="{% static 'app/js/jquery-2.2.1.min.js' %}"></script>
-<script src="{% static 'app/js/jqueryui.js' %}"></script>
-<link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
-<link rel="stylesheet" href="{% static 'app/css/default.css'%}" />
-<script type="text/javascript" src="{% static 'app/js/bootstrap-tab.js' %}">  </script>
-{% render_table table 'django_tables2/bootstrap.html' %}
+<html>
+    <head>
+        {% load render_table from django_tables2 %}
+        {% load querystring from django_tables2 %}
+        {% load bootstrap4 %}
+        {% load static %}
+        {% load django_tables2 crispy_forms_tags %}        
+        <link rel="stylesheet" href="{% static 'django_tables2/themes/paleblue/css/screen.css' %}" />
+        <link rel="stylesheet" href="{% static 'app/customCss/customcss.css' %}"></link>
+    </head>
+    <body class="container-background">
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}        
+        <div align="center" style=" box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+            <a class="btn btn-primary" href="{% querystring '_export'='csv' %}"> download as csv</a>
+            {% crispy filter.form filter.form.helper %}
+        </div>
+        <div align="center" >
+            {% render_table table 'django_tables2/bootstrap.html' %}
+        </div>
+    </body>
+    <script src="{% static 'app/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'app/js/jqueryui.js' %}"></script>
+</html>

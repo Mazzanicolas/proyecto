@@ -90,6 +90,7 @@ $(document).ready(function(){
     });
 });
 
+
 var bar = new ProgressBar.Circle(container, {
     color: '#d6d7d8',
     // This has to be the same size as the maximum width to
