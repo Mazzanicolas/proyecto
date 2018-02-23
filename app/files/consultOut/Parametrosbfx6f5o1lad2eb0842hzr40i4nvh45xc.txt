@@ -1,0 +1,9 @@
+Filtros utilizados 
+Tipo de Transporte utilizados: CAMINANDO, AUTO, OMNIBUS
+Trabaja: No
+Tiene Jardin: No
+Prestador: Por Defecto 
+Dias: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo 
+Desde Las: 0 
+Hasta Las: 23 
+Individuos: 1, 2, 3 

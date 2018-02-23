@@ -22,8 +22,7 @@ class UserRegistryHelper(FormHelper):
         Div(Field('email')),
         Div(Field('username')),
         Div(Field('password')),
-        Div(Div(Submit('submit', 'Crear',css_class='btn-primary')),
-        css_class="panel-body")
+        Div(Div(Submit('submit', 'Crear',css_class='btn-primary')))
             )
         )
 

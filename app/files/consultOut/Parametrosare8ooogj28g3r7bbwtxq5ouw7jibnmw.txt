@@ -1,0 +1,9 @@
+Filtros utilizados 
+Tipo de Transporte utilizados: CAMINANDO, AUTO
+Trabaja: Si
+Tiene Jardin: Si
+Prestador: Por Defecto 
+Dias: Lunes 
+Desde Las: 8 
+Hasta Las: 10 
+Individuos: Todos

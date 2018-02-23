@@ -1,5 +1,4 @@
 /* Init alertas */
-$('#alertCalculos').hide();
 
 
 /*Checkeo de errores, validacion*/
@@ -91,33 +90,11 @@ $(document).ready(function(){
     });
 });
 
-/*  var bar = new ProgressBar.Path('#heart-path', {
-    strokeWidth: 4,
-    easing: 'easeInOut',
-    duration: 10000,
-    text: {
-        style: {
-          // Text color.
-          // Default: same as stroke color (options.color)
-          color: '#999',
-          position: 'absolute',
-          right: '0',
-          top: '30px',
-          padding: 0,
-          margin: 0,
-          transform: null
-        },
-        autoStyleContainer: false
-      },
-      from: {color: '#FFEA82'},
-      to: {color: '#ED6A5A'}
-  });
-*/
 var bar = new ProgressBar.Circle(container, {
     color: '#d6d7d8',
     // This has to be the same size as the maximum width to
     // prevent clipping
-    strokeWidth: 5,
+    strokeWidth: 7,
     trailWidth: 1,
     easing: 'easeInOut',
     duration: 2500,
@@ -133,29 +110,29 @@ var bar = new ProgressBar.Circle(container, {
   
       var value = Math.round(circle.value() * 100);
       if (value === 0) {
-        circle.setText('');
+        circle.setText('¡Listo!');
       } else {
-        circle.setText(String(value)+'%');
+        circle.setText(String(value)+' %');
       }
   
     }
   });
   bar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+  bar.text.style.fontStyle = "italic"
   bar.text.style.fontSize = '3rem';
-//bar.set(0);
-bar.animate(0); 
+
 /*Consultas XML*/
 
 window.onload = askMatrizAutoStatusCheck();
 
 function getMatrizAutoStatus(progressLoopMatrizAuto) {
-    console.log("Esto deberia salir solo una vez sino rip cargado auto")
+    console.log("XML CARGADO AUTO")
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var obj = JSON.parse(this.responseText);
             var crrnt = ((obj['progressStatus']).toFixed(1)*100);
-            console.log(crrnt)
+            bar.animate(crrnt/100); 
             document.getElementById("progressBarMatrizAuto").style.width = (crrnt).toString()+"%";
             document.getElementById("progressBarMatrizAutoPercentage").innerHTML = (crrnt).toString()+"%";
             progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 15000);
@@ -179,37 +156,49 @@ function askMatrizAutoStatusCheck(){
 }
 
 //
-window.onload = ask();
+window.onload = calculate();
 
 function ask2(progressLoop) {
-    console.log("Esto deberia salir solo una vez sino rip barra de cargado")
-    $('#alertCalculos').hide();
+    console.log("XML CARGADO")
     var xhttp = new XMLHttpRequest();
     clearTimeout(progressLoop);
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-        var obj = JSON.parse(this.responseText);
-        var crrnt = ((parseFloat(obj['Done'])/parseFloat(obj['Total']))*100).toFixed(1);
-        console.log(crrnt);
-        bar.animate(crrnt/100); 
-        progressLoop = setTimeout(function() { ask2(progressLoop); }, 15000);
-        if(crrnt>99){
-            document.getElementById('descargar').style.visibility = 'visible';
-            $('#alertCalculos').show();
-            clearTimeout(progressLoop);
-        }
-        if(crrnt<0){
-            $('#alertCalculos').hide();
-            clearTimeout(progressLoop);
-        }
+            var obj = JSON.parse(this.responseText);
+            var fileStatus = ((parseFloat(obj['Done'])/parseFloat(obj['Total']))).toFixed(2);
+            console.log(typeof fileStatus);        
+            fileStatus = parseFloat(fileStatus);
+            bar.animate(fileStatus); 
+            progressLoop = setTimeout(function() { ask2(progressLoop); }, 10000);
+            if(fileStatus>0){
+                document.getElementById('container').style.visibility = 'visible';
+            }
+            if(fileStatus>0.999){
+                bar.animate(0)
+                downloadRedy();
+                clearTimeout(progressLoop);
+            }
+            if(fileStatus<0){
+                noFileInCache();
+                clearTimeout(progressLoop);
+            }
         }
     };
     xhttp.open("GET", "progress/", true);
     xhttp.send();
 }
 
-function ask(){
+function calculate(){
     var progressLoop = setTimeout(function() { ask2(progressLoop); }, 100);
 }
 
+function downloadRedy(){
+    document.getElementById('descargar').style.visibility = 'visible';
+    document.getElementById('container').style.visibility = 'visible';
+    document.getElementById('alertCalculos').style.visibility = 'visible';
+}
+function noFileInCache(){
+    document.getElementById('container').style.visibility = 'hidden';
+    document.getElementById('alertCalculos').style.visibility = 'hidden';
+}
 /*Alerts*/

@@ -51,7 +51,7 @@
                             <a class="dropdown-item" href="logout/">Cerrar sesión</a>
                             {% if request.user.is_superuser %}
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" data-toggle="modal" href="register/">Crear Usuario</a>
+                                <a class="dropdown-item" href="register/">Crear Usuario</a>
                             {% endif %}
                         </div>
                     </li>
@@ -59,7 +59,7 @@
                 </div>
             </nav>            
             <!--Alerts-->
-            <div class="alert alert-success alert-dismissible fade show" role="alert" id="alertCalculos">
+            <div class="alert alert-success alert-dismissible fade show" role="alert" id="alertCalculos" style="visibility:hidden">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -67,14 +67,7 @@
             </div>
             <!--Alerts-->
             <!--v-Content-v-->
-            <!--div id="barContainer"><div id="loadingBarContainer"></div></div-->
-            <!--div id="wrapper">-->
-                <div id="container"><!--
-                    <svg viewBox="0 0 100 100">
-                        <path d="M 50,2 L 98,98 L 2,98 L 50,2" stroke="#eee" stroke-width="1" fill-opacity="0"></path><path id="heart-path" d="M 50,2 L 98,98 L 2,98 L 50,2" stroke="#0FA0CE" stroke-width="4" fill-opacity="0" style="stroke-dasharray: 310.663, 310.663; stroke-dashoffset: 250.59; stroke-linecap: round;"></path>
-                    </svg>-->
-                </div>
-            <!--/div>-->
+            <div id="container" style="visibility:hidden"></div>
             <!--Cargar-->
             <div class="modal fade" id="cargar_datos">
                 <div class="modal-dialog modal-lg" role="document">
