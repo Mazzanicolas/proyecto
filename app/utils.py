@@ -4,6 +4,7 @@ import os
 import glob
 import shapefile
 import redis
+from datetime import datetime, timedelta
 
 def numbersToDays(numberList):
     daysDict = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
@@ -158,6 +159,22 @@ def getTiempos(individuo,centro,tipoTrans):
     tiemposDict['tTrabajoHogar']= getTTrabajoHogar(tipoTrans,tiempos)
     tiemposDict['tJardinTrabajo']= getTJardinTrabajo(tipoTrans,tiempos)
     tiemposDict['tJardinCentro']= getTJardinCentro(tipoTrans,tiempos)
+    return tiemposDict
+def getDeltaTiempos(individuo,centro,tipoTrans):
+    tiempos = IndividuoCentro.objects.get(individuo = individuo,centro = centro)
+    if(tipoTrans == '-1'):
+        tipoTrans = individuo.tipo_transporte.id
+    tiemposDict = dict()
+    tipoTrans = int(tipoTrans)
+    tiemposDict['tHogarCentro'] = timedelta(minutes  = getTHogarCentro(tipoTrans,tiempos))
+    tiemposDict['tHogarTrabajo'] = timedelta(minutes = getTHogarTrabajo(tipoTrans,tiempos))
+    tiemposDict['tHogarJardin'] = timedelta(minutes  = getTHogarJardin(tipoTrans,tiempos))
+    tiemposDict['tCentroHogar'] = timedelta(minutes  = getTCentroHogar(tipoTrans,tiempos))
+    tiemposDict['tCentroJardin'] = timedelta(minutes = getTCentroJardin(tipoTrans,tiempos))
+    tiemposDict['tTrabajoJardin']= timedelta(minutes = getTTrabajoJardin(tipoTrans,tiempos))
+    tiemposDict['tTrabajoHogar']= timedelta(minutes = getTTrabajoHogar(tipoTrans,tiempos))
+    tiemposDict['tJardinTrabajo']= timedelta(minutes = getTJardinTrabajo(tipoTrans,tiempos))
+    tiemposDict['tJardinCentro']= timedelta(minutes = getTJardinCentro(tipoTrans,tiempos))
     return tiemposDict
 def getTHogarCentro(tipoTrans,tiempos):
     if(tipoTrans == 2):
@@ -409,3 +426,18 @@ def getSimpleLock(key):
     finally:    
         if have_lock:
             my_lock.release()
+
+def horaMilToDateTime(hora):
+    if(hora == 2400):
+        return datetime(2013,3,11,hour = 0,minute = 0)
+    hora = str(hora)
+    if(len(hora)==3):
+        return datetime(2013,3,10,hour = int(hora[:1]),minute = int(hora[-2:]))
+    elif(len(hora) == 4):
+        return datetime(2013,3,10,hour = int(hora[:2]),minute = int(hora[-2:]))
+    else:
+        return datetime(2013,3,10, minute = int(hora))
+
+
+def proTime(hora,minutes):
+    return horaMilToDateTime(hora) + timedelta(minutes)
