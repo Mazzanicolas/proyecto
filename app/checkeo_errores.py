@@ -46,6 +46,7 @@ def checkMutualistas(request):
     l = csv.reader(csvf, delimiter=',', quotechar='"')
     lineas=[]
     lineas.extend(l)
+    lineas = list(filter(None,lineas))
     for linea in lineas:
         if len(linea) != 2:
             errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(linea)))

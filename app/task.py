@@ -26,7 +26,7 @@ RADIO_CERCANO = 500 # distancia maxima en metros para que dos paradas se conside
 global TIEMPO_CAMBIO_PARADA
 TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) # Regla de 3 para sacar el tiempo caminando promedio entre dos paradas cercanas
                                                                           # con los valores por defecto es 3 minutos.
-                                                                        
+
 @shared_task()
 def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
@@ -69,8 +69,8 @@ def delegator(get,sessionKey,cookies):
 def saveResumenToCsv(result,sessionKey):
     fieldNames = ['persona', 'cantidadTotalHoras','cantidadHorasLunes','cantidadHorasMartes','cantidadHorasMiercoles', 'cantidadHorasJueves',
                 'cantidadHorasViernes','cantidadHorasSabado', 'cantidadMaximaHoras','cantidadConsultasLunes', 'cantidadConsultasMartes','cantidadConsultasMiercoles',
-                'cantidadConsultasJueves', 'cantidadConsultasViernes','cantidadConsultasSabado','cantidadTotalConsultas', 'cantidadCentrosLunes', 
-                'cantidadCentrosMartes','cantidadCentrosMiercoles','cantidadCentrosJueves', 'cantidadCentrosViernes','cantidadCentrosSabado', 'cantidadTotalCentros', 
+                'cantidadConsultasJueves', 'cantidadConsultasViernes','cantidadConsultasSabado','cantidadTotalConsultas', 'cantidadCentrosLunes',
+                'cantidadCentrosMartes','cantidadCentrosMiercoles','cantidadCentrosJueves', 'cantidadCentrosViernes','cantidadCentrosSabado', 'cantidadTotalCentros',
                 'centroOptimo']
     with open('./app/files/consultOut/ResumenResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
         writer = csv.DictWriter(csvFile,delimiter = ',',fieldnames = fieldNames)
@@ -133,7 +133,7 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             if(prestador != -2):
                 prestadorObject = Prestador.objects.get(id=prestador) if(prestador!= -1) else individuo.prestador
                 prestador = prestadorObject.id if(prestador!= -1) else individuo.prestador.id
-                
+
         else:
             tipoTrans = individuo.tipo_transporte
             tieneTrabajo = individuo.tieneTrabajo
@@ -165,8 +165,8 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             centroId = centro.id_centro
             aux =[]
             for tiempo in tiempos:
-                tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora, 
-                            pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo, 
+                tiempoViaje, llegaG,llega = calcTiempoAndLlega(individuo = individuo,centro = centroId,dia = tiempo.dia,hora = tiempo.hora,
+                            pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo,
                             tieneJardin = tieneJardin,dictTiemposSettings=dictTiemposSettings,inicioJar = inicioJar,finJar = finJar ,inicioTra = inicioTra ,finTra = finTra)
                 result.append([individuo.id,prestadorObject.nombre,centroId,centro.prestador.nombre,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
         print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
@@ -289,7 +289,7 @@ def getCentroOptimo(individuo):
     elif(individuo.tipo_transporte.id == 2):
         return IndividuoCentroOptimo.objects.get(individuo = individuo).centroOptimoOmnibus
     else:
-        return IndividuoCentroOptimo.objects.get(individuo = individuo).centroOptimoAuto    
+        return IndividuoCentroOptimo.objects.get(individuo = individuo).centroOptimoAuto
 def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemposSettings,inicioJar ,finJar ,inicioTra ,finTra ):
     tiempoMaximo   = dictTiemposSettings.get('tiempoMaximo')
     tiempoConsulta = dictTiemposSettings.get('tiempoConsulta')
@@ -300,7 +300,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     jardin = individuo.jardin
     hasPed = pediatras >0
     horaDate = utils.horaMilToDateTime(hora)
-    if(tieneTrabajo and horaDate > inicioTra and horaDate < finTra and trabajo.dias in utils.getListOfDays(trabajo.dias) 
+    if(tieneTrabajo and horaDate > inicioTra and horaDate < finTra and trabajo.dias in utils.getListOfDays(trabajo.dias)
             or tieneJardin and horaDate > inicioJar and horaDate < finJar and jardin.dias in utils.getListOfDays(jardin.dias)):
         return -1,"No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
@@ -328,7 +328,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
                     resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
                     horaTerCons1 = horaDate + tiempoConsulta + tiempos['tCentroJardin']
                     horaTerCons2 =finTra + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
-                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)                    
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
                     resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= inicioJar and finTra + resultTimpo <= horaDate + tiReLle and hasPed  and samePrest) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlega
 
@@ -365,8 +365,8 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
     jardin = individuo.jardin
     hasPed = pediatras>0
     horaDate = utils.horaMilToDateTime(hora)
-    
-    if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias) or 
+
+    if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias) or
             tieneJardin and horaDate >= inicioJar and finJar and dia in utils.getListOfDays(jardin.dias)):
         return -1,"No","No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
@@ -401,7 +401,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                     resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
                     horaTerCons1 = horaDate + tiempoConsulta + tiempos['tCentroJardin']
                     horaTerCons2 = finTra + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
-                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2) 
+                    horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
                     resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= inicioJar and finTra + resultTimpo <= horaDate + tiReLle) else "No"
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
@@ -461,7 +461,7 @@ def saveTiemposToDB(tipo):
     csvFile = open("./app/files/RawCsv/tiempos"+tipoId+".csv", 'r')
     lineas = csv.reader(csvFile)
     progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
-    progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas) 
+    progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas)
     csvFile.seek(0)
     progressTotal.save()
     for caso in lineas:
@@ -511,12 +511,12 @@ def saveTiemposBusToDB(lineas):
     id = 0
     tiempos = []
     bulkAmount = 10000
+    lineas,diagonales = lineas[:-1], lineas[-1]
     for i in range(len(lineas)):
         for j in range(len(lineas[i])):
             if i == j:
-                t = SectorTiempoAuto.objects.get(sector_1__shapeid = str(i), sector_2__shapeid = str(j)).tiempo
+                t = float(diagonales[j])
             else:
-                #t = float(lineas[i][j])
                 l = list(map(lambda x: float(x),lineas[i][j].split(';')))
                 t = l[0]*TIEMPO_ESPERA + l[1]*TIEMPO_VIAJE + l[2]*TIEMPO_CAMBIO_PARADA
                 if t < 0:
@@ -786,4 +786,3 @@ def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCe
         auxOptimo.centroOptimoCaminando = centro
         auxOptimo.tHogarCentroCaminando = tHogarCentroCaminando
     return auxOptimo
-    
