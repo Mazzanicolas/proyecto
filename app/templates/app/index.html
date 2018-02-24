@@ -70,13 +70,15 @@
             <div class="alert alert-info" role="alert" id="alertCargandoAutos" style="display:none;border-radius: 0 !important;text-align:center;">
                 Cargando Matriz de tiempos: <strong>Auto</strong>
             </div>
-            <div class="alert alert-info" role="alert" id="alertEjecutando" style="display:none;border-radius: 0 !important;text-align:center;">
-                Calculando: <strong> Ejecutar</strong>
+            <div class="alert alert-info" role="alert" id="alertCalculando" style="display:none;border-radius: 0 !important;text-align:center;">
+                Calculando
+            </div>
+            <div class="alert alert-danger" role="alert" id="alertDatosFaltantes" style="display:none;border-radius: 0 !important;text-align:center;">
+                <strong>Datos faltantes en el sistema:</strong>
             </div>
             <!--Alerts-->
             <!--v-Content-v-->
             <div id="container" style="visibility:hidden"></div>
-            <!--div id="loadingbar" style="visibility:hidden"></div-->
             <!--Cargar-->
             <div class="modal fade" id="cargar_datos">
                 <div class="modal-dialog modal-lg" role="document">
@@ -99,7 +101,7 @@
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation0" name="optionsRadios" value="option7">
-                                            <label class="custom-control-label" for="customControlValidation0">Tipos de transporte</label>
+                                            <label class="custom-control-label" for="customControlValidation0">Tipos de transporte&nbsp;<span id='TTrBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
                                         <!--debug-->
                                     </div>
@@ -111,39 +113,16 @@
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation1" name="optionsRadios" value="option3">
-                                            <label class="custom-control-label" for="customControlValidation1">Matriz tiempos Auto</label>
+                                            <label class="custom-control-label" for="customControlValidation1">Matriz tiempos Auto&nbsp;<span id='MTAuBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
-                                        <!--debug-->
-                                        <!--div id="matrizAutoStatus">
-                                            <div class="progress" id="progressBarMatrizAutoContainer"  style="margin-left:60px;margin-right:80px;margin-bottom:20px;margin-top:20px;">
-                                                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizAuto">
-                                                    <div id="progressBarMatrizAutoPercentage">0%</div>
-                                                </div>
-                                            </div>
-                                            <div style=" margin-left: 325px;"><button type="submit" class="btn btn-primary btn-sm">Cancelar</button></div>
-                                        </div-->
-                                        <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation2" name="optionsRadios" value="option6">
-                                            <label class="custom-control-label" for="customControlValidation2">Matriz tiempos Omnibus</label>
+                                            <label class="custom-control-label" for="customControlValidation2">Matriz tiempos Omnibus&nbsp;<span id='MTOmBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
-                                        <!--debug-->
-                                        <!--div class="progress" id="progressBarMatrizOmnibusContainer" style="visibility: hidden;">
-                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizOmnibus">
-                                                <div id="progressBarMatrizOmnibusPercentage">0%</div>
-                                            </div>
-                                        </div-->
-                                        <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation3" name="optionsRadios" value="option4">
-                                            <label class="custom-control-label" for="customControlValidation3">Matriz tiempos Caminando</label>
+                                            <label class="custom-control-label" for="customControlValidation3">Matriz tiempos Caminando&nbsp;<span id='MTCaBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
-                                        <!--debug--> 
-                                        <!--div class="progress" id="progressBarMatrizCaminandoContainer" style="visibility: hidden;">
-                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarMatrizCaminando">
-                                                <div id="progressBarMatrizCaminandoPercentage">0%</div>
-                                            </div>
-                                        </div-->
                                     </div>                                
                                 </fieldset>
                                 <!--Debuggfield-->
@@ -153,43 +132,23 @@
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation4" name="optionsRadios" value="option1">
-                                            <label class="custom-control-label" for="customControlValidation4">Conjunto de datos de Prestadores&nbsp;<span class="badge badge-success">Cargado</span></label>
+                                            <label class="custom-control-label" for="customControlValidation4">Conjunto de datos de Prestadores&nbsp;<span id='CDPrBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
-                                        <!--debug-->                                
-                                        <!--div class="progress" id="progressBarDatosPrestadoresContainer" style="visibility: hidden;">
-                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPrestadores">
-                                                <div id="progressBarDatosPrestadoresPercentage">0%</div>
-                                            </div>
-                                        </div-->
-                                        <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation5" name="optionsRadios" value="option5">
-                                            <label class="custom-control-label" for="customControlValidation5">Conjunto de datos para Centros&nbsp;<span class="badge badge-success">Cargado</span></label>
+                                            <label class="custom-control-label" for="customControlValidation5">Conjunto de datos para Centros&nbsp;<span id='CDCeBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
-                                        <!--debug-->                               
-                                        <!--div class="progress" id="progressBarDatosCentrosContainer" style="visibility: hidden;">
-                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosCentros">
-                                                <div id="progressBarDatosCentrosPercentage">0%</div>
-                                            </div>
-                                        </div-->
-                                        <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation6" name="optionsRadios" value="option2">
-                                            <label class="custom-control-label" for="customControlValidation6">Conjunto de datos para Personas&nbsp;<span class="badge badge-success">Cargado</span></label>
+                                            <label class="custom-control-label" for="customControlValidation6">Conjunto de datos para Personas&nbsp;<span id='CDPeBadage' class="badge badge-danger"> ! </span></label>
                                         </div>
-                                        <!--debug-->                                  
-                                        <!--div class="progress" id="progressBarDatosPersonasContainer" style="visibility: hidden;">
-                                            <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progressBarDatosPersonas">
-                                                <div id="progressBarDatosPersonasPercentage">0%</div>
-                                            </div>
-                                        </div-->
                                     </div>
                                 </fieldset>
                                 <!--Debuggfield-->
                                 <br><br>
                                 <div class="form-group" style="text-align: center;">
                                     <label for="inputFile">Seleccione un archivo</label>
-                                    <input type="file" class="form-control-file"  name = "inputFile" aria-describedby="fileHelp">
+                                    <input type="file" class="form-control-file" accept=".csv"  name = "inputFile" aria-describedby="fileHelp">
                                     <small id="fileHelp" class="form-text text-muted">Seleccione el archivo en formato csv.</small>
                                 </div>
                             

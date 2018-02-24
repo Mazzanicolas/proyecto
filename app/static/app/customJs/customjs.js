@@ -192,109 +192,126 @@ function askMatrizAutoStatusCheck(){
     var progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 100);
 }*/
 /*sys*/
-window.onload = systemStatus();
+window.onload = daemonRequest();
+
+function daemonRequest(){
+    var progressLoop = setTimeout(function() { processStatusXML(progressLoop); }, 1000);
+}
 
 function systemStatus(){
     console.log("XML Checking System...");
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            console.log("XML response 200 OK")
+            console.log("XML 200")
+            var systemStatusResponse = JSON.parse(this.responseText);  
+        }          
+
+    };
+    xhttp.open("GET", "systemStatus/", true);
+    xhttp.send();
+}
+
+function processStatusXML(progressLoop){
+    console.log("XML Checking Progress...");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("XML 200")
             var systemStatusResponse = JSON.parse(this.responseText);            
             workingProcessId = systemStatusResponse['loadingDataId'] //100 Si nada esta cargando //103 Si tiene algo cargado //0-8 Id del proceso cargando
             processStatus    = systemStatusResponse['status'] //Si se esta haciendo algo siempre >= 0.01
             console.log(workingProcessId);
             console.log(processStatus);
-            eventHandler(workingProcessId,processStatus);
+            progressLoop = setTimeout(function() { processStatusXML(progressLoop); }, 10000);
+            threadStatus = eventHandler(workingProcessId,processStatus);
+            if(threadIsDone(threadStatus)){
+                clearTimeout(progressLoop);
+                console.log("Thread closed")
+            }
         }
     };
     xhttp.open("GET", "systemStatus/", true);
     xhttp.send();
 }
 
-function progressStatus(url){
-    console.log("XML Checking Progress...");
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            console.log("XMLP response 200 OK")
-            var systemStatusResponse = JSON.parse(this.responseText);            
-            processStatus = systemStatusResponse['status'] //Si se esta haciendo algo siempre >= 0.01
-            return processStatus
-        }
-    };
-    xhttp.open("GET", url, true);
-    xhttp.send();
+function threadIsDone(threadStatus){
+    if(threadStatus==0){
+        return true;
+    }
+    return false;
 }
 
 function eventHandler(workingProcessId, processStatus){
+    threadStatus = 0;
     switch(workingProcessId) {
         case 0:
-            isEjecutnadoInit(processStatus);
+            threadStatus = isEjecutnadoInit(processStatus);
             break;
         case 1:
-            isSimulandoInit(processStatus);
+            threadStatus = isSimulandoInit(processStatus);
             break;
         case 100:
-            noFilesFoundInit(processStatus);
+            threadStatus = noFilesFoundInit(processStatus);
             break;
         case 103:
-            filesFoundInit(processStatus);
+            threadStatus = filesFoundInit(processStatus);
             break;        
         case 2:
-            isRecalculandoInit(processStatus);
+            threadStatus = isRecalculandoInit(processStatus);
             break;
         case 3:
-            isCargandoPersonasInit(processStatus);
+            threadStatus = isCargandoPersonasInit(processStatus);
             break;
         case 4:
-            isCargandoCentrosInit(processStatus);
+            threadStatus = isCargandoCentrosInit(processStatus);
             break;
         case 5:
-            isCargandoPrestadoresInit(processStatus);
+            threadStatus = isCargandoPrestadoresInit(processStatus);
             break;
         case 6:
-            isCargandoCaminandoInit(processStatus);
+            threadStatus = isCargandoCaminandoInit(processStatus);
             break;
         case 7:
-            isCargandoOmnibusInit(processStatus);
+            threadStatus = isCargandoOmnibusInit(processStatus);
             break;
         case 8:
-            isCargandoAutoInit(processStatus);
+            threadStatus = isCargandoAutoInit(processStatus);
             break;
         default:
-            console.log("Error no process id found");
+            threadStatus = 0
+            console.log("PID 404");
     }
+    return threadStatus;
 }
 
 function isEjecutnadoInit(processStatus){
-    console.log(typeof processStatus);
-    bar.animate(processStatus);
-    showAlert('alertEjecutando');
-    showLoadingBar();
-    daemonRequest(updateGUIejecutar);
-}
-function updateGUIejecutar(progressLoop){
-    currentStatus = progressStatus('ejecutarProgress/')
-    if(currentStatus>0.999){
+    if(processStatus<0.01){
+        bar.animate(0.01);
+    }else if(processStatus>0.99){
         bar.animate(0);
-        hdieAlert('alertEjecutando');
-        clearTimeout(progressLoop);
+        hideAlert('alertCalculando');
         showDownloadButton();
+        return 0;
     } else {
-        bar.animate(currentStatus);
-        progressLoop = setTimeout(function() { updateGUIejecutar(progressLoop); }, 10000);
+        bar.animate(processStatus);        
     }
+    showAlert('alertCalculando');
+    showLoadingBar();
+    return 1;
 }
 function isSimulandoInit(processStatus){}
+
 function noFilesFoundInit(processStatus){
     hideLoadingBar();
-    hiddeDownloadButton();    
+    hiddeDownloadButton();
+    return 0;
 }
 function filesFoundInit(processStatus){
-    showDownloadButton()
+    showDownloadButton();
     bar.animate(0);
-    showLoadingBar()
+    showLoadingBar();
+    return 0;
 }
 function isRecalculandoInit(processStatus){}
 function isCargandoPersonasInit(processStatus){}
@@ -303,10 +320,6 @@ function isCargandoPrestadores(processStatus){}
 function isCargandoCaminandoInit(processStatus){}
 function isCargandoOmnibusInit(processStatus){}
 function isCargandoAutoInit(processStatus){}
-
-function daemonRequest(currentProcess){
-    var progressLoop = setTimeout(function() { currentProcess(progressLoop); }, 100);
-}
 
 function showLoadingBar(){
     document.getElementById('container').style.visibility = 'visible';
@@ -328,6 +341,25 @@ function showAlert(id){
 function hideAlert(id){
     document.getElementById(id).style.display = 'none';
 }
+
+function changeBadage(dataId,badage){
+    document.getElementById(dataId).className = badage;
+    if(badage=='badge badge-success'){
+        document.getElementById(dataId).innerHTML = 'Cargado';
+    } else {
+        document.getElementById(dataId).innerHTML = 'No Cargado';
+    }
+}
+//changeBadage('CDPeBadage','badge badge-success');
+function showAlertMissingData(dataName){
+    document.getElementById('alertDatosFaltantes').innerHTML += dataName;
+    document.getElementById('alertDatosFaltantes').style.display = 'block';
+}
+function hideAlertMissingData(dataName){
+    document.getElementById('alertDatosFaltantes').innerHTML = '<strong>Datos faltantes en el sistema:</strong>';
+    document.getElementById('alertDatosFaltantes').style.display = 'none';
+}
+showAlertMissingData('dataName');
 /*sys*/
 /*window.onload = calculate();
 

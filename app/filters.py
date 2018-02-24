@@ -37,9 +37,9 @@ class IndividuoTiempoCentroFilter(django_filters.FilterSet):
         fields = ['individuo', 'centro','hora','dia','trabajo','prestador','transporte','tiempoViaje']
 
 class IndividuoFilter(django_filters.FilterSet):
-    individuo = django_filters.NumberFilter(label = 'Filtrar por Individuo', name='id')
+    individuo = django_filters.NumberFilter(label = 'Filtrar por Individuo', name='id', widget=forms.TextInput(attrs={'placeholder': 'ID Individuo'}))
     trabajo =  django_filters.BooleanFilter(label = "Trabaja", name = "tieneTrabajo")
-    jardin =  django_filters.BooleanFilter(label = "Trabaja", name = "tieneJardin")
+    jardin =  django_filters.BooleanFilter(label = "Jardin", name = "tieneJardin")
     prestador = django_filters.filters.ModelMultipleChoiceFilter(
         name='prestador__nombre',
         to_field_name='nombre',

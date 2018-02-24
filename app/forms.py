@@ -54,13 +54,14 @@ class IndHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        Div('individuo','trabajo','jardin'),
-        Div(InlineCheckboxes('prestador')),
-        Div(InlineCheckboxes('transporte')),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('individuo','trabajo','jardin',InlineCheckboxes('prestador'),InlineCheckboxes('transporte')),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 
 class CenHelper(FormHelper):
@@ -69,14 +70,14 @@ class CenHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Centro',
-        'id_centro',InlineCheckboxes('prestador'),'sector_auto','sector_caminando'),
-        ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('id_centro',InlineCheckboxes('prestador'),'sector_auto','sector_caminando'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class AncHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -84,15 +85,14 @@ class AncHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Ancla Temporal',
-        'id',InlineCheckboxes('prestador'),InlineCheckboxes('tipo'),'sector_auto','sector_caminando'),
-        Tab('Hora','hora_inicio','hora_fin')
-        ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(#Error prestador
+                    Div('id',InlineCheckboxes('prestador'),InlineCheckboxes('tipo'),'sector_auto','sector_caminando','hora_inicio','hora_fin'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class IndCenHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -100,14 +100,14 @@ class IndCenHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Individuo-Centro',
-        'individuo', Div('centro')
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('individuo','centro'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class PedHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -115,14 +115,14 @@ class PedHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Pediatra',
-            Div('centro'),InlineCheckboxes('dia'),'hora','cantidad_pediatras'
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('centro',InlineCheckboxes('dia'),'hora','cantidad_pediatras'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class PresHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -130,14 +130,14 @@ class PresHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Prestador',
-            Div('prestador'),
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('prestador'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class SecAutHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -145,8 +145,14 @@ class SecAutHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-                Div('shapeid'),        
-                Div(Submit('submit', 'Aplicar Filtro',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-6',)
+        Div(
+            Div(
+                Div(
+                    Div('shapeid'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class SecCamHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -154,14 +160,14 @@ class SecCamHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Sector Caminando',
-            Div('shapeid'),
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('shapeid'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class SecOmnHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -169,14 +175,14 @@ class SecOmnHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Sector Omnibus',
-            Div('shapeid'),
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('shapeid'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class SecTieAutHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -184,14 +190,14 @@ class SecTieAutHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Tiempos Sectores Auto',
-            Div('sector_1'), Div('sector_2')
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('sector_1','sector_2'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class SecTieCamHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -199,14 +205,14 @@ class SecTieCamHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Tiempos Sectores Caminando',
-            Div('sector_1'), Div('sector_2')
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('sector_1','sector_2'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 class SecTieOmnHelper(FormHelper):
     form_class = 'form-horizontal'
@@ -214,14 +220,14 @@ class SecTieOmnHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Tiempos Sectores Caminando',
-            Div('sectorO_1'), Div('sectorO_2')
-        ) ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('sectorO_1','sectorO_2'),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                ),css_class="card"
+            ),id="filters", css_class="collapse"
+        )
     )
 choices = ((0,"Por defecto"),(1,"Si"),(None,"No"))
 DIAS = (
