@@ -89,8 +89,38 @@ $(document).ready(function(){
             document.getElementById("cbCSV1").disabled = false;
     });
 });
-
-
+//Loading Bar
+/*var loadingBar = new ProgressBar.Circle(loadingbar, {
+    color: '#d6d7d8',
+    // This has to be the same size as the maximum width to
+    // prevent clipping
+    strokeWidth: 7,
+    trailWidth: 1,
+    easing: 'easeInOut',
+    duration: 2500,
+    text: {
+      autoStyleContainer: false
+    },
+    from: { color: '#4158d0', width: 2 },
+    to: { color: '#c850c0', width: 5 },
+    // Set default step function for all animate calls
+    step: function(state, circle) {
+      circle.path.setAttribute('stroke', state.color);
+      circle.path.setAttribute('stroke-width', state.width);
+  
+      var value = Math.round(circle.value() * 100);
+      if (value === 0) {
+        circle.setText('¡Listo!');
+      } else {
+        circle.setText(String(value)+' %');
+      }
+  
+    }
+  });
+  loadingBar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
+  loadingBar.text.style.fontStyle = "italic"
+  loadingBar.text.style.fontSize = '3rem';
+*/
 var bar = new ProgressBar.Circle(container, {
     color: '#d6d7d8',
     // This has to be the same size as the maximum width to
@@ -132,18 +162,24 @@ function getMatrizAutoStatus(progressLoopMatrizAuto) {
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var obj = JSON.parse(this.responseText);
-            var crrnt = ((obj['progressStatus']).toFixed(1)*100);
-            bar.animate(crrnt/100); 
-            document.getElementById("progressBarMatrizAuto").style.width = (crrnt).toString()+"%";
-            document.getElementById("progressBarMatrizAutoPercentage").innerHTML = (crrnt).toString()+"%";
+            var saveStatus = ((obj['progressStatus']).toFixed(2));
             progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 15000);
-            if(crrnt>99){
-                document.getElementById('matrizAutoStatus').style.visibility = 'hidden';
+            console.log(saveStatus);  
+            saveStatus = parseFloat(saveStatus)      
+            if(saveStatus>0){
+                document.getElementById('container').style.visibility = 'visible';
+                bar.animate(saveStatus)                
+                document.getElementById('alertCargandoAutos').style.visibility = 'visible';
+            }
+            if(saveStatus>0.999){
+                bar.animate(0)
+                document.getElementById('container').style.visibility = 'visible';
+                document.getElementById('alertCargandoAutos').style.visibility = 'hidden';
                 clearTimeout(progressLoopMatrizAuto);
             }
-            if(crrnt<0){
-                bar.animate(0); 
-                document.getElementById('progressBarMatrizAutoContainer').style.visibility = 'hidden';
+            if(saveStatus<0){ 
+                document.getElementById('container').style.visibility = 'hidden';
+                document.getElementById('alertCargandoAutos').style.visibility = 'hidden';
                 clearTimeout(progressLoopMatrizAuto);
             }
         }
@@ -155,8 +191,8 @@ function getMatrizAutoStatus(progressLoopMatrizAuto) {
 function askMatrizAutoStatusCheck(){
     var progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 100);
 }
-
-//
+/*sys*/
+/*sys*/
 window.onload = calculate();
 
 function ask2(progressLoop) {
@@ -196,10 +232,10 @@ function calculate(){
 function downloadRedy(){
     document.getElementById('descargar').style.visibility = 'visible';
     document.getElementById('container').style.visibility = 'visible';
-    document.getElementById('alertCalculos').style.visibility = 'visible';
+    document.getElementById('alertCalculos').style.display = 'block';
 }
 function noFileInCache(){
     document.getElementById('container').style.visibility = 'hidden';
-    document.getElementById('alertCalculos').style.visibility = 'hidden';
+    document.getElementById('alertCalculos').style.display= 'none';
 }
 /*Alerts*/
