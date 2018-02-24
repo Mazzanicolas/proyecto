@@ -32,22 +32,33 @@ class IndTieCenHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        TabHolder(
-        Tab('Individuo-Centro',
-        'individuo','trabajo','jardin',
-        Div('centro')
-        ),
-        Tab('Hora-Dia',
-        'hora',InlineCheckboxes('dia')
-        ),
-        Tab('Prestadores', InlineCheckboxes('prestador')),
-        Tab('Transporte', InlineCheckboxes('transporte')),
-        ),
-        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
-        HTML("""
-            <br>    <br>
-        """),
+        Div(
+            Div(
+                Div(
+                    Div('individuo','trabajo','jardin','centro','hora',InlineCheckboxes('dia'),InlineCheckboxes('prestador'),Tab('Transporte', InlineCheckboxes('transporte')),
+                    Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
+                    ),css_class="card"
+                ),id="filters", css_class="collapse"
+            )
+        )
     )
+#    layout = Layout(
+#        TabHolder(
+#        Tab('Individuo-Centro',
+#        'individuo','trabajo','jardin',
+#        Div('centro')
+#        ),
+#        Tab('Hora-Dia',
+#        'hora',InlineCheckboxes('dia')
+#        ),
+#        Tab('Prestadores', InlineCheckboxes('prestador')),
+#        Tab('Transporte', InlineCheckboxes('transporte')),
+#        ),
+#        Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
+#        HTML("""
+#            <br>    <br>
+#        """),
+#    )
 class IndHelper(FormHelper):
     form_class = 'form-horizontal'
     label_class = 'col-lg-2'

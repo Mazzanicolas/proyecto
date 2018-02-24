@@ -12,13 +12,15 @@
         {% bootstrap_css %}
         {% bootstrap_javascript %}        
         <div align="center" style=" box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
-            {% crispy filter.form filter.form.helper %}
+            <button type="button" class="btn input-block-level form-control" data-toggle="collapse" data-target="#filters" style="border-radius: 0 !important;">Filtrar Tabla</button>
             <a class="btn btn-primary" href="{% querystring '_export'='csv' %}"> download as csv</a>
+            {% crispy filter.form filter.form.helper %}
         </div>
         <div align="center" >
             {% render_table table 'django_tables2/bootstrap.html' %}
         </div>
     </body>
     <script src="{% static 'app/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script src="{% static 'app/bootstrap4/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'app/js/jqueryui.js' %}"></script>
 </html>
