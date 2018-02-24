@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from celery import shared_task, group, result
 from celery.result import allow_join_result
 import time
+from math import ceil
 from datetime import timedelta
 from app.models import *
 import app.utils as utils
@@ -104,6 +105,7 @@ def addProgress(sessionKey,amount):
             my_lock.release()
 @shared_task
 def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
+    print("yeaboeENTRE")
     dictTiemposSettings['tiempoMaximo'] = timedelta(minutes = int(dictTiemposSettings.get('tiempoMaximo')))
     dictTiemposSettings['tiempoConsulta'] = timedelta(minutes = int(dictTiemposSettings.get('tiempoConsulta')))
     dictTiemposSettings['tiempoLlega'] = timedelta(minutes = int(dictTiemposSettings.get('tiempoLlega')))
@@ -114,8 +116,10 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
     result = []
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
     if(simParam):
+        print("yeaboe")
         listaCentros = Centro.objects.all()
     else:
+        print("noyeaboe")
         p = dictTiemposSettings['centroPrest']
         if(p == '-1'):
             listaCentros = Centro.objects.all()
@@ -302,6 +306,9 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     horaDate = utils.horaMilToDateTime(hora)
     if(tieneTrabajo and horaDate > inicioTra and horaDate < finTra and trabajo.dias in utils.getListOfDays(trabajo.dias)
             or tieneJardin and horaDate > inicioJar and horaDate < finJar and jardin.dias in utils.getListOfDays(jardin.dias)):
+        print("********************************************************************************************************")
+        print(horaDate,inicioJar,finJar,inicioTra,finTra)
+        print("********************************************************************************************************")
         return -1,"No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(horaDate < inicioTra):
@@ -367,7 +374,11 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
     horaDate = utils.horaMilToDateTime(hora)
 
     if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias) or
-            tieneJardin and horaDate >= inicioJar and finJar and dia in utils.getListOfDays(jardin.dias)):
+            tieneJardin and horaDate >= inicioJar and horaDate < finJar and dia in utils.getListOfDays(jardin.dias)):
+        if(dia == 0 and centro == 101):
+            print("********************************************************************************************************")
+            print(horaDate,inicioJar,finJar,inicioTra,finTra)
+            print("********************************************************************************************************")
         return -1,"No","No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(horaDate < inicioTra):
@@ -603,8 +614,8 @@ def saveIndividuosToDB(lineas):
     sf = shapefile.Reader('app/files/shapeBus.shp')
     shapeBus = sf.shapes()
     recordsBus = sf.records()
-    Individuo.objects.all().delete()
     AnclaTemporal.objects.all().delete()
+    Individuo.objects.all().delete()
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
     dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
     idAncla = 0
@@ -675,10 +686,10 @@ def calcularTiemposMatrix():
     newCalcTimes()
 
 def newCalcTimes():
-    tiempoMaximo   = int(Settings.objects.get(setting = "tiempoMaximo").value)  # Cambiar(Tomar de bd)
-    tiempoConsulta = int(Settings.objects.get(setting = "tiempoConsulta").value) #Cambiar(Tomar de bd)
     individuos     = Individuo.objects.select_related().all()
     centros        = Centro.objects.select_related().all()
+    #individuos = Individuo.objects.all()
+    #centros = Centro.objects.all()
     for individuo in individuos:
         print(individuo.id)
         transporte = individuo.tipo_transporte.id
@@ -696,23 +707,23 @@ def newCalcTimes():
         secTrabajoBus = utils.newGetSector(trabajo,2)
         secJardinBus  = utils.newGetSector(jardin,2)
         ####
-        tHogarTrabajoAuto  = utils.calcularTiempoViaje([secHogarAuto, secTrabajoAuto],1)
-        tHogarJardinAuto   =  utils.calcularTiempoViaje([secHogarAuto, secJardinAuto],1)
-        tJardinTrabajoAuto = utils.calcularTiempoViaje([secJardinAuto, secTrabajoAuto],1)
-        tTrabajoJardinAuto = utils.calcularTiempoViaje([secJardinAuto, secHogarAuto],1)
-        tTrabajoHogarAuto  = utils.calcularTiempoViaje([secTrabajoAuto, secHogarAuto],1)
+        tHogarTrabajoAuto  = ceil(utils.calcularTiempoViaje([secHogarAuto, secTrabajoAuto],1)/60)
+        tHogarJardinAuto   =  ceil(utils.calcularTiempoViaje([secHogarAuto, secJardinAuto],1)/60)
+        tJardinTrabajoAuto = ceil(utils.calcularTiempoViaje([secJardinAuto, secTrabajoAuto],1)/60)
+        tTrabajoJardinAuto = ceil(utils.calcularTiempoViaje([secTrabajoAuto, secJardinAuto],1)/60)
+        tTrabajoHogarAuto  = ceil(utils.calcularTiempoViaje([secTrabajoAuto, secHogarAuto],1)/60)
 #######################
-        tHogarTrabajoCaminando  = utils.calcularTiempoViaje([secHogarCaminando, secTrabajoCaminando],0)
-        tHogarJardinCaminando   =  utils.calcularTiempoViaje([secHogarCaminando, secJardinCaminando],0)
-        tJardinTrabajoCaminando = utils.calcularTiempoViaje([secJardinCaminando, secTrabajoCaminando],0)
-        tTrabajoJardinCaminando = utils.calcularTiempoViaje([secJardinCaminando, secHogarCaminando],0)
-        tTrabajoHogarCaminando  = utils.calcularTiempoViaje([secTrabajoCaminando, secHogarCaminando],0)
+        tHogarTrabajoCaminando  = ceil(utils.calcularTiempoViaje([secHogarCaminando, secTrabajoCaminando],0)/60)
+        tHogarJardinCaminando   =  ceil(utils.calcularTiempoViaje([secHogarCaminando, secJardinCaminando],0)/60)
+        tJardinTrabajoCaminando = ceil(utils.calcularTiempoViaje([secJardinCaminando, secTrabajoCaminando],0)/60)
+        tTrabajoJardinCaminando = ceil(utils.calcularTiempoViaje([secTrabajoCaminando, secJardinCaminando],0)/60)
+        tTrabajoHogarCaminando  = ceil(utils.calcularTiempoViaje([secTrabajoCaminando, secHogarCaminando],0)/60)
 #######################
-        tHogarTrabajoBus  = utils.calcularTiempoViaje([secHogarBus, secTrabajoBus],2)
-        tHogarJardinBus   =  utils.calcularTiempoViaje([secHogarBus, secJardinBus],2)
-        tJardinTrabajoBus = utils.calcularTiempoViaje([secJardinBus, secTrabajoBus],2)
-        tTrabajoJardinBus = utils.calcularTiempoViaje([secJardinBus, secHogarBus],2)
-        tTrabajoHogarBus  = utils.calcularTiempoViaje([secTrabajoBus, secHogarBus],2)
+        tHogarTrabajoBus  = ceil(utils.calcularTiempoViaje([secHogarBus, secTrabajoBus],2)/60)
+        tHogarJardinBus   =  ceil(utils.calcularTiempoViaje([secHogarBus, secJardinBus],2)/60)
+        tJardinTrabajoBus = ceil(utils.calcularTiempoViaje([secJardinBus, secTrabajoBus],2)/60)
+        tTrabajoJardinBus = ceil(utils.calcularTiempoViaje([secTrabajoBus, secJardinBus],2)/60)
+        tTrabajoHogarBus  = ceil(utils.calcularTiempoViaje([secTrabajoBus, secHogarBus],2)/60)
         tiemposCentros = []
         auxOptimo = IndividuoCentroOptimo(individuo = individuo)
         for centro in centros:
@@ -721,37 +732,36 @@ def newCalcTimes():
             secCentroCaminando = utils.newGetSector(centro,0)
             secCentroBus       = utils.newGetSector(centro,2)
 
-            tHogarCentroAuto   = utils.calcularTiempoViaje([secHogarAuto, secCentroAuto],1)
-            tJardinCentroAuto  = utils.calcularTiempoViaje([secJardinAuto, secCentroAuto],1)
-            tCentroHogarAuto   = utils.calcularTiempoViaje([secCentroAuto, secHogarAuto],1)
-            tCentroJardinAuto  = utils.calcularTiempoViaje([secCentroAuto, secJardinAuto],1)
+            tHogarCentroAuto   = ceil(utils.calcularTiempoViaje([secHogarAuto, secCentroAuto],1)/60)
+            tJardinCentroAuto  = ceil(utils.calcularTiempoViaje([secJardinAuto, secCentroAuto],1)/60)
+            tCentroHogarAuto   = ceil(utils.calcularTiempoViaje([secCentroAuto, secHogarAuto],1)/60)
+            tCentroJardinAuto  = ceil(utils.calcularTiempoViaje([secCentroAuto, secJardinAuto],1)/60)
 ####################
-            tHogarCentroCaminando  = utils.calcularTiempoViaje([secHogarCaminando, secCentroCaminando],0)
-            tJardinCentroCaminando = utils.calcularTiempoViaje([secJardinCaminando, secCentroCaminando],0)
-            tCentroHogarCaminando  = utils.calcularTiempoViaje([secCentroCaminando, secHogarCaminando],0)
-            tCentroJardinCaminando = utils.calcularTiempoViaje([secCentroCaminando, secJardinCaminando],0)
+            tHogarCentroCaminando  = ceil(utils.calcularTiempoViaje([secHogarCaminando, secCentroCaminando],0)/60)
+            tJardinCentroCaminando = ceil(utils.calcularTiempoViaje([secJardinCaminando, secCentroCaminando],0)/60)
+            tCentroHogarCaminando  = ceil(utils.calcularTiempoViaje([secCentroCaminando, secHogarCaminando],0)/60)
+            tCentroJardinCaminando = ceil(utils.calcularTiempoViaje([secCentroCaminando, secJardinCaminando],0)/60)
 #########################
-            tHogarCentroBus  = utils.calcularTiempoViaje([secHogarBus, secCentroBus],2)
-            tJardinCentroBus = utils.calcularTiempoViaje([secJardinBus, secCentroBus],2)
-            tCentroHogarBus  = utils.calcularTiempoViaje([secCentroBus, secHogarBus],2)
-            tCentroJardinBus = utils.calcularTiempoViaje([secCentroBus, secJardinBus],2)
-
+            tHogarCentroBus  = ceil(utils.calcularTiempoViaje([secHogarBus, secCentroBus],2)/60)
+            tJardinCentroBus = ceil(utils.calcularTiempoViaje([secJardinBus, secCentroBus],2)/60)
+            tCentroHogarBus  = ceil(utils.calcularTiempoViaje([secCentroBus, secHogarBus],2)/60)
+            tCentroJardinBus = ceil(utils.calcularTiempoViaje([secCentroBus, secJardinBus],2)/60)
             ini = time.time()
-            q = IndividuoCentro(individuo          = individuo , centro = centro, tHogarTrabajoAuto = tHogarTrabajoAuto/60,
-                                tHogarJardinAuto   = tHogarJardinAuto/60,tJardinTrabajoAuto  = tJardinTrabajoAuto/60,
-                                tTrabajoJardinAuto = tTrabajoJardinAuto/60,tTrabajoHogarAuto = tTrabajoHogarAuto/60,
-                                tHogarCentroAuto   = tHogarCentroAuto/60,tJardinCentroAuto   = tJardinCentroAuto/60,
-                                tCentroHogarAuto   = tCentroHogarAuto/60,tCentroJardinAuto   = tCentroJardinAuto/60,
-            tHogarTrabajoCaminando = tHogarTrabajoCaminando/60,
-                                tHogarJardinCaminando   = tHogarJardinCaminando/60,tJardinTrabajoCaminando  = tJardinTrabajoCaminando/60,
-                                tTrabajoJardinCaminando = tTrabajoJardinCaminando/60,tTrabajoHogarCaminando = tTrabajoHogarCaminando/60,
-                                tHogarCentroCaminando   = tHogarCentroCaminando/60,tJardinCentroCaminando   = tJardinCentroCaminando/60,
-                                tCentroHogarCaminando   = tCentroHogarCaminando/60,tCentroJardinCaminando   = tCentroJardinCaminando/60,
-            tHogarTrabajoBus = tHogarTrabajoBus/60,
-                                tHogarJardinBus   = tHogarJardinBus/60,tJardinTrabajoBus  = tJardinTrabajoBus/60,
-                                tTrabajoJardinBus = tTrabajoJardinBus/60,tTrabajoHogarBus = tTrabajoHogarBus/60,
-                                tHogarCentroBus   = tHogarCentroBus/60,tJardinCentroBus   = tJardinCentroBus/60,
-                                tCentroHogarBus   = tCentroHogarBus/60,tCentroJardinBus   = tCentroJardinBus/60)
+            q = IndividuoCentro(individuo          = individuo , centro = centro, tHogarTrabajoAuto = tHogarTrabajoAuto,
+                                tHogarJardinAuto   = tHogarJardinAuto,tJardinTrabajoAuto  = tJardinTrabajoAuto,
+                                tTrabajoJardinAuto = tTrabajoJardinAuto,tTrabajoHogarAuto = tTrabajoHogarAuto,
+                                tHogarCentroAuto   = tHogarCentroAuto,tJardinCentroAuto   = tJardinCentroAuto,
+                                tCentroHogarAuto   = tCentroHogarAuto,tCentroJardinAuto   = tCentroJardinAuto,
+            tHogarTrabajoCaminando = tHogarTrabajoCaminando,
+                                tHogarJardinCaminando   = tHogarJardinCaminando,tJardinTrabajoCaminando  = tJardinTrabajoCaminando,
+                                tTrabajoJardinCaminando = tTrabajoJardinCaminando,tTrabajoHogarCaminando = tTrabajoHogarCaminando,
+                                tHogarCentroCaminando   = tHogarCentroCaminando,tJardinCentroCaminando   = tJardinCentroCaminando,
+                                tCentroHogarCaminando   = tCentroHogarCaminando,tCentroJardinCaminando   = tCentroJardinCaminando,
+            tHogarTrabajoBus = tHogarTrabajoBus,
+                                tHogarJardinBus   = tHogarJardinBus,tJardinTrabajoBus  = tJardinTrabajoBus,
+                                tTrabajoJardinBus = tTrabajoJardinBus,tTrabajoHogarBus = tTrabajoHogarBus,
+                                tHogarCentroBus   = tHogarCentroBus,tJardinCentroBus   = tJardinCentroBus,
+                                tCentroHogarBus   = tCentroHogarBus,tCentroJardinBus   = tCentroJardinBus)
             tiemposCentros.append(q)
             auxOptimo = setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroBus, tHogarCentroCaminando)
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
