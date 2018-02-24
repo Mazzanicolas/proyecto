@@ -219,7 +219,7 @@ def secureUserCreation(request):
     if request.method == "POST":
         if not request.user.is_authenticated or not request.user.is_superuser:
             return HttpResponseForbidden()       
-        
+        helper = UserRegistryHelper()
         form =  UserForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
@@ -399,6 +399,7 @@ def guardarArchivo(nombre, archivo):
 def generateCsvResults(request):
     deleteConsultaResults(request)
     indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
+    print (dictParam,dictSettings)
     utils.writeSettings(request.session.session_key,dictSettings,dictParam)
     asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
     request.session['asyncKey'] = asyncKey.id   
@@ -514,20 +515,17 @@ def calcularTiemposMatrixIndi(request):
     
    # if(not utils.checkStatusesForTiemposMatrix()):
     #    return redirect('index')
-    print("PUTO")
     progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
     progressTotal = Settings.objects.get(setting='totalMatrizIndividuoTiempoCentro')
     progressDone.value  = 0
     progressTotal.value = Individuo.objects.count()*2
     progressDone.save()
     progressTotal.save()
-    print("PUTO2")
     IndividuoTiempoCentro.objects.all().delete()
     IndividuoCentro.objects.all().delete()
+    IndividuoCentroOptimo.objects.all().delete()
     asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
-    print("PUTO3")
     utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
-    print("PUTO4")
     return redirect('index')
 
 def checkCompletedMatrixs():

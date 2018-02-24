@@ -9,17 +9,17 @@ class AnclaTemporal(models.Model):
     hora_inicio = models.IntegerField(blank=True, null=True)
     hora_fin = models.IntegerField(blank=True, null=True)
     dias = models.CharField(max_length = 20)
-    sector_auto = models.ForeignKey('SectorAuto', models.SET_NULL,blank=True, null=True,related_name='sector_auto')
-    sector_caminando = models.ForeignKey('SectorCaminando', models.SET_NULL,blank=True, null=True,related_name='sector_caminando')
-    sector_bus = models.ForeignKey('SectorOmnibus', models.SET_NULL,blank=True, null=True,related_name='sector_omnibus')
+    sector_auto = models.ForeignKey('SectorAuto', models.CASCADE,blank=True, null=True,related_name='sector_auto')
+    sector_caminando = models.ForeignKey('SectorCaminando', models.CASCADE,blank=True, null=True,related_name='sector_caminando')
+    sector_bus = models.ForeignKey('SectorOmnibus', models.CASCADE,blank=True, null=True,related_name='sector_omnibus')
 
 class Centro(models.Model):
     id_centro = models.IntegerField(primary_key = True)
     x_coord = models.FloatField()
     y_coord = models.FloatField()
-    sector_auto = models.ForeignKey('SectorAuto', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_auto')
-    sector_caminando = models.ForeignKey('SectorCaminando', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_caminando')
-    sector_bus = models.ForeignKey('SectorOmnibus', models.SET_NULL,blank=True, null=True,related_name='sectorCentro_omnibus')
+    sector_auto = models.ForeignKey('SectorAuto', models.CASCADE,blank=True, null=True,related_name='sectorCentro_auto')
+    sector_caminando = models.ForeignKey('SectorCaminando', models.CASCADE, blank=True, null=True,related_name='sectorCentro_caminando')
+    sector_bus = models.ForeignKey('SectorOmnibus', models.CASCADE,blank=True, null=True,related_name='sectorCentro_omnibus')
     prestador = models.ForeignKey('Prestador', models.CASCADE)
 
     class Meta:
@@ -36,8 +36,8 @@ class Individuo(models.Model):
     tieneTrabajo    = models.BooleanField()
     prestador       = models.ForeignKey('Prestador', models.CASCADE)
     hogar           = models.ForeignKey(AnclaTemporal, models.CASCADE, related_name='hogar')
-    trabajo         = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='trabajo')
-    jardin          = models.ForeignKey(AnclaTemporal, models.SET_NULL, blank=True, null=True,related_name='jardin')
+    trabajo         = models.ForeignKey(AnclaTemporal, models.CASCADE, blank=True, null=True,related_name='trabajo')
+    jardin          = models.ForeignKey(AnclaTemporal, models.CASCADE, blank=True, null=True,related_name='jardin')
 
     class Meta:
         ordering = ['id']
@@ -133,8 +133,8 @@ class SectorOmnibus(models.Model):
         ordering = ['shapeid']
 
 class SectorTiempoAuto(models.Model):
-    sector_1 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sector_1')
-    sector_2 = models.ForeignKey(SectorAuto, models.SET_NULL, blank=True, null=True,related_name='sector_2')
+    sector_1 = models.ForeignKey(SectorAuto, models.CASCADE, blank=True, null=True,related_name='sector_1')
+    sector_2 = models.ForeignKey(SectorAuto, models.CASCADE, blank=True, null=True,related_name='sector_2')
     tiempo = models.FloatField()
     distancia = models.FloatField(blank=True, null=True)
 
@@ -142,8 +142,8 @@ class SectorTiempoAuto(models.Model):
         unique_together = (('sector_1', 'sector_2'),)
         ordering = ['id']
 class SectorTiempoCaminando(models.Model):
-    sector_1 = models.ForeignKey(SectorCaminando, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_1')
-    sector_2 = models.ForeignKey(SectorCaminando, models.SET_NULL, blank=True, null=True,related_name='sectorCaminando_2')
+    sector_1 = models.ForeignKey(SectorCaminando, models.CASCADE, blank=True, null=True,related_name='sectorCaminando_1')
+    sector_2 = models.ForeignKey(SectorCaminando, models.CASCADE, blank=True, null=True,related_name='sectorCaminando_2')
     tiempo = models.FloatField()
     distancia = models.FloatField(blank=True, null=True)
 
@@ -152,8 +152,8 @@ class SectorTiempoCaminando(models.Model):
         ordering = ['id']
 
 class SectorTiempoOmnibus(models.Model):
-    sectorO_1 = models.ForeignKey(SectorOmnibus, models.SET_NULL, blank=True, null=True,related_name='sectorO_1')
-    sectorO_2 = models.ForeignKey(SectorOmnibus, models.SET_NULL, blank=True, null=True,related_name='sectorO_2')
+    sectorO_1 = models.ForeignKey(SectorOmnibus, models.CASCADE, blank=True, null=True,related_name='sectorO_1')
+    sectorO_2 = models.ForeignKey(SectorOmnibus, models.CASCADE, blank=True, null=True,related_name='sectorO_2')
     tiempo = models.FloatField()
     class Meta:
         unique_together = (('sectorO_1', 'sectorO_2'),)
