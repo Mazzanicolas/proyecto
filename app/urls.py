@@ -35,5 +35,6 @@ urlpatterns = [
     url(r'cancelarCentro/$', views.cancelarCentro, name='cancelarCentro'),
     url(r'CalculateTimeMatrix/$', views.calcularTiemposMatrixIndi, name='calculateTimeMatrix'),
     url(r'^$', views.testing, name='index'),
-    url(r'^progressMatrizAuto/$', views.progressMatrizAuto, name='progressMatrizAuto'),
+    url(r'^systemStatus/$', views.systemStatus, name='systemStatus'),
+    url(r'^ejecutarProgress/$', views.ejecutarProgress, name='ejecutarProgress'),
 ]

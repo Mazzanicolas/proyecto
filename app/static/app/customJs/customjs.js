@@ -153,18 +153,18 @@ var bar = new ProgressBar.Circle(container, {
   bar.text.style.fontSize = '3rem';
 
 /*Consultas XML*/
-
+/*
 window.onload = askMatrizAutoStatusCheck();
 
 function getMatrizAutoStatus(progressLoopMatrizAuto) {
-    console.log("XML CARGADO AUTO")
+    //console.log("XML CARGADO AUTO")
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var obj = JSON.parse(this.responseText);
             var saveStatus = ((obj['progressStatus']).toFixed(2));
             progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 15000);
-            console.log(saveStatus);  
+            //console.log(saveStatus);  
             saveStatus = parseFloat(saveStatus)      
             if(saveStatus>0){
                 document.getElementById('container').style.visibility = 'visible';
@@ -190,20 +190,156 @@ function getMatrizAutoStatus(progressLoopMatrizAuto) {
 
 function askMatrizAutoStatusCheck(){
     var progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 100);
+}*/
+/*sys*/
+window.onload = systemStatus();
+
+function systemStatus(){
+    console.log("XML Checking System...");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("XML response 200 OK")
+            var systemStatusResponse = JSON.parse(this.responseText);            
+            workingProcessId = systemStatusResponse['loadingDataId'] //100 Si nada esta cargando //103 Si tiene algo cargado //0-8 Id del proceso cargando
+            processStatus    = systemStatusResponse['status'] //Si se esta haciendo algo siempre >= 0.01
+            console.log(workingProcessId);
+            console.log(processStatus);
+            eventHandler(workingProcessId,processStatus);
+        }
+    };
+    xhttp.open("GET", "systemStatus/", true);
+    xhttp.send();
+}
+
+function progressStatus(url){
+    console.log("XML Checking Progress...");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("XMLP response 200 OK")
+            var systemStatusResponse = JSON.parse(this.responseText);            
+            processStatus = systemStatusResponse['status'] //Si se esta haciendo algo siempre >= 0.01
+            return processStatus
+        }
+    };
+    xhttp.open("GET", url, true);
+    xhttp.send();
+}
+
+function eventHandler(workingProcessId, processStatus){
+    switch(workingProcessId) {
+        case 0:
+            isEjecutnadoInit(processStatus);
+            break;
+        case 1:
+            isSimulandoInit(processStatus);
+            break;
+        case 100:
+            noFilesFoundInit(processStatus);
+            break;
+        case 103:
+            filesFoundInit(processStatus);
+            break;        
+        case 2:
+            isRecalculandoInit(processStatus);
+            break;
+        case 3:
+            isCargandoPersonasInit(processStatus);
+            break;
+        case 4:
+            isCargandoCentrosInit(processStatus);
+            break;
+        case 5:
+            isCargandoPrestadoresInit(processStatus);
+            break;
+        case 6:
+            isCargandoCaminandoInit(processStatus);
+            break;
+        case 7:
+            isCargandoOmnibusInit(processStatus);
+            break;
+        case 8:
+            isCargandoAutoInit(processStatus);
+            break;
+        default:
+            console.log("Error no process id found");
+    }
+}
+
+function isEjecutnadoInit(processStatus){
+    console.log(typeof processStatus);
+    bar.animate(processStatus);
+    showAlert('alertEjecutando');
+    showLoadingBar();
+    daemonRequest(updateGUIejecutar);
+}
+function updateGUIejecutar(progressLoop){
+    currentStatus = progressStatus('ejecutarProgress/')
+    if(currentStatus>0.999){
+        bar.animate(0);
+        hdieAlert('alertEjecutando');
+        clearTimeout(progressLoop);
+        showDownloadButton();
+    } else {
+        bar.animate(currentStatus);
+        progressLoop = setTimeout(function() { updateGUIejecutar(progressLoop); }, 10000);
+    }
+}
+function isSimulandoInit(processStatus){}
+function noFilesFoundInit(processStatus){
+    hideLoadingBar();
+    hiddeDownloadButton();    
+}
+function filesFoundInit(processStatus){
+    showDownloadButton()
+    bar.animate(0);
+    showLoadingBar()
+}
+function isRecalculandoInit(processStatus){}
+function isCargandoPersonasInit(processStatus){}
+function isCargandoCentrosInit(processStatus){}
+function isCargandoPrestadores(processStatus){}
+function isCargandoCaminandoInit(processStatus){}
+function isCargandoOmnibusInit(processStatus){}
+function isCargandoAutoInit(processStatus){}
+
+function daemonRequest(currentProcess){
+    var progressLoop = setTimeout(function() { currentProcess(progressLoop); }, 100);
+}
+
+function showLoadingBar(){
+    document.getElementById('container').style.visibility = 'visible';
+}
+function hideLoadingBar(){
+    document.getElementById('container').style.visibility = 'hidden';
+}
+function showDownloadButton(){
+    document.getElementById('descargar').style.visibility = 'visible';
+    document.getElementById('alertCalculos').style.display = 'block';
+}
+function hiddeDownloadButton(){
+    document.getElementById('descargar').style.visibility = 'hidden';
+    document.getElementById('alertCalculos').style.display = 'none';
+}
+function showAlert(id){
+    document.getElementById(id).style.display = 'block';
+}
+function hideAlert(id){
+    document.getElementById(id).style.display = 'none';
 }
 /*sys*/
-/*sys*/
-window.onload = calculate();
+/*window.onload = calculate();
 
 function ask2(progressLoop) {
-    console.log("XML CARGADO")
+    //console.log("XML CARGADO")
     var xhttp = new XMLHttpRequest();
     clearTimeout(progressLoop);
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             var obj = JSON.parse(this.responseText);
             var fileStatus = ((parseFloat(obj['Done'])/parseFloat(obj['Total']))).toFixed(2);
-            console.log(typeof fileStatus);        
+            //console.log(typeof fileStatus);        
             fileStatus = parseFloat(fileStatus);
             bar.animate(fileStatus); 
             progressLoop = setTimeout(function() { ask2(progressLoop); }, 10000);
@@ -237,5 +373,5 @@ function downloadRedy(){
 function noFileInCache(){
     document.getElementById('container').style.visibility = 'hidden';
     document.getElementById('alertCalculos').style.display= 'none';
-}
+}*/
 /*Alerts*/

@@ -27,6 +27,26 @@ from django.views.generic import View
 from .forms import UserForm
 from  django.utils.decorators import classonlymethod
 
+def systemStatus(request):
+    current = request.session.get('current',None)
+    total   = request.session.get('total',None)
+    if(current and total and current < total and current >= 0 ):
+        status = calculatePercetage(current,total)
+        data = {'loadingDataId':0,'status':status}
+        return JsonResponse(data)
+    data = {'loadingDataId':404,'status':'0'}
+    return JsonResponse(data)
+
+def ejecutarProgress(request):
+    current = request.session.get('current',None)
+    total   = request.session.get('total',None)
+    if(current and total and current < total and current >= 0 ):
+        status = calculatePercetage(current,total)
+        data = {'loadingDataId':0,'status':status}
+        return JsonResponse(data)
+    data = {'loadingDataId':404,'status':'0'}
+    return JsonResponse(data)
+
 def progressMatrizAuto(request):
     progressDone  = Settings.objects.get(setting='currentMatrizAuto')
     progressTotal = Settings.objects.get(setting='totalMatrizAuto')

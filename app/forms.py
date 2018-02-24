@@ -54,9 +54,9 @@ class IndHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
-        Div('Individuo','individuo','trabajo','jardin'),
-        Div('Prestadores', InlineCheckboxes('prestador')),
-        Div('Transporte', InlineCheckboxes('transporte')),
+        Div('individuo','trabajo','jardin'),
+        Div(InlineCheckboxes('prestador')),
+        Div(InlineCheckboxes('transporte')),
         Div(Submit('submit', 'Apply Filter',css_class='btn-primary'),css_class='col-lg-offset-3 col-lg-9',),
         HTML("""
             <br>    <br>
