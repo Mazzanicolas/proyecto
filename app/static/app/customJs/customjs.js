@@ -156,7 +156,7 @@ function checkLoading(){
         updateStatusLoading('progressMatrizBus/');
     } else if(isProcessing(MTCaStatus)) {
         showAlertText('alertLoading','Matriz de tiempos Caminando');
-        showAlert('cancelarCamiando');
+        showAlert('cancelarCaminando');
         hiddeDownloadButton()
         updateStatusLoading('progressMatrizCaminando/');
     } else if(isProcessing(CDPrStatus)) {
