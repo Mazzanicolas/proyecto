@@ -18,8 +18,8 @@ def getPrestadoresNombres():
     return puto
 def getPrestaresNombresFiltrosSimular():
     return [(-1,"Por defecto"),(-2,"Ignorar")]+ [(x.id,x.nombre) for x in Prestador.objects.all()]
-def createFolderInUsers(directory):
-    directory = './app/files/users/'+direcotry
+def createFolder(directory):
+    #directory = './app/data/'+directory
     if not os.path.exists(directory):
         os.makedirs(directory)
 
@@ -335,8 +335,10 @@ def minsToMil(time):
     hours = time/60
     mins  = time%60
     return int(hours)*100+mins
-def writeSettings(sessionKey,dictSettings,simParams):
-    with open("./app/files/consultOut/Parametros{}.txt".format(str(sessionKey)), "w") as text_file:
+def writeSettings(userId,dictSettings,simParams):
+    baseDirectory = "./app/data/users/user"+userId+"/consultOut/"
+    createFolder(baseDirectory)
+    with open(baseDirectory + "Parametros.txt", "w") as text_file:
         if(simParams):
             text_file.write("Parametros de Simulacion \n")
             if(simParams['tipoTransporte'] == '-1'):

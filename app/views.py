@@ -407,8 +407,8 @@ def generateCsvResults(request):
     deleteConsultaResults(request)
     indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
     print (dictParam,dictSettings)
-    utils.writeSettings(request.session.session_key,dictSettings,dictParam)
-    asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
+    utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
+    asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)],queue = 'delegate')
     request.session['asyncKey'] = asyncKey.id   
     response = redirect('index')
     task_postrun.connect(shutdown_worker, sender=delegator)
@@ -418,23 +418,22 @@ def downloadFile(request):
     if not request.user.is_authenticated:
         return redirect('login')
     sessionKey = request.session.session_key
+    userId = str(request.user.id)
     zip_subdir   = "Resultados"
     zip_filename = "%s.zip" % zip_subdir
     s  = BytesIO()
-    print("Valor isIndividual es: " + str(request.session.get('isIndividual',-40)))
-    print("Valor isResumen es: " + str(request.session.get('isResumen',-40)))
     zf = zipfile.ZipFile(s, "w",zipfile.ZIP_DEFLATED)
     if(not request.session.get('isIndividual',0) == 0):
-        indvPath = './app/files/consultOut/IndividualResult'+sessionKey+'.csv'
+        indvPath = './app/data/users/user'+userId+"/consultOut/"+'IndividualResult.csv'
         fdir, fname = os.path.split(indvPath)
         zip_path    = os.path.join(zip_subdir, 'Resultado individual.csv')
         zf.write(indvPath, zip_path)
     if(not request.session.get('isResumen',0) == 0):
-        resumenPath = './app/files/consultOut/ResumenResult'+sessionKey+'.csv'
+        resumenPath = './app/data/users/user'+userId+"/consultOut/"+'ResumenResult.csv'
         fdir, fname = os.path.split(resumenPath)
         zip_path    = os.path.join(zip_subdir, 'Resumen.csv')
         zf.write(resumenPath, zip_path)
-    parameterPath = './app/files/consultOut/Parametros'+sessionKey+'.txt'
+    parameterPath = './app/data/users/user'+userId+"/consultOut/"+'Parametros.txt'
     fdir, fname = os.path.split(parameterPath)
     zip_path    = os.path.join(zip_subdir, 'Parametros.txt')
     zf.write(parameterPath, zip_path)
@@ -490,8 +489,9 @@ def redirectTable(request):
 def downloadShapeFile(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    path = './app/files/consultOut/IndividualResult'
-    filenames    = generarShape(request, request.session.session_key, path)
+    userId = str(request.user.id)
+    path = './app/data/users/user'+userId+'/consultOut/IndividualResult'
+    filenames    = generarShape(request, userId, path)
     resp = zipFile("Shapefiles",filenames)
     return resp
     #[['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega'],  ..]

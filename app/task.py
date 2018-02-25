@@ -29,7 +29,7 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
                                                                           # con los valores por defecto es 3 minutos.
 
 @shared_task()
-def delegator(get,sessionKey,cookies):
+def delegator(get,sessionKey,cookies,userId):
     session = SessionStore(session_key=sessionKey)
     tiempoInicio = time.time()
     getData      = get
@@ -52,9 +52,12 @@ def delegator(get,sessionKey,cookies):
     session['total'] = len(individuos)*2 + 10 if (isIndividual and isResumen) else len(individuos) + 5
     session.save()
     if(isIndividual):
-        header = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
-        with open('./app/files/consultOut/IndividualResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
+        header = ['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']
+        baseDirectory = './app/data/users/user'+userId+'/consultOut/'
+        utils.createFolder(baseDirectory)
+        with open('IndividualResult.csv', 'w',newline="") as csvFile:
             writer = csv.writer(csvFile)
+            writer.writerow(header)
             for i in range(0,len(individuos),6):
                 nIndividuos = individuos[i:i+6]
                 job = calculateIndividual.chunks(nIndividuos,1).group()
@@ -73,18 +76,20 @@ def delegator(get,sessionKey,cookies):
         with allow_join_result():
             resultList = result.join()
             resultList = sum(sum(resultList,[]), [])
-            saveResumenToCsv(resultList,sessionKey)
+            saveResumenToCsv(resultList,userId)
+    session = SessionStore(session_key=sessionKey)
     session['calculationStatus'] = 1
     session.save()
-    #raise SystemExit()
 
-def saveResumenToCsv(result,sessionKey):
+def saveResumenToCsv(result,userId):
     fieldNames = ['persona', 'cantidadTotalHoras','cantidadHorasLunes','cantidadHorasMartes','cantidadHorasMiercoles', 'cantidadHorasJueves',
                 'cantidadHorasViernes','cantidadHorasSabado', 'cantidadMaximaHoras','cantidadConsultasLunes', 'cantidadConsultasMartes','cantidadConsultasMiercoles',
                 'cantidadConsultasJueves', 'cantidadConsultasViernes','cantidadConsultasSabado','cantidadTotalConsultas', 'cantidadCentrosLunes',
                 'cantidadCentrosMartes','cantidadCentrosMiercoles','cantidadCentrosJueves', 'cantidadCentrosViernes','cantidadCentrosSabado', 'cantidadTotalCentros',
                 'centroOptimo']
-    with open('./app/files/consultOut/ResumenResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
+    baseDirectory = './app/data/users/user'+userId+'/consultOut/'
+    utils.createFolder(baseDirectory)
+    with open(baseDirectory + 'ResumenResult.csv', 'w',newline="") as csvFile:
         writer = csv.DictWriter(csvFile,delimiter = ',',fieldnames = fieldNames)
         writer.writeheader()
         for row in result:
@@ -92,21 +97,23 @@ def saveResumenToCsv(result,sessionKey):
     addProgress(sessionKey,5)
     print("EndOFRESUMENCSV")
 
-def saveCSVfromString(csvAsString,sessionKey):
-    with open('./app/files/consultOut/IndividualResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
-        writer = csv.writer(csvFile)
-        for row in csvAsString:
-            writer.writerow(row)
-    addProgress(sessionKey,5)
-    print("ENDOSINDIVIDUALCSV")
+#def saveCSVfromString(csvAsString,sessionKey):
+#    with open('./a(pp/files/consultOut/IndividualResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
+#        writer = csv.writer(csvFile)
+#        for row in csvAsString:
+#            writer.writerow(row)
+#    addProgress(sessionKey,5)
+#    print("ENDOSINDIVIDUALCSV")
+
 def addProgress(sessionKey,amount):
-    session = SessionStore(session_key=sessionKey)
     have_lock = False
     my_lock = redis.Redis().lock(sessionKey)
     try:
         have_lock = my_lock.acquire(blocking=True)
         if have_lock:
+            session = SessionStore(session_key=sessionKey)
             print("Got lock.")
+            print(session['current'])
             session['current'] = session['current'] + amount if(session.get('current',None)) else amount
             session.save()
         else:
@@ -500,7 +507,9 @@ def saveTiemposToDB(tipo):
     tiempos = []
     init = time.time()
     bulkAmount = 10000
-    csvFile = open("./app/files/RawCsv/tiempos"+tipoId+".csv", 'r')
+    baseDirectory = "./app/data/RawCsv/"
+    utils.createFolder(baseDirectory)
+    csvFile = open(baseDirectory+"tiempos"+tipoId+".csv", 'r')
     lineas = csv.reader(csvFile)
     progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
     progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas)
@@ -529,7 +538,6 @@ def saveTiemposToDB(tipo):
             print(id)
             print(time.time() - init)
             init = time.time()
-            print("Wea "+str(progressDone.value))
             if(tipo == 1):
                 guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
             else:
@@ -585,13 +593,15 @@ def saveTiemposBusToDB(lineas):
     print("Se cargo correctamente el archivo")
 @shared_task
 def saveCentrosToDB(lineas,dict_prestadores):
-    sf = shapefile.Reader('app/files/shapeAuto.shp')
+    baseDirectory = "./app/data/shapes/"
+    utils.createFolder(baseDirectory)
+    sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
     shapeAuto = sf.shapes()
     recordsAuto = sf.records()
-    sf = shapefile.Reader('app/files/shapeCaminando.shp')
+    sf = shapefile.Reader(baseDirectory + "shapeCaminando.shp")
     shapeCaminando = sf.shapes()
     recordsCaminando = sf.records()
-    sf = shapefile.Reader('app/files/shapeBus.shp')
+    sf = shapefile.Reader(baseDirectory + "shapeBus.shp")
     shapeBus = sf.shapes()
     recordsBus = sf.records()
     Pediatra.objects.all().delete()
@@ -636,13 +646,14 @@ def saveCentrosToDB(lineas,dict_prestadores):
     print("Se cargo correctamente el archivo")
 @shared_task
 def saveIndividuosToDB(lineas):
-    sf = shapefile.Reader('app/files/shapeAuto.shp')
+    baseDirectory = 'app/data/shapes/'
+    sf = shapefile.Reader(baseDirectory + 'shapeAuto.shp')
     shapeAuto = sf.shapes()
     recordsAuto = sf.records()
-    sf = shapefile.Reader('app/files/shapeCaminando.shp')
+    sf = shapefile.Reader(baseDirectory + 'shapeCaminando.shp')
     shapeCaminando = sf.shapes()
     recordsCaminando = sf.records()
-    sf = shapefile.Reader('app/files/shapeBus.shp')
+    sf = shapefile.Reader(baseDirectory + 'shapeBus.shp')
     shapeBus = sf.shapes()
     recordsBus = sf.records()
     AnclaTemporal.objects.all().delete()

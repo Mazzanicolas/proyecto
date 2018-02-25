@@ -68,13 +68,15 @@ def cargarTiposTransporte(request):
     print("Se cargo correctamente el archivo")
 
 def cargarSectores():
-    sf = shapefile.Reader('app/files/shapeAuto.shp')
+    baseDirectory = "./app/data/shapes/"
+    utils.createFolder(baseDirectory)
+    sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
     shapeAuto = sf.shapes()
     recordsAuto = sf.records()
-    sf = shapefile.Reader('app/files/shapeCaminando.shp')
+    sf = shapefile.Reader(baseDirectory + "shapeCaminando.shp")
     shapeCaminando = sf.shapes()
     recordsCaminando = sf.records()
-    sf = shapefile.Reader('app/files/shapeBus.shp')
+    sf = shapefile.Reader(baseDirectory + "shapeBus.shp")
     shapeBus = sf.shapes()
     recordsBus = sf.records()
     for i in range(len(shapeAuto)):
@@ -120,7 +122,8 @@ def cargarTiempos(tipo,request):
     else:
         tipoId = "Auto"
     csvfile = request.FILES['inputFile']
-    newCsv = open("./app/files/RawCsv/tiempos"+tipoId+".csv", 'wb')
+    baseDirectory  = "./app/data/RawCsv/"
+    newCsv = open(baseDirectory + "tiempos"+tipoId+".csv", 'wb')
     for chunk in csvfile.chunks():
         newCsv.write(chunk)
     newCsv.close()

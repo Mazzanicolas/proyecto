@@ -10,14 +10,15 @@ def getIDCentroXYCoordDictionary(centros):
         xyCoordCentrosDictionary[centro.id_centro] = [centro.x_coord,centro.y_coord]
     return xyCoordCentrosDictionary
 
-def saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod):
-    directory = 'app/files/shpOut/'
-    shapeWriter.save(directory+fileName+'$'+sessionId)
+def saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod):
+    directory = './app/data/users/user'+userId+'/shpOut/'
+    utils.createFolder(directory)
+    shapeWriter.save(directory+fileName)
     shapeWriter = shapefile.Writer(shapefile.POINT)
-    pathToFilesToDownlaod.extend([directory+fileName+'$'+sessionId+'.shp',directory+fileName+'$'+sessionId+'.shx',directory+fileName+'$'+sessionId+'.dbf'])
+    pathToFilesToDownlaod.extend([directory+fileName+'.shp',directory+fileName+'.shx',directory+fileName+'.dbf'])
     return pathToFilesToDownlaod
 
-def generarShapeLlega(path, fields, xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeLlega(path, fields, xyCoordCentrosDictionary, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -29,9 +30,9 @@ def generarShapeLlega(path, fields, xyCoordCentrosDictionary, fileName, sessionI
                 xCoordCentro,yCoordCentro = xyCoordCentrosDictionary.get(int(individuo[2]))
                 shapeWriter.point(xCoordCentro,yCoordCentro)
                 shapeWriter.record(individuo[0],individuo[2],individuo[3],individuo[4],individuo[5],individuo[6],individuo[7],individuo[9])
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarResumenLlega(path, fields, xyCoordCentrosDictionary, fileName, sessionId, pathToFilesToDownlaod):
+def generarResumenLlega(path, fields, xyCoordCentrosDictionary, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -47,7 +48,7 @@ def generarResumenLlega(path, fields, xyCoordCentrosDictionary, fileName, sessio
                     shapeWriter.point(xCoordCentro,yCoordCentro)
                     shapeWriter.record(individuo[0],individuo[2],dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), '?'))
                     currentIdsInDBF.append(str(individuo[0])+'_'+str(individuo[2]))
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
 def idIsDuplicated(idIndividuoToCheck,idCentroToCheck,listOfIds):
     combinationToCheck = str(idIndividuoToCheck)+'_'+str(idCentroToCheck)
@@ -67,7 +68,7 @@ def getDictionaryCantidadLlega(path):
     return dictionaryOfIdOccurences
 
 
-def generarShapeHogares(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeHogares(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -75,9 +76,9 @@ def generarShapeHogares(fields, individuos, fileName, sessionId, pathToFilesToDo
         xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
         shapeWriter.point(xCoordHogar,yCoordHogar)
         shapeWriter.record(individuo.id)
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarShapeJardines(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeJardines(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 //Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -86,9 +87,9 @@ def generarShapeJardines(fields, individuos, fileName, sessionId, pathToFilesToD
             xCoordJardin,yCoordJardin = individuo.jardin.x_coord, individuo.jardin.y_coord
             shapeWriter.point(xCoordJardin,yCoordJardin)
             shapeWriter.record(individuo.id,individuo.jardin.hora_inicio,individuo.jardin.hora_fin)
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
     
-def generarShapeTrabajos(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeTrabajos(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 #Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -97,9 +98,9 @@ def generarShapeTrabajos(fields, individuos, fileName, sessionId, pathToFilesToD
             xCoordTrabajo,yCoordTrabajo = individuo.trabajo.x_coord, individuo.trabajo.y_coord
             shapeWriter.point(xCoordTrabajo,yCoordTrabajo)
             shapeWriter.record(individuo.id,individuo.trabajo.hora_inicio,individuo.trabajo.hora_fin)
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarShapeCentroOptimoAuto(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeCentroOptimoAuto(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 #Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -108,9 +109,9 @@ def generarShapeCentroOptimoAuto(fields, individuos, fileName, sessionId, pathTo
         xCoordCentroAuto,yCoordCentroAuto = centroOptimo.centroOptimoAuto.x_coord, centroOptimo.centroOptimoAuto.y_coord
         shapeWriter.point(xCoordCentroAuto,yCoordCentroAuto)
         shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroAuto))
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 #Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -119,9 +120,9 @@ def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, sessionId, pat
         xCoordCentroOmnibus,yCoordCentroOmnibus = centroOptimo.centroOptimoOmnibus.x_coord, centroOptimo.centroOptimoOmnibus.y_coord
         shapeWriter.point(xCoordCentroOmnibus,yCoordCentroOmnibus)
         shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroOmnibus))
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarShapeCentroOptimoCaminando(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeCentroOptimoCaminando(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     shapeWriter = shapefile.Writer(shapefile.POINT)
     #shapeWriter.autoBalance = 1 #Descomentar en release
     shapeWriter = createShapeFields(shapeWriter,fields)
@@ -130,9 +131,9 @@ def generarShapeCentroOptimoCaminando(fields, individuos, fileName, sessionId, p
         xCoordCentroCaminando,yCoordCentroCaminando = centroOptimo.centroOptimoCaminando.x_coord, centroOptimo.centroOptimoCaminando.y_coord
         shapeWriter.point(xCoordCentroCaminando,yCoordCentroCaminando)
         shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroCaminando))
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     lineParts = []        
     shapeWriter = shapefile.Writer(shapefile.POLYLINE)
     #shapeWriter.autoBalance = 1 #Descomentar en release
@@ -145,9 +146,9 @@ def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, sessionId, pa
         shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroAuto))
         shapeWriter.line(parts=lineParts)
         lineParts=[]
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def genrerarShapeLineaHogarCentroOmnibus(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def genrerarShapeLineaHogarCentroOmnibus(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     lineParts = []
     shapeWriter = shapefile.Writer(shapefile.POLYLINE)
     #shapeWriter.autoBalance = 1 #Descomentar en release
@@ -160,9 +161,9 @@ def genrerarShapeLineaHogarCentroOmnibus(fields, individuos, fileName, sessionId
         shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroOmnibus))
         shapeWriter.line(parts=lineParts)
         lineParts=[]
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
-def generarShapeLineaHogarCentroCaminando(fields, individuos, fileName, sessionId, pathToFilesToDownlaod):
+def generarShapeLineaHogarCentroCaminando(fields, individuos, fileName, userId, pathToFilesToDownlaod):
     lineParts = []
     shapeWriter = shapefile.Writer(shapefile.POLYLINE)
     #shapeWriter.autoBalance = 1 #Descomentar en release
@@ -175,7 +176,7 @@ def generarShapeLineaHogarCentroCaminando(fields, individuos, fileName, sessionI
         shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroCaminando))
         shapeWriter.line(parts=lineParts)
         lineParts=[]
-    saveShapeFiles(fileName, sessionId, shapeWriter, pathToFilesToDownlaod)
+    saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
 def createShapeFields(shapeWriter,fields):
     for field in fields:
@@ -203,44 +204,48 @@ def llega(indivudoCentroDiaHora):
     return False
 
 def writeCsvFile(afile):
-    path = './app/files/shpOut/Llega.csv'
+    baseDirectory = './app/data/shpOut/'
+    utils.createFolder(baseDirectory)
+    path = './app/data/shpOut/Llega.csv'
     with open(path, 'w', newline='') as temporalFile:
         writer = csv.writer(temporalFile)
         writer.writerows(afile)
     return path
 
-def generarShape(request,sessionId,pathToSourceData):
-    utils.cleanAllFolderFiles('./app/files/shpOut/')
+def generarShape(request,userId,pathToSourceData):
+    baseDirectory = './app/data/users/user'+userId+'/shpOut/'
+    utils.createFolder(baseDirectory)
+    utils.cleanAllFolderFiles('./app/data/users/user'+userId+'/shpOut/')
     values = request.GET
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = Individuo.objects.all()
     pathToFilesToDownlaod = []
     if('generar_llega' in values):
-        path = pathToSourceData+sessionId+'.csv'
+        path = pathToSourceData+'.csv'
         temporalFilePath = llegaToCsv(path)
-        generarShapeLlega(temporalFilePath, ['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],xyCoordCentrosDictionary,'Llega', sessionId, pathToFilesToDownlaod)
+        generarShapeLlega(temporalFilePath, ['IDHogar','IDCentro','IDPrestador','Transporte','DiasLlega','Hora','TiempoDeViaje','CantidadDePediatras'],xyCoordCentrosDictionary,'Llega', userId, pathToFilesToDownlaod)
     if('generar_resumen_llega' in values):
-        path = pathToSourceData+sessionId+'.csv'
+        path = pathToSourceData+'.csv'
         temporalFilePath = llegaToCsv(path)
-        generarResumenLlega(temporalFilePath,['IDHogar','IDCentro','CantidadLlega'],xyCoordCentrosDictionary,'LlegaResumido', sessionId, pathToFilesToDownlaod)
+        generarResumenLlega(temporalFilePath,['IDHogar','IDCentro','CantidadLlega'],xyCoordCentrosDictionary,'LlegaResumido', userId, pathToFilesToDownlaod)
     if('generar_hogares' in  values):
-        generarShapeHogares(['IDHogar'], individuos, 'Hogares', sessionId, pathToFilesToDownlaod)
+        generarShapeHogares(['IDHogar'], individuos, 'Hogares', userId, pathToFilesToDownlaod)
     if('generar_jardines' in  values):
-        generarShapeJardines(['IDHogar','HoraInicio','HoraFin'], individuos, 'Jardines', sessionId, pathToFilesToDownlaod)
+        generarShapeJardines(['IDHogar','HoraInicio','HoraFin'], individuos, 'Jardines', userId, pathToFilesToDownlaod)
     if('generar_trabajos' in  values):
-        generarShapeTrabajos(['IDHogar','HoraInicio','HoraFin'], individuos, 'Trabajos', sessionId, pathToFilesToDownlaod)
+        generarShapeTrabajos(['IDHogar','HoraInicio','HoraFin'], individuos, 'Trabajos', userId, pathToFilesToDownlaod)
     if('generar_autos' in  values):
-        generarShapeCentroOptimoAuto(['IDHogar','IDCentroOptimoAuto','TiempoAuto'], individuos, 'CentrosOptimosAuto', sessionId, pathToFilesToDownlaod)
+        generarShapeCentroOptimoAuto(['IDHogar','IDCentroOptimoAuto','TiempoAuto'], individuos, 'CentrosOptimosAuto', userId, pathToFilesToDownlaod)
     if('generar_omnibus' in  values):
-        generarShapeCentroOptimoOmnibus(['IDHogar','IDCentroOptimoOmnibus','TiempoOmnibus'], individuos, 'CentrosOptimosOmnibus', sessionId, pathToFilesToDownlaod)
+        generarShapeCentroOptimoOmnibus(['IDHogar','IDCentroOptimoOmnibus','TiempoOmnibus'], individuos, 'CentrosOptimosOmnibus', userId, pathToFilesToDownlaod)
     if('generar_caminando' in  values):
-        generarShapeCentroOptimoCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'CentrosOptimosCaminando', sessionId, pathToFilesToDownlaod)
+        generarShapeCentroOptimoCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'CentrosOptimosCaminando', userId, pathToFilesToDownlaod)
     if('generar_hogar_autos' in  values):
-        generarShapeLineaHogarCentroAuto(['IDHogar','IDCentroOptimoAuto','TiempoAuto'], individuos, 'LineaHogarCentrosOptimosAuto', sessionId, pathToFilesToDownlaod)
+        generarShapeLineaHogarCentroAuto(['IDHogar','IDCentroOptimoAuto','TiempoAuto'], individuos, 'LineaHogarCentrosOptimosAuto', userId, pathToFilesToDownlaod)
     if('generar_hogar_omnibus' in  values):
-        genrerarShapeLineaHogarCentroOmnibus(['IDHogar','IDCentroOptimoOmnibus','TiempoOmnibus'], individuos, 'LineaHogarCentrosOptimosOmnibus', sessionId, pathToFilesToDownlaod)
+        genrerarShapeLineaHogarCentroOmnibus(['IDHogar','IDCentroOptimoOmnibus','TiempoOmnibus'], individuos, 'LineaHogarCentrosOptimosOmnibus', userId, pathToFilesToDownlaod)
     if('generar_hogar_caminando' in  values):
-        generarShapeLineaHogarCentroCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'LineaHogarCentrosOptimosCaminando', sessionId, pathToFilesToDownlaod)
+        generarShapeLineaHogarCentroCaminando(['IDHogar','IDCentroOptimoCaminando','TiempoCaminando'], individuos, 'LineaHogarCentrosOptimosCaminando', userId, pathToFilesToDownlaod)
     return pathToFilesToDownlaod
 
 def removeCsvHeader(aFile):
