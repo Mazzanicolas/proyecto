@@ -1,5 +1,7 @@
-/* Init alertas */
-
+/* Init tooltips*/
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+})
 
 /*Checkeo de errores, validacion*/
 
