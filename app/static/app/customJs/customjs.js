@@ -147,28 +147,34 @@ function checkLoading(){
     } else if(isProcessing(MTAuStatus)) {        
         showAlertText('alertLoading','Matriz de tiempos Auto');
         showAlert('cancelarAuto');
+        hiddeDownloadButton()
         updateStatusLoading('progressMatrizAuto/');
     } else if(isProcessing(MTOmStatus)) {
         showAlertText('alertLoading','Matriz de tiempos Omnibus');
         showAlert('cancelarOmnibus');
+        hiddeDownloadButton()
         updateStatusLoading('progressMatrizBus/');
     } else if(isProcessing(MTCaStatus)) {
         showAlertText('alertLoading','Matriz de tiempos Caminando');
         showAlert('cancelarCamiando');
+        hiddeDownloadButton()
         updateStatusLoading('progressMatrizCaminando/');
     } else if(isProcessing(CDPrStatus)) {
         //updateStatusLoading('/');
     } else if(isProcessing(CDCeStatus)) {
         showAlertText('alertLoading','Conjunto de datos para Centros');
         showAlert('cancelarCentro');
+        hiddeDownloadButton()
         updateStatusLoading('progressCentro/');
     } else if(isProcessing(CDPeStatus)) {
         showAlertText('alertLoading','Conjunto de datos para Individuos');
         showAlert('cancelarAuto');
+        hiddeDownloadButton()
         updateStatusLoading('progressIndividuo/');
     } else if(isProcessing(ReStatus)) {
         showAlertText('alertLoading','Datos nuevos en el sistema');
         showAlert('cancelarRecalculado');
+        hiddeDownloadButton()
         updateStatusLoading('progressIndividuoTiempoCentro/');
     } else {
         console.log('Nothing Loading');
