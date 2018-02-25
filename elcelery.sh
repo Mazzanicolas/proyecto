@@ -1,1 +1,1 @@
-celery -A proyecto worker -Q CalculationQueue,delegate --concurrency 2
+celery -A proyecto worker -Q CalculationQueue --concurrency 2
