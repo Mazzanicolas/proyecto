@@ -134,7 +134,7 @@ class SimPersonTable(TestPersonTable):
         sequence = ('individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','llega')
 class FilteredPersonListView(LoginRequiredMixin,ExportMixin,PagedFilteredTableView):
     table_class = TestPersonTable
-    template_name = 'app/filterTable.html'
+    template_name = 'app/filterTableDownload.html'
     paginate_by = 200
     filter_class = IndividuoTiempoCentroFilter
     formhelper_class = IndTieCenHelper

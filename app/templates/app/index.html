@@ -113,7 +113,15 @@
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation1" name="optionsRadios" value="option3">
-                                            <label class="custom-control-label" for="customControlValidation1">Matriz tiempos Auto&nbsp;<span id='MTAuBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation1">Matriz tiempos Auto&nbsp;
+                                                {% if statuses.0 == 1 %}
+                                                    <span id='MTAuBadage' class="badge badge-success">Cargado</span>
+                                                {% elif statuses.0 == 0 %}
+                                                    <span id='MTAuBadage' class="badge badge-info">Cargando</span>
+                                                {% else %}
+                                                    <span id='MTAuBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}
+                                            </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation2" name="optionsRadios" value="option6">
