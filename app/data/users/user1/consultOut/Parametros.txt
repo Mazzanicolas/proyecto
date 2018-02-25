@@ -6,4 +6,4 @@ Prestador: Por Defecto
 Dias: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo 
 Desde Las: 0 
 Hasta Las: 23 
-Individuos: 1, 2, 3, 50, 120, 500, 5000 
+Individuos: 1, 2, 3, 50, 120 

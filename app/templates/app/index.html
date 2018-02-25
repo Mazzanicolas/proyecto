@@ -14,7 +14,7 @@
     <body>
         <div class="container-background">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="#">Proyecto</a>
+                <a class="navbar-brand" href="/app/">Proyecto</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
                 </button>
@@ -81,8 +81,8 @@
                 <strong>¡Descarga Lista!</strong> Calculos realizados exitosamente.
             </div>
             <!--Alert-loading-->
-            <div class="alert alert-info" role="alert" id="alertCargandoAutos" style="display:none;border-radius: 0 !important;text-align:center;">
-                Cargando Matriz de tiempos: <strong>Auto</strong>
+            <div class="alert alert-info" role="alert" id="alertLoading" style="display:none;border-radius: 0 !important;text-align:center;">
+                <strong>Cargando</strong>: 
             </div>
             <div class="alert alert-info" role="alert" id="alertCalculando" style="display:none;border-radius: 0 !important;text-align:center;">
                 Calculando
@@ -443,7 +443,7 @@
         </div>        
     </body>
     <!--v-Variables-v-->
-    <script> //Potato security
+    <script> //Alta security
         var TTrStatus  = '{{statuses.6}}';
         var MTAuStatus = '{{statuses.0}}';
         var MTOmStatus = '{{statuses.2}}';
