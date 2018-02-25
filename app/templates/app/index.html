@@ -38,9 +38,23 @@
                     <li class="nav-item">
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#ejecutar">Ejecutar</a></li>
                     </li>
+                    {% if statuses.8 == 1 %}
+                        <li class="nav-item">
+                            <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar">Descargar</a></li>
+                        </li>
+                    {% else %}
+                        <li class=  "nav-item">
+                            <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar" style="display:none">Descargar</a></li>
+                        </li>
+                    {% endif %}
+                    <!--DEBug-->
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar" style="visibility:hidden">Descargar</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarAuto/">Cancelar</a></li>
                     </li>
+                    <li class="nav-item">
+                        <li><a class="nav-link navbar-brand" href="cancelarCalculos/">Cancelar Calculado</a></li>
+                    </li>
+                    <!--DEBug-->
                 </ul>
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item dropdown">

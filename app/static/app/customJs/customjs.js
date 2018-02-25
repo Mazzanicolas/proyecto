@@ -129,6 +129,7 @@ window.onload = checkCurrentStatus();
 function checkCurrentStatus(){
     if(isCalculando(currentProgress)){
         console.log('Calculando ...');
+        bar.animate(0.01);
         showAlert('alertCalculando');
         updateStatus();
     } else {
@@ -145,7 +146,6 @@ function isCalculando(status){
 
 function updateStatus(){
     var progressLoop = setTimeout(function() { progressStatus('progressCalculation/',progressLoop); }, 5000);
-    //progressStatus('progressCalculation/',progressLoop);
     showLoadingBar();
 }
 
@@ -154,10 +154,9 @@ function progressStatus(url,progressLoop){
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            console.log("XMLP response 200 OK");
             var systemStatusResponse = JSON.parse(this.responseText);          
             processStatus = systemStatusResponse['progressStatus']
-            if(!(progressStatus>0)){bar.animate(processStatus);}
+            if(processStatus>0){bar.animate(processStatus);}
             progressLoop = setTimeout(function() { progressStatus(url,progressLoop); }, 5000);
             console.log(processStatus);
             if(threadIsDone(processStatus)){
@@ -186,11 +185,11 @@ function hideLoadingBar(){
     document.getElementById('container').style.visibility = 'hidden';
 }
 function showDownloadButton(){
-    document.getElementById('descargar').style.visibility = 'visible';
+    document.getElementById('descargar').style.display = 'block';
     document.getElementById('alertCalculos').style.display = 'block';
 }
 function hiddeDownloadButton(){
-    document.getElementById('descargar').style.visibility = 'hidden';
+    document.getElementById('descargar').style.display = 'block';
     document.getElementById('alertCalculos').style.display = 'none';
 }
 function showAlert(id){
