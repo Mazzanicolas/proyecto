@@ -25,9 +25,6 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
                                                                           # con los valores por defecto es 3 minutos.
 
 def cargarCentroPediatras(request):
-    taskId = Settings.objects.get(setting = "asyncKeyCentro").value
-    if(taskId):
-        revoke(taskId,terminate = True)
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
     res, lineas = checkCentroPediatras(request,dict_prestadores)
@@ -97,9 +94,6 @@ def cargarSectores():
         sector.save()
 
 def cargarIndividuoAnclas(requestf):
-    taskId = Settings.objects.get(setting = "asyncKeyIndividuo").value
-    if(taskId):
-        revoke(taskId,terminate = True)
     prestadores = [x.id for x in Prestador.objects.all()]
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
     dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
@@ -129,9 +123,6 @@ def cargarTiempos(tipo,request):
         tipoId = "Caminando"
     else:
         tipoId = "Auto"
-    taskId = Settings.objects.get(setting = "asyncKey"+tipoId).value
-    if(taskId):
-        revoke(taskId,terminate = True)
     csvfile = request.FILES['inputFile']
     baseDirectory  = "./app/data/RawCsv/"
     utils.createFolder(baseDirectory)
@@ -157,9 +148,6 @@ def cargarTiemposBus(request):
     res, lineas = checkTiemposBus(request)
     if not res:
         return lineas
-    taskId = Settings.objects.get(setting = "asyncKeyBus").value
-    if(taskId):
-        revoke(taskId,terminate = True)
     status  = Settings.objects.get(setting='statusMatrizBus')
     status.value  = 0
     status.save()

@@ -7,35 +7,88 @@ from celery.contrib.abortable import AbortableAsyncResult
 
 def cancelarCentro(request):
     asyncTask = result.AsyncResult(id = Settings.objects.get(setting = 'asyncKeyCentro').value)
-    asyncTask.revoke(terminate = True)
-    status = Settings.objects.get(setting = 'statusMatrizCentro')
+    if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
+        asyncTask.abort()
+    else:
+        status  = Settings.objects.get(setting='statusMatrizCentro')
+        status.value  =  -1
+        status.save()
+        return
+    if(request):
+        return redirect('index')
+    return None
+    #asyncTask.revoke(terminate = True)
+    #status = Settings.objects.get(setting = 'statusMatrizCentro')
 
 def cancelarIndividuo(request):
     asyncTask = result.AsyncResult(id = Settings.objects.get(setting = 'asyncKeyIndividuo').value)
-    asyncTask.revoke(terminate = True)
-    status = Settings.objects.get(setting = 'statusMatrizIndividuo')
+    if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
+        asyncTask.abort()
+    else:
+        status  = Settings.objects.get(setting='statusMatrizIndividuo')
+        status.value  =  -1
+        status.save()
+        return
+    if(request):
+        return redirect('index')
+    return None
+    #asyncTask.revoke(terminate = True)
+    #status = Settings.objects.get(setting = 'statusMatrizIndividuo')
 
 def cancelarAuto(request):
     
     asyncTask =  AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyAuto').value)
-    asyncTask.abort()
-    #asyncTask.revoke(terminate = True)
-    #status = Settings.objects.get(setting = 'statusMatrizAuto')
-    #revoke(Settings.objects.get(setting = 'asyncKeyAuto').value,  terminate=True)
+    if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
+        asyncTask.abort()
+    else:
+        status  = Settings.objects.get(setting='statusMatrizAuto')
+        status.value  =  -1
+        status.save()
+        return
     if(request):
         return redirect('index')
     return None
 def cancelarCaminando(request):
     asyncTask = result.AsyncResult(id = Settings.objects.get(setting = 'asyncKeyCaminando').value)
-    asyncTask.revoke(terminate = True)
-    status = Settings.objects.get(setting = 'statusMatrizCaminando')
+    if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
+        asyncTask.abort()
+    else:
+        status  = Settings.objects.get(setting='statusMatrizCaminando')
+        status.value  =  -1
+        status.save()
+        return
+    if(request):
+        return redirect('index')
+    return None
+    #asyncTask.revoke(terminate = True)
+    #status = Settings.objects.get(setting = 'statusMatrizCaminando')
 
 def cancelarBus(request):
     asyncTask = result.AsyncResult(id = Settings.objects.get(setting = 'asyncKeyBus').value)
-    asyncTask.revoke(terminate = True)
-    status = Settings.objects.get(setting = 'statusMatrizBus')
+    if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
+        asyncTask.abort()
+    else:
+        status  = Settings.objects.get(setting='statusMatrizBus')
+        status.value  =  -1
+        status.save()
+        return
+    if(request):
+        return redirect('index')
+    return None
+    #asyncTask.revoke(terminate = True)
+    #status = Settings.objects.get(setting = 'statusMatrizBus')
 
 def cancelarIndividuoTiempoCentro(request):
     asyncTask = result.AsyncResult(id = Settings.objects.get(setting = 'asyncKeyIndividuosTiempoCentros').value)
-    asyncTask.revoke(terminate = True)
-    status = Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro')
+    if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
+        asyncTask.abort()
+    else:
+        status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+        status.value  =  -1
+        status.save()
+        return
+    if(request):
+        return redirect('index')
+    return None
+    #asyncTask.revoke(terminate = True)
+    #status = Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro')

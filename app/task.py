@@ -520,7 +520,6 @@ def saveTiemposToDB(self,tipo):
         csvFile.seek(0)
         progressTotal.save()
         for caso in lineas:
-            print(self.is_aborted())
             if(id == -1):
                 id +=1
                 continue
@@ -537,6 +536,11 @@ def saveTiemposToDB(self,tipo):
             id +=1
             tiempos.append(tiempo)
             if(id % bulkAmount == 0):
+                if(self.is_aborted()):
+                    status  = Settings.objects.get(setting='statusMatriz'+tipoId)
+                    status.value  =  -1
+                    status.save()
+                    return
                 progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
                 progressDone.value  = float(progressDone.value) + bulkAmount
                 progressDone.save()
@@ -549,6 +553,11 @@ def saveTiemposToDB(self,tipo):
                     guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
                 tiempos = []
         if(tiempos):
+            if(self.is_aborted()):
+                status  = Settings.objects.get(setting='statusMatriz'+tipoId)
+                status.value  =  -1
+                status.save()
+                return
             if(tipo == 1):
                 guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
             else:
@@ -562,8 +571,9 @@ def saveTiemposToDB(self,tipo):
         print("Se cargo correctamente el archivo")
     except Terminated:
         print("Task was terminated")
-@shared_task
-def saveTiemposBusToDB(lineas):
+
+@shared_task( bind=True, base=AbortableTask)
+def saveTiemposBusToDB(self,lineas):
     SectorTiempoOmnibus.objects.all().delete()
     id = 0
     tiempos = []
@@ -582,7 +592,11 @@ def saveTiemposBusToDB(lineas):
             tiempos.append(tiempo)
             id +=1
             if(id % bulkAmount == 0):
-                print(id)
+                if(self.is_aborted()):
+                    status  = Settings.objects.get(setting='statusMatrizBus')
+                    status.value  =  -1
+                    status.save()
+                    return
                 guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
                 tiempos = []
                 progressDone  = Settings.objects.get(setting='currentMatrizBus')
@@ -590,16 +604,22 @@ def saveTiemposBusToDB(lineas):
                 progressDone.save()
                 print(id)
     if(tiempos != list()):
+        if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizBus')
+            status.value  =  -1
+            status.save()
+            return
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
         progressDone  = Settings.objects.get(setting='currentMatrizBus')
         progressDone.value  = float(progressDone.value) + bulkAmount
         progressDone.save()
-        status  = Settings.objects.get(setting='statusMatrizBus')
-        status.value  = 1
-        status.save()
+    status  = Settings.objects.get(setting='statusMatrizBus')
+    status.value  = 1
+    status.save()
     print("Se cargo correctamente el archivo")
-@shared_task
-def saveCentrosToDB(lineas,dict_prestadores):
+
+@shared_task( bind=True, base=AbortableTask)
+def saveCentrosToDB(self,lineas,dict_prestadores):
     baseDirectory = "./app/data/shapes/"
     utils.createFolder(baseDirectory)
     sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
@@ -643,6 +663,12 @@ def saveCentrosToDB(lineas,dict_prestadores):
                     print(caso)
                 pediatras.append(Pediatra(centro_id = id_centro, dia = i, hora = utils.parsear_hora(j), cantidad_pediatras = cantPediatras))
                 contador_dias +=1
+        if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizCentro')
+            status.value  =  -1
+            status.save()
+            return
+        centro.save()
         Pediatra.objects.bulk_create(pediatras)
         progressDone  = Settings.objects.get(setting='currentMatrizCentro')
         progressDone.value  = float(progressDone.value) + 1
@@ -651,8 +677,8 @@ def saveCentrosToDB(lineas,dict_prestadores):
     status.value  = 1
     status.save()
     print("Se cargo correctamente el archivo")
-@shared_task
-def saveIndividuosToDB(lineas):
+@shared_task( bind=True, base=AbortableTask)
+def saveIndividuosToDB(self, lineas):
     baseDirectory = 'app/data/shapes/'
     sf = shapefile.Reader(baseDirectory + 'shapeAuto.shp')
     shapeAuto = sf.shapes()
@@ -678,6 +704,11 @@ def saveIndividuosToDB(lineas):
             anclaJardin.sector_auto      = utils.getSectorForPoint(anclaJardin, shapeAuto,recordsAuto, SectorAuto)
             anclaJardin.sector_caminando = utils.getSectorForPoint(anclaJardin,shapeCaminando,recordsCaminando, SectorCaminando)
             anclaJardin.sector_bus       = utils.getSectorForPoint(anclaJardin, shapeBus, recordsBus, SectorOmnibus)
+            if(self.is_aborted()):
+                status  = Settings.objects.get(setting='statusMatrizIndividuo')
+                status.value  =  -1
+                status.save()
+                return
             anclaJardin.save()
             idAncla +=1
             tieneJardin = True
@@ -689,6 +720,11 @@ def saveIndividuosToDB(lineas):
             anclaTrabajo.sector_auto      = utils.getSectorForPoint(anclaTrabajo, shapeAuto,recordsAuto, SectorAuto)
             anclaTrabajo.sector_caminando = utils.getSectorForPoint(anclaTrabajo,shapeCaminando,recordsCaminando, SectorCaminando)
             anclaTrabajo.sector_bus       = utils.getSectorForPoint(anclaTrabajo, shapeBus, recordsBus, SectorOmnibus)
+            if(self.is_aborted()):
+                status  = Settings.objects.get(setting='statusMatrizIndividuo')
+                status.value  =  -1
+                status.save()
+                return
             anclaTrabajo.save()
             idAncla +=1
             tieneTrabajo = True
@@ -699,12 +735,17 @@ def saveIndividuosToDB(lineas):
         anclaHogar.sector_auto      = utils.getSectorForPoint(anclaHogar, shapeAuto,recordsAuto, SectorAuto)
         anclaHogar.sector_caminando = utils.getSectorForPoint(anclaHogar,shapeCaminando,recordsCaminando, SectorCaminando)
         anclaHogar.sector_bus       = utils.getSectorForPoint(anclaHogar, shapeBus, recordsBus, SectorOmnibus)
-        anclaHogar.save()
         idAncla +=1
         ## Individuo
         #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
         individuo  = Individuo(id = int(caso[0]),tipo_transporte = dicc_transporte.get(caso[19]),prestador = Prestador.objects.get(id =int(caso[1])),
                     hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
+        if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  =  -1
+            status.save()
+            return
+        anclaHogar.save()
         individuo.save()
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
         progressDone.value  = float(progressDone.value) + 1
@@ -714,8 +755,8 @@ def saveIndividuosToDB(lineas):
     status.value  = 1
     status.save()
 
-@shared_task
-def calcularTiemposMatrix():
+@shared_task( bind=True, base=AbortableTask)
+def calcularTiemposMatrix(self):
     individuos = Individuo.objects.all()
     centros = Centro.objects.all()
     id = 0
@@ -728,13 +769,18 @@ def calcularTiemposMatrix():
                 q = IndividuoTiempoCentro(id = id,individuo = individuo,centro=centro,dia = consulta.dia,hora = consulta.hora,cantidad_pediatras = consulta.cantidad_pediatras)
                 listaHoras.append(q)
                 id = id+1
+        if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  =  -1
+            status.save()
+            return
         IndividuoTiempoCentro.objects.bulk_create(listaHoras)
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
         progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
-    newCalcTimes()
+    newCalcTimes(self)
 
-def newCalcTimes():
+def newCalcTimes(self):
     individuos     = Individuo.objects.select_related().all()
     centros        = Centro.objects.select_related().all()
     #individuos = Individuo.objects.all()
