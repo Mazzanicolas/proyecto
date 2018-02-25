@@ -35,7 +35,7 @@ def cargarCentroPediatras(request):
     status.save()
     progressDone  = Settings.objects.get(setting='currentMatrizCentro')
     progressTotal = Settings.objects.get(setting='totalMatrizCentro')
-    progressDone.value  = 0
+    progressDone.value  = 0.1
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
@@ -102,7 +102,7 @@ def cargarIndividuoAnclas(requestf):
     status.save()
     progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
     progressTotal = Settings.objects.get(setting='totalMatrizIndividuo')
-    progressDone.value  = 0
+    progressDone.value  = 0.1
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
@@ -131,7 +131,7 @@ def cargarTiempos(tipo,request):
     status.value  = 0
     status.save()
     progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-    progressDone.value  = 0
+    progressDone.value  = 0.1
     progressDone.save()
     print("ENTRANDO")
     asyncKey = saveTiemposToDB.apply_async(args=[tipo],queue = 'CalculationQueue')
@@ -146,7 +146,7 @@ def cargarTiemposBus(request):
     status.save()
     progressDone  = Settings.objects.get(setting='currentMatrizBus')
     progressTotal = Settings.objects.get(setting='totalMatrizBus')
-    progressDone.value  = 0
+    progressDone.value  = 0.1
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()

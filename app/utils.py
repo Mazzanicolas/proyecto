@@ -166,15 +166,16 @@ def getDeltaTiempos(individuo,centro,tipoTrans):
         tipoTrans = individuo.tipo_transporte.id
     tiemposDict = dict()
     tipoTrans = int(tipoTrans)
-    tiemposDict['tHogarCentro'] = timedelta(minutes  = getTHogarCentro(tipoTrans,tiempos))
-    tiemposDict['tHogarTrabajo'] = timedelta(minutes = getTHogarTrabajo(tipoTrans,tiempos))
-    tiemposDict['tHogarJardin'] = timedelta(minutes  = getTHogarJardin(tipoTrans,tiempos))
-    tiemposDict['tCentroHogar'] = timedelta(minutes  = getTCentroHogar(tipoTrans,tiempos))
-    tiemposDict['tCentroJardin'] = timedelta(minutes = getTCentroJardin(tipoTrans,tiempos))
-    tiemposDict['tTrabajoJardin']= timedelta(minutes = getTTrabajoJardin(tipoTrans,tiempos))
-    tiemposDict['tTrabajoHogar']= timedelta(minutes = getTTrabajoHogar(tipoTrans,tiempos))
-    tiemposDict['tJardinTrabajo']= timedelta(minutes = getTJardinTrabajo(tipoTrans,tiempos))
-    tiemposDict['tJardinCentro']= timedelta(minutes = getTJardinCentro(tipoTrans,tiempos))
+    tiemposDict['tHogarCentro'  ] = timedelta(minutes = getTHogarCentro(tipoTrans,   tiempos))
+    tiemposDict['tHogarTrabajo' ] = timedelta(minutes = getTHogarTrabajo(tipoTrans,  tiempos))
+    tiemposDict['tHogarJardin'  ] = timedelta(minutes = getTHogarJardin(tipoTrans,   tiempos))
+    tiemposDict['tCentroHogar'  ] = timedelta(minutes = getTCentroHogar(tipoTrans,   tiempos))
+    tiemposDict['tCentroJardin' ] = timedelta(minutes = getTCentroJardin(tipoTrans,  tiempos))
+    tiemposDict['tTrabajoJardin'] = timedelta(minutes = getTTrabajoJardin(tipoTrans, tiempos))
+    tiemposDict['tTrabajoHogar' ] = timedelta(minutes = getTTrabajoHogar(tipoTrans,  tiempos))
+    tiemposDict['tJardinHogar'  ] = timedelta(minutes = getTJardinHogar(tipoTrans,   tiempos))
+    tiemposDict['tJardinTrabajo'] = timedelta(minutes = getTJardinTrabajo(tipoTrans, tiempos))
+    tiemposDict['tJardinCentro' ] = timedelta(minutes = getTJardinCentro(tipoTrans,  tiempos))
     return tiemposDict
 def getTHogarCentro(tipoTrans,tiempos):
     if(tipoTrans == 2):
@@ -239,6 +240,14 @@ def getTJardinTrabajo(tipoTrans,tiempos):
         return tiempos.tJardinTrabajoCaminando
     else:
         return tiempos.tJardinTrabajoAuto
+
+def getTJardinHogar(tipoTrans,tiempos):
+    if(tipoTrans == 2):
+        return tiempos.tJardinHogarBus
+    elif (tipoTrans == 0):
+        return tiempos.tJardinHogarCaminando
+    else:
+        return tiempos.tJardinHogarAuto
 
 def getTJardinCentro(tipoTrans,tiempos):
     if(tipoTrans == 2):
@@ -441,3 +450,19 @@ def horaMilToDateTime(hora):
 
 def proTime(hora,minutes):
     return horaMilToDateTime(hora) + timedelta(minutes)
+
+def vuelveHogar(salidaDelAncla,tAnclaHogar,tHogarCentro,tAnclaCentro,hora,tiReLle,tiempoMaximo):
+    horaLlegadaDesdeHogar = salidaDelAncla + tAnclaHogar + timedelta(minutes = 30) + tHogarCentro
+    if (horaLlegadaDesdeHogar <= hora + tiReLle):
+        if(tHogarCentro <= tiempoMaximo):
+            return "Si",tHogarCentro
+        else:
+            if(tAnclaCentro <= tiempoMaximo):
+                return "Si", tAnclaCentro
+            else:
+                return "No", tHogarCentro
+    else:
+        if(tAnclaCentro < tiempoMaximo):
+            return "Si",tAnclaCentro
+        else:
+            return "No",tAnclaCentro

@@ -26,14 +26,17 @@ from django.contrib.auth import authenticate, login
 from django.views.generic import View
 from .forms import UserForm
 from  django.utils.decorators import classonlymethod
+from celery.signals import task_postrun
 
 def systemStatus(request):
     current = request.session.get('current',None)
     total   = request.session.get('total',None)
-    if(current and total and current < total and current >= 0 ):
+    cp = utils.getOrCreateSettigs('currentProcess',-404)      
+    if(current and total and current >= 0 ):
         status = calculatePercetage(current,total)
         data = {'loadingDataId':0,'status':status}
         return JsonResponse(data)
+    setting = Settings.objects.get('statusMatrizAuto')
     data = {'loadingDataId':404,'status':'0'}
     return JsonResponse(data)
 
@@ -56,10 +59,7 @@ def progressMatrizAuto(request):
     data = {"progressStatus":done}
     return JsonResponse(data)
 
-def calculatePercetage(lhs,rhs):
-    if(int(rhs) <= 0 ):
-        return 0
-    return int(lhs)/int(rhs)
+
 def cancelarCentro(request):
     asyncTask = result.AsyncResult(id = Setting.objects.get(key = 'AsyncKeyCentro'))
     asyncTask.revoke(terminate = True)
@@ -161,7 +161,12 @@ def testing(request):
     simularForm = SimularForm()
     simularHelper = SimularHelper()
     username = request.user.username
-    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username }
+    statuses = {0:Settings.objects.get(setting = 'statusMatrizAuto'),                  1:Settings.objects.get(setting = 'statusMatrizCaminando'), 
+                2:Settings.objects.get(setting = 'statusMatrizBus'),                   3:Settings.objects.get(setting = 'statusMatrizIndividuo'),             
+                4:Settings.objects.get(setting = 'statusMatrizCentro'),                5:Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro'), 
+                6:request.session.get('calculationStatus', -1)
+        }
+    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username, 'statuses':statuses }
     response = render(request, 'app/index.html',context)
     response.set_cookie(key = 'tiempoMaximo',  value = maxT)
     response.set_cookie(key = 'tiempoConsulta',value = consT)
@@ -404,6 +409,7 @@ def generateCsvResults(request):
     asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES],queue = 'delegate')
     request.session['asyncKey'] = asyncKey.id   
     response = redirect('index')
+    task_postrun.connect(shutdown_worker, sender=delegator)
     return response
 
 def downloadFile(request):
@@ -511,22 +517,29 @@ def plot(request):
         return redirect('login')
     return render(request,'app/plot.html')
 
+def shutdown_worker(**kwargs):
+    raise SystemExit()
+
 def calcularTiemposMatrixIndi(request):
     
    # if(not utils.checkStatusesForTiemposMatrix()):
     #    return redirect('index')
     progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
     progressTotal = Settings.objects.get(setting='totalMatrizIndividuoTiempoCentro')
-    progressDone.value  = 0
+    progressDone.value  = 0.1
     progressTotal.value = Individuo.objects.count()*2
     progressDone.save()
     progressTotal.save()
     IndividuoTiempoCentro.objects.all().delete()
     IndividuoCentro.objects.all().delete()
     IndividuoCentroOptimo.objects.all().delete()
+    progressStatus = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+    progressStatus.value = 0
+    progressStatus.save()
     asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
     utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
     return redirect('index')
+
 
 def checkCompletedMatrixs():
     timAutStatus = utils.getOrCreateSettigs('statusMatrizAuto',-1)

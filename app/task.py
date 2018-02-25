@@ -51,14 +51,21 @@ def delegator(get,sessionKey,cookies):
     session['total'] = len(individuos)*2 + 10 if (isIndividual and isResumen) else len(individuos) + 5
     session.save()
     if(isIndividual):
-        job = calculateIndividual.chunks(individuos,1).group()
-        resultado = job.apply_async(queue = "CalculationQueue")
         header = [['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']]
-        with allow_join_result():
-            resultList = resultado.join()
-            resultList =  header + sum(sum(resultList,[]), [])
-            saveCSVfromString(resultList,sessionKey)
-
+        with open('./app/files/consultOut/IndividualResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
+            writer = csv.writer(csvFile)
+            for i in range(0,len(individuos),6):
+                nIndividuos = individuos[i:i+6]
+                job = calculateIndividual.chunks(nIndividuos,1).group()
+                resultado = job.apply_async(queue = "CalculationQueue")
+                with allow_join_result():
+                    resultList = resultado.join()
+                    resultList = sum(sum(resultList,[]), [])
+                    for row in resultList:
+                        writer.writerow(row)
+                #saveCSVfromString(resultList,sessionKey)
+        addProgress(sessionKey,5)
+        print("ENDOSINDIVIDUALCSV")
     if(isResumen):
         job = suzuki.chunks(individuos,1).group()
         result = job.apply_async(queue = "CalculationQueue")
@@ -66,6 +73,7 @@ def delegator(get,sessionKey,cookies):
             resultList = result.join()
             resultList = sum(sum(resultList,[]), [])
             saveResumenToCsv(resultList,sessionKey)
+    #raise SystemExit()
 
 def saveResumenToCsv(result,sessionKey):
     fieldNames = ['persona', 'cantidadTotalHoras','cantidadHorasLunes','cantidadHorasMartes','cantidadHorasMiercoles', 'cantidadHorasJueves',
@@ -116,10 +124,8 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
     result = []
     daysList = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}
     if(simParam):
-        print("yeaboe")
         listaCentros = Centro.objects.all()
     else:
-        print("noyeaboe")
         p = dictTiemposSettings['centroPrest']
         if(p == '-1'):
             listaCentros = Centro.objects.all()
@@ -306,9 +312,6 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     horaDate = utils.horaMilToDateTime(hora)
     if(tieneTrabajo and horaDate > inicioTra and horaDate < finTra and trabajo.dias in utils.getListOfDays(trabajo.dias)
             or tieneJardin and horaDate > inicioJar and horaDate < finJar and jardin.dias in utils.getListOfDays(jardin.dias)):
-        print("********************************************************************************************************")
-        print(horaDate,inicioJar,finJar,inicioTra,finTra)
-        print("********************************************************************************************************")
         return -1,"No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(horaDate < inicioTra):
@@ -322,7 +325,9 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
                     horaTerCons1 = horaDate + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
                     horaTerCons2  = finJar + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= inicioTra and finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle and hasPed  and samePrest) else "No"
+                    if(horaViajeMasConsulta <= inicioTra and finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle):
+                        llegaG, resultTimpo = utils.vuelveHogar(finJar,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)
+                    resultLlega = "Si" if (llegaG == "Si" and hasPed  and samePrest) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlega
             else:
                 resultTimpo =tiempos['tHogarCentro']
@@ -336,18 +341,24 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
                     horaTerCons1 = horaDate + tiempoConsulta + tiempos['tCentroJardin']
                     horaTerCons2 =finTra + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= inicioJar and finTra + resultTimpo <= horaDate + tiReLle and hasPed  and samePrest) else "No"
+                    if(horaViajeMasConsulta <= inicioJar and finTra + resultTimpo <= horaDate + tiReLle):
+                        llegaG, resultTimpo = utils.vuelveHogar(finTra,tiempos['tTrabajoHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)
+                    resultLlega = "Si" if (llegaG == "Si" and hasPed  and samePrest) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlega
 
                 else:
                     resultTimpo =tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
                     horaLlegadaJardin =finTra + tiempos['tTrabajoJardin']
                     horaSalidaJardin = finJar if (horaLlegadaJardin <= finJar) else horaLlegadaJardin
-                    resultLlega = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate + tiReLle and hasPed   and samePrest) else "No"
+                    if(horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate + tiReLle ):
+                        llegaG,resultTimpo = utils.vuelveHogar(horaSalidaJardin,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)
+                    resultLlega = "Si" if (llegaG == "Si" and hasPed   and samePrest) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlega
             else:
                 resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and finTra + resultTimpo <= horaDate +tiReLle and hasPed  and samePrest) else "No"
+                if(finTra + resultTimpo <= horaDate +tiReLle):
+                        llegaG,resultTimpo = utils.vuelveHogar(finTra,tiempos['tTrabajoHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)
+                resultLlega = "Si" if (llegaG == "Si" and hasPed  and samePrest) else "No"
                 return resultTimpo.total_seconds() / 60,resultLlega
     else:
         if(jardin and dia in utils.getListOfDays(jardin.dias)):
@@ -357,7 +368,9 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
                 return resultTimpo.total_seconds() / 60,resultLlega
             else:
                 resultTimpo =tiempos['tHogarJardin']+ tiempos['tJardinCentro']
-                resultLlega = "Si" if (resultTimpo<=tiempoMaximo and finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle and hasPed and samePrest) else "No"
+                if(finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle):
+                        llegaG,resultTimpo = utils.vuelveHogar(finJar,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)
+                resultLlega = "Si" if (llegaG and hasPed and samePrest) else "No"
                 return resultTimpo.total_seconds() / 60,resultLlega
         else:
             resultTimpo =tiempos['tHogarCentro']
@@ -375,10 +388,6 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
 
     if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias) or
             tieneJardin and horaDate >= inicioJar and horaDate < finJar and dia in utils.getListOfDays(jardin.dias)):
-        if(dia == 0 and centro == 101):
-            print("********************************************************************************************************")
-            print(horaDate,inicioJar,finJar,inicioTra,finTra)
-            print("********************************************************************************************************")
         return -1,"No","No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(horaDate < inicioTra):
@@ -392,10 +401,13 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                 else:
                     #TODO: VER AFTER LUNES
                     resultTimpo = tiempos['tHogarJardin'] + tiempos['tJardinCentro']
+                    vuelveHogar = utils.vuelveHogar()
                     horaTerCons1 = horaDate + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
                     horaTerCons2  = finJar + tiempos['tJardinCentro'] + tiempoConsulta + tiempos['tCentroHogar'] + tiempos['tHogarTrabajo']
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta <= inicioTra and finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle) else "No"
+                    resultLlegaG = "Si" if (horaViajeMasConsulta <= inicioTra and finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle) else "No"
+                    if(resultLlegaG == "Si"):
+                        resultLlegaG,resultTimpo = utils.vuelveHogar(finJar,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)                        
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
@@ -413,7 +425,9 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                     horaTerCons1 = horaDate + tiempoConsulta + tiempos['tCentroJardin']
                     horaTerCons2 = finTra + tiempos['tTrabajoHogar'] + tiempos['tHogarCentro'] + tiempoConsulta + tiempos['tCentroJardin']
                     horaViajeMasConsulta = max(horaTerCons1, horaTerCons2)
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and horaViajeMasConsulta<= inicioJar and finTra + resultTimpo <= horaDate + tiReLle) else "No"
+                    resultLlegaG = "Si" if (horaViajeMasConsulta<= inicioJar and finTra + resultTimpo <= horaDate + tiReLle) else "No"
+                    if(resultLlegaG == "Si"):
+                        resultLlegaG,resultTimpo = utils.vuelveHogar(finTra,tiempos['tTrabajoHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)                        
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
@@ -422,13 +436,17 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                     resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
                     horaLlegadaJardin = finTra + tiempos['tTrabajoJardin']
                     horaSalidaJardin = finJar if (horaLlegadaJardin <= finJar) else horaLlegadaJardin
-                    resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and  horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate, tiReLle) else "No"
+                    resultLlegaG = "Si" if (horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate, tiReLle) else "No"
+                    if(resultLlegaG == "Si"):
+                        resultLlegaG,resultTimpo = utils.vuelveHogar(horaSalidaJardin,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)                        
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                     resultLlega = "Si" if (BoolLlega) else "No"
                     return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
             else:
                 resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
                 resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and finTra + resultTimpo <= horaDate + tiReLle) else "No"
+                if(resultLlegaG == "Si"):
+                        resultLlegaG,resultTimpo = utils.vuelveHogar(finTra,tiempos['tTrabajoHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)      
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
@@ -443,6 +461,8 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             else:
                 resultTimpo = tiempos['tHogarJardin']+ tiempos['tJardinCentro']
                 resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and finJar + tiempos['tJardinCentro'] <= horaDate + tiReLle) else "No"
+                if(resultLlegaG == "Si"):
+                        resultLlegaG,resultTimpo = utils.vuelveHogar(finJar,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo) 
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
                 resultLlega = "Si" if (BoolLlega) else "No"
                 return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
@@ -510,7 +530,7 @@ def saveTiemposToDB(tipo):
         else:
             guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
     progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-    progressDone.value  = int(progressDone.value) + bulkAmount
+    progressDone.value  = float(progressDone.value) + bulkAmount
     progressDone.save()
     status  = Settings.objects.get(setting='statusMatriz'+tipoId)
     status.value  = 1
@@ -540,13 +560,13 @@ def saveTiemposBusToDB(lineas):
                 guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
                 tiempos = []
                 progressDone  = Settings.objects.get(setting='currentMatrizBus')
-                progressDone.value  = int(progressDone.value) + bulkAmount
+                progressDone.value  = float(progressDone.value) + bulkAmount
                 progressDone.save()
                 print(id)
     if(tiempos != list()):
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
         progressDone  = Settings.objects.get(setting='currentMatrizBus')
-        progressDone.value  = int(progressDone.value) + bulkAmount
+        progressDone.value  = float(progressDone.value) + bulkAmount
         progressDone.save()
         status  = Settings.objects.get(setting='statusMatrizBus')
         status.value  = 1
@@ -597,7 +617,7 @@ def saveCentrosToDB(lineas,dict_prestadores):
                 contador_dias +=1
         Pediatra.objects.bulk_create(pediatras)
         progressDone  = Settings.objects.get(setting='currentMatrizCentro')
-        progressDone.value  = int(progressDone.value) + 1
+        progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
     status  = Settings.objects.get(setting='statusMatrizCentro')
     status.value  = 1
@@ -658,7 +678,7 @@ def saveIndividuosToDB(lineas):
                     hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
         individuo.save()
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
-        progressDone.value  = int(progressDone.value) + 1
+        progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
     print("Se cargo correctamente el archivo")
     status  = Settings.objects.get(setting='statusMatrizIndividuo')
@@ -681,7 +701,7 @@ def calcularTiemposMatrix():
                 id = id+1
         IndividuoTiempoCentro.objects.bulk_create(listaHoras)
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
-        progressDone.value  = int(progressDone.value) + 1
+        progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
     newCalcTimes()
 
@@ -692,80 +712,88 @@ def newCalcTimes():
     #centros = Centro.objects.all()
     for individuo in individuos:
         print(individuo.id)
-        transporte = individuo.tipo_transporte.id
-        trabajo    = individuo.trabajo
-        jardin     = individuo.jardin
-        secHogarAuto   = utils.newGetSector(individuo.hogar,1)
-        secTrabajoAuto = utils.newGetSector(trabajo,1)
-        secJardinAuto  = utils.newGetSector(jardin,1)
+        transporte     = individuo.tipo_transporte.id
+        trabajo        = individuo.trabajo
+        jardin         = individuo.jardin
+        secHogarAuto   = utils.newGetSector(individuo.hogar, 1)
+        secTrabajoAuto = utils.newGetSector(trabajo,         1)
+        secJardinAuto  = utils.newGetSector(jardin,          1)
         ######
-        secHogarCaminando   = utils.newGetSector(individuo.hogar,0)
-        secTrabajoCaminando = utils.newGetSector(trabajo,0)
-        secJardinCaminando  = utils.newGetSector(jardin,0)
+        secHogarCaminando   = utils.newGetSector(individuo.hogar, 0)
+        secTrabajoCaminando = utils.newGetSector(trabajo,         0)
+        secJardinCaminando  = utils.newGetSector(jardin,          0)
         #####
-        secHogarBus   = utils.newGetSector(individuo.hogar,2)
-        secTrabajoBus = utils.newGetSector(trabajo,2)
-        secJardinBus  = utils.newGetSector(jardin,2)
+        secHogarBus   = utils.newGetSector(individuo.hogar, 2)
+        secTrabajoBus = utils.newGetSector(trabajo,         2)
+        secJardinBus  = utils.newGetSector(jardin,          2)
         ####
-        tHogarTrabajoAuto  = ceil(utils.calcularTiempoViaje([secHogarAuto, secTrabajoAuto],1)/60)
-        tHogarJardinAuto   =  ceil(utils.calcularTiempoViaje([secHogarAuto, secJardinAuto],1)/60)
-        tJardinTrabajoAuto = ceil(utils.calcularTiempoViaje([secJardinAuto, secTrabajoAuto],1)/60)
-        tTrabajoJardinAuto = ceil(utils.calcularTiempoViaje([secTrabajoAuto, secJardinAuto],1)/60)
-        tTrabajoHogarAuto  = ceil(utils.calcularTiempoViaje([secTrabajoAuto, secHogarAuto],1)/60)
+        tHogarTrabajoAuto  = ceil(utils.calcularTiempoViaje([secHogarAuto,   secTrabajoAuto],  1)/60)
+        tHogarJardinAuto   = ceil(utils.calcularTiempoViaje([secHogarAuto,   secJardinAuto],   1)/60)
+        tJardinTrabajoAuto = ceil(utils.calcularTiempoViaje([secJardinAuto,  secTrabajoAuto],  1)/60)
+        tJardinHogarAuto   = ceil(tuils.calcularTiempoViaje([secJardinAuto,  secHogarAuto],    1)/60)
+        tTrabajoJardinAuto = ceil(utils.calcularTiempoViaje([secTrabajoAuto, secJardinAuto],   1)/60)
+        tTrabajoHogarAuto  = ceil(utils.calcularTiempoViaje([secTrabajoAuto, secHogarAuto],    1)/60)
 #######################
-        tHogarTrabajoCaminando  = ceil(utils.calcularTiempoViaje([secHogarCaminando, secTrabajoCaminando],0)/60)
-        tHogarJardinCaminando   =  ceil(utils.calcularTiempoViaje([secHogarCaminando, secJardinCaminando],0)/60)
-        tJardinTrabajoCaminando = ceil(utils.calcularTiempoViaje([secJardinCaminando, secTrabajoCaminando],0)/60)
-        tTrabajoJardinCaminando = ceil(utils.calcularTiempoViaje([secTrabajoCaminando, secJardinCaminando],0)/60)
-        tTrabajoHogarCaminando  = ceil(utils.calcularTiempoViaje([secTrabajoCaminando, secHogarCaminando],0)/60)
+        tHogarTrabajoCaminando  = ceil(utils.calcularTiempoViaje([secHogarCaminando,   secTrabajoCaminando],  0)/60)
+        tHogarJardinCaminando   = ceil(utils.calcularTiempoViaje([secHogarCaminando,   secJardinCaminando],   0)/60)
+        tJardinTrabajoCaminando = ceil(utils.calcularTiempoViaje([secJardinCaminando,  secTrabajoCaminando],  0)/60)
+        tJardinHogarCaminando   = ceil(tuils.calcularTiempoViaje([secJardinCaminando,  secHogarCaminando],    0)/60)
+        tTrabajoJardinCaminando = ceil(utils.calcularTiempoViaje([secTrabajoCaminando, secJardinCaminando],   0)/60)
+        tTrabajoHogarCaminando  = ceil(utils.calcularTiempoViaje([secTrabajoCaminando, secHogarCaminando],    0)/60)
 #######################
-        tHogarTrabajoBus  = ceil(utils.calcularTiempoViaje([secHogarBus, secTrabajoBus],2)/60)
-        tHogarJardinBus   =  ceil(utils.calcularTiempoViaje([secHogarBus, secJardinBus],2)/60)
-        tJardinTrabajoBus = ceil(utils.calcularTiempoViaje([secJardinBus, secTrabajoBus],2)/60)
-        tTrabajoJardinBus = ceil(utils.calcularTiempoViaje([secTrabajoBus, secJardinBus],2)/60)
-        tTrabajoHogarBus  = ceil(utils.calcularTiempoViaje([secTrabajoBus, secHogarBus],2)/60)
+        tHogarTrabajoBus  = ceil(utils.calcularTiempoViaje([secHogarBus,   secTrabajoBus], 2)/60)
+        tHogarJardinBus   = ceil(utils.calcularTiempoViaje([secHogarBus,   secJardinBus],  2)/60)
+        tJardinTrabajoBus = ceil(utils.calcularTiempoViaje([secJardinBus,  secTrabajoBus], 2)/60)
+        tJardinHogarBus   = ceil(tuils.calcularTiempoViaje([secJardinBus,  secHogarBus],   2)/60)
+        tTrabajoJardinBus = ceil(utils.calcularTiempoViaje([secTrabajoBus, secJardinBus],  2)/60)
+        tTrabajoHogarBus  = ceil(utils.calcularTiempoViaje([secTrabajoBus, secHogarBus],   2)/60)
         tiemposCentros = []
         auxOptimo = IndividuoCentroOptimo(individuo = individuo)
         for centro in centros:
             aux = time.time()
-            secCentroAuto      = utils.newGetSector(centro,1)
-            secCentroCaminando = utils.newGetSector(centro,0)
-            secCentroBus       = utils.newGetSector(centro,2)
+            secCentroAuto      = utils.newGetSector(centro, 1)
+            secCentroCaminando = utils.newGetSector(centro, 0)
+            secCentroBus       = utils.newGetSector(centro, 2)
 
-            tHogarCentroAuto   = ceil(utils.calcularTiempoViaje([secHogarAuto, secCentroAuto],1)/60)
-            tJardinCentroAuto  = ceil(utils.calcularTiempoViaje([secJardinAuto, secCentroAuto],1)/60)
-            tCentroHogarAuto   = ceil(utils.calcularTiempoViaje([secCentroAuto, secHogarAuto],1)/60)
-            tCentroJardinAuto  = ceil(utils.calcularTiempoViaje([secCentroAuto, secJardinAuto],1)/60)
+            tHogarCentroAuto   = ceil(utils.calcularTiempoViaje([secHogarAuto,  secCentroAuto], 1)/60)
+            tJardinCentroAuto  = ceil(utils.calcularTiempoViaje([secJardinAuto, secCentroAuto], 1)/60)
+            tCentroHogarAuto   = ceil(utils.calcularTiempoViaje([secCentroAuto, secHogarAuto],  1)/60)
+            tCentroJardinAuto  = ceil(utils.calcularTiempoViaje([secCentroAuto, secJardinAuto], 1)/60)
 ####################
-            tHogarCentroCaminando  = ceil(utils.calcularTiempoViaje([secHogarCaminando, secCentroCaminando],0)/60)
-            tJardinCentroCaminando = ceil(utils.calcularTiempoViaje([secJardinCaminando, secCentroCaminando],0)/60)
-            tCentroHogarCaminando  = ceil(utils.calcularTiempoViaje([secCentroCaminando, secHogarCaminando],0)/60)
-            tCentroJardinCaminando = ceil(utils.calcularTiempoViaje([secCentroCaminando, secJardinCaminando],0)/60)
+            tHogarCentroCaminando  = ceil(utils.calcularTiempoViaje([secHogarCaminando,  secCentroCaminando], 0)/60)
+            tJardinCentroCaminando = ceil(utils.calcularTiempoViaje([secJardinCaminando, secCentroCaminando], 0)/60)
+            tCentroHogarCaminando  = ceil(utils.calcularTiempoViaje([secCentroCaminando, secHogarCaminando],  0)/60)
+            tCentroJardinCaminando = ceil(utils.calcularTiempoViaje([secCentroCaminando, secJardinCaminando], 0)/60)
 #########################
-            tHogarCentroBus  = ceil(utils.calcularTiempoViaje([secHogarBus, secCentroBus],2)/60)
-            tJardinCentroBus = ceil(utils.calcularTiempoViaje([secJardinBus, secCentroBus],2)/60)
-            tCentroHogarBus  = ceil(utils.calcularTiempoViaje([secCentroBus, secHogarBus],2)/60)
-            tCentroJardinBus = ceil(utils.calcularTiempoViaje([secCentroBus, secJardinBus],2)/60)
+            tHogarCentroBus  = ceil(utils.calcularTiempoViaje([secHogarBus,  secCentroBus], 2)/60)
+            tJardinCentroBus = ceil(utils.calcularTiempoViaje([secJardinBus, secCentroBus], 2)/60)
+            tCentroHogarBus  = ceil(utils.calcularTiempoViaje([secCentroBus, secHogarBus],  2)/60)
+            tCentroJardinBus = ceil(utils.calcularTiempoViaje([secCentroBus, secJardinBus], 2)/60)
             ini = time.time()
-            q = IndividuoCentro(individuo          = individuo , centro = centro, tHogarTrabajoAuto = tHogarTrabajoAuto,
-                                tHogarJardinAuto   = tHogarJardinAuto,tJardinTrabajoAuto  = tJardinTrabajoAuto,
-                                tTrabajoJardinAuto = tTrabajoJardinAuto,tTrabajoHogarAuto = tTrabajoHogarAuto,
-                                tHogarCentroAuto   = tHogarCentroAuto,tJardinCentroAuto   = tJardinCentroAuto,
-                                tCentroHogarAuto   = tCentroHogarAuto,tCentroJardinAuto   = tCentroJardinAuto,
-            tHogarTrabajoCaminando = tHogarTrabajoCaminando,
-                                tHogarJardinCaminando   = tHogarJardinCaminando,tJardinTrabajoCaminando  = tJardinTrabajoCaminando,
-                                tTrabajoJardinCaminando = tTrabajoJardinCaminando,tTrabajoHogarCaminando = tTrabajoHogarCaminando,
-                                tHogarCentroCaminando   = tHogarCentroCaminando,tJardinCentroCaminando   = tJardinCentroCaminando,
-                                tCentroHogarCaminando   = tCentroHogarCaminando,tCentroJardinCaminando   = tCentroJardinCaminando,
-            tHogarTrabajoBus = tHogarTrabajoBus,
-                                tHogarJardinBus   = tHogarJardinBus,tJardinTrabajoBus  = tJardinTrabajoBus,
-                                tTrabajoJardinBus = tTrabajoJardinBus,tTrabajoHogarBus = tTrabajoHogarBus,
-                                tHogarCentroBus   = tHogarCentroBus,tJardinCentroBus   = tJardinCentroBus,
-                                tCentroHogarBus   = tCentroHogarBus,tCentroJardinBus   = tCentroJardinBus)
+            q = IndividuoCentro(individuo = individuo, centro = centro, 
+                                
+                                tHogarTrabajoAuto  = tHogarTrabajoAuto,    tHogarJardinAuto  = tHogarJardinAuto,   
+                                tJardinTrabajoAuto = tJardinTrabajoAuto,   tJardinHogarAuto  = tJardinHogarAuto,
+                                tTrabajoJardinAuto = tTrabajoJardinAuto,   tTrabajoHogarAuto = tTrabajoHogarAuto,
+                                tHogarCentroAuto   = tHogarCentroAuto,     tJardinCentroAuto = tJardinCentroAuto,
+                                tCentroHogarAuto   = tCentroHogarAuto,     tCentroJardinAuto = tCentroJardinAuto,
+                
+                                tHogarTrabajoCaminando  = tHogarTrabajoCaminando,  tHogarJardinCaminando  = tHogarJardinCaminando,
+                                tJardinTrabajoCaminando = tJardinTrabajoCaminando, tJardinHogarCaminando  = tJardinHogarCaminando,
+                                tTrabajoJardinCaminando = tTrabajoJardinCaminando, tTrabajoHogarCaminando = tTrabajoHogarCaminando,
+                                tHogarCentroCaminando   = tHogarCentroCaminando,   tJardinCentroCaminando = tJardinCentroCaminando,
+                                tCentroHogarCaminando   = tCentroHogarCaminando,   tCentroJardinCaminando = tCentroJardinCaminando,
+                
+                                tHogarTrabajoBus  = tHogarTrabajoBus,  tHogarJardinBus  = tHogarJardinBus,
+                                tJardinTrabajoBus = tJardinTrabajoBus, tJardinHogarBus  = tJardinHogarBus,
+                                tTrabajoJardinBus = tTrabajoJardinBus, tTrabajoHogarBus = tTrabajoHogarBus,
+                                tHogarCentroBus   = tHogarCentroBus,   tJardinCentroBus = tJardinCentroBus,
+                                tCentroHogarBus   = tCentroHogarBus,   tCentroJardinBus = tCentroJardinBus
+            )
             tiemposCentros.append(q)
             auxOptimo = setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroBus, tHogarCentroCaminando)
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
-        progressDone.value  = int(progressDone.value) + 1
+        progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
         IndividuoCentro.objects.bulk_create(tiemposCentros)
         auxOptimo.save()

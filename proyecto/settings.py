@@ -116,6 +116,8 @@ CELERY_RESULT_BACKEND = 'redis://'
 CELERY_BROKER_URL = 'redis://'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CELERY_TASK_CREATE_MISSING_QUEUES = True
+#CELERY_WORKER_MAX_TASKS_PER_CHILD = 20
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 1
 CELERY_WORKER_CONCURRENCY = multiprocessing.cpu_count() - 2
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
