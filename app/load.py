@@ -123,6 +123,7 @@ def cargarTiempos(tipo,request):
         tipoId = "Auto"
     csvfile = request.FILES['inputFile']
     baseDirectory  = "./app/data/RawCsv/"
+    utils.createFolder(baseDirectory)
     newCsv = open(baseDirectory + "tiempos"+tipoId+".csv", 'wb')
     for chunk in csvfile.chunks():
         newCsv.write(chunk)

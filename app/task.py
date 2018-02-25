@@ -533,7 +533,7 @@ def saveTiemposToDB(tipo):
         tiempos.append(tiempo)
         if(id % bulkAmount == 0):
             progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-            progressDone.value  = int(progressDone.value) + bulkAmount
+            progressDone.value  = float(progressDone.value) + bulkAmount
             progressDone.save()
             print(id)
             print(time.time() - init)

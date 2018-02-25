@@ -187,7 +187,7 @@ class UserFormView(View):
         helper = UserRegistryHelper()
         return render(request, self.template_name,{'form':form,'helper':helper})  
     
-    def post(self,request):
+    def post(self,request): 
         helper = UserRegistryHelper ()
         if not request.user.is_authenticated and not request.user.is_superuser:
             print("orazio el kaker 2")
