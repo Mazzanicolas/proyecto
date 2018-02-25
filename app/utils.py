@@ -437,6 +437,8 @@ def getSimpleLock(key):
             my_lock.release()
 
 def horaMilToDateTime(hora):
+    if hora is None:
+        return hora
     if(hora == 2400):
         return datetime(2013,3,11,hour = 0,minute = 0)
     hora = str(hora)

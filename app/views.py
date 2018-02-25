@@ -166,6 +166,7 @@ def testing(request):
                 4:Settings.objects.get(setting = 'statusMatrizCentro'),                5:Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro'), 
                 6:request.session.get('calculationStatus', -1)
         }
+    
     context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username, 'statuses':statuses }
     response = render(request, 'app/index.html',context)
     response.set_cookie(key = 'tiempoMaximo',  value = maxT)

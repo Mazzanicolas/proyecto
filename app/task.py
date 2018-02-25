@@ -31,6 +31,7 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
 @shared_task()
 def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
+    session[]
     tiempoInicio = time.time()
     getData      = get
     isResumen = False
@@ -39,7 +40,8 @@ def delegator(get,sessionKey,cookies):
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
-    session['current'] = 0
+    session['current'] = 0.01
+    session['calculationStatus'] = 0
     if(getData.get('generarIndividual',0)== '1'):
         print("Soy un Individual")
         session['isIndividual'] = 1
@@ -73,6 +75,8 @@ def delegator(get,sessionKey,cookies):
             resultList = result.join()
             resultList = sum(sum(resultList,[]), [])
             saveResumenToCsv(resultList,sessionKey)
+    session['calculationStatus'] = 0
+    session.save()
     #raise SystemExit()
 
 def saveResumenToCsv(result,sessionKey):
@@ -452,7 +456,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                     return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
             else:
                 resultTimpo = tiempos['tTrabajoHogar'] + tiempos['tHogarCentro']
-                resultLlegaG = "Si" if (resultTimpo<=tiempoMaximo and finTra + resultTimpo <= horaDate + tiReLle) else "No"
+                resultLlegaG = "Si" if (finTra + resultTimpo <= horaDate + tiReLle) else "No"
                 if(resultLlegaG == "Si"):
                         resultLlegaG,resultTimpo = utils.vuelveHogar(finTra,tiempos['tTrabajoHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)      
                 BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
