@@ -55,7 +55,7 @@ def delegator(get,sessionKey,cookies,userId):
         header = ['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']
         baseDirectory = './app/data/users/user'+userId+'/consultOut/'
         utils.createFolder(baseDirectory)
-        with open('IndividualResult.csv', 'w',newline="") as csvFile:
+        with open( baseDirectory + 'IndividualResult.csv', 'w',newline="") as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow(header)
             for i in range(0,len(individuos),6):
@@ -76,12 +76,12 @@ def delegator(get,sessionKey,cookies,userId):
         with allow_join_result():
             resultList = result.join()
             resultList = sum(sum(resultList,[]), [])
-            saveResumenToCsv(resultList,userId)
+            saveResumenToCsv(resultList,userId,sessionKey)
     session = SessionStore(session_key=sessionKey)
     session['calculationStatus'] = 1
     session.save()
 
-def saveResumenToCsv(result,userId):
+def saveResumenToCsv(result,userId,sessionKey):
     fieldNames = ['persona', 'cantidadTotalHoras','cantidadHorasLunes','cantidadHorasMartes','cantidadHorasMiercoles', 'cantidadHorasJueves',
                 'cantidadHorasViernes','cantidadHorasSabado', 'cantidadMaximaHoras','cantidadConsultasLunes', 'cantidadConsultasMartes','cantidadConsultasMiercoles',
                 'cantidadConsultasJueves', 'cantidadConsultasViernes','cantidadConsultasSabado','cantidadTotalConsultas', 'cantidadCentrosLunes',
