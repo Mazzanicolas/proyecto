@@ -49,10 +49,25 @@
                     {% endif %}
                     <!--DEBug-->
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarAuto/">Cancelar</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarAuto/" style="display:none" id="cancelarAuto">Cancelar Cargado</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarCalculos/">Cancelar Calculado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarCalculos/" style="display:none" id="cancelarCalculos">Cancelar Calculos</a></li>
+                    </li>                    
+                    <li class="nav-item">
+                        <li><a class="nav-link navbar-brand" href="cancelarCaminando/" style="display:none" id="cancelarCaminando">Cancelar Cargado</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a class="nav-link navbar-brand" href="cancelarBus/" style="display:none" id="cancelarOmnibus">Cancelar Cargado</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a class="nav-link navbar-brand" href="cancelarIndividuo/" style="display:none" id="cancelarIndividuo">Cancelar Cargado</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a class="nav-link navbar-brand" href="cancelarCentro/" style="display:none" id="cancelarCentro">Cancelar Cargado</a></li>
+                    </li>
+                    <li class="nav-item">
+                        <li><a class="nav-link navbar-brand" href="cancelarIndividuoTiempoCentro/" style="display:none" id="cancelarRecalculado">Cancelar Recalculado</a></li>
                     </li>
                     <!--DEBug-->
                 </ul>
@@ -108,7 +123,46 @@
                         <div class="modal-body">
                             <div class="alert alert-warning" role="alert">
                                 <strong>Advertencia:</strong> Se remplazan los datos existentes en la base de datos.
-                            </div>                            
+                            </div>
+                            <fieldset class="form-group">
+                                <legend style="text-align: center;">Shapes</legend>
+                                <div class="form-check" >
+                                    <!--debug-->
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" class="custom-control-input" id="customControlValidation10" name="optionsRadios" value="option10">
+                                        <label class="custom-control-label" for="customControlValidation10">Shapes Auto&nbsp;
+                                            {% if statuses.6 > 0 %}
+                                                <span id='TTrBadage' class="badge badge-success">Cargado</span>
+                                            {% else %}
+                                                <span id='TTrBadage' class="badge badge-danger">No Cargado</span>
+                                            {% endif %}    
+                                        </label>
+                                    </div>
+                                    <!--debug-->
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" class="custom-control-input" id="customControlValidation11" name="optionsRadios" value="option11">
+                                        <label class="custom-control-label" for="customControlValidation11">Shapes Omnibus&nbsp;
+                                            {% if statuses.6 > 0 %}
+                                                <span id='TTrBadage' class="badge badge-success">Cargado</span>
+                                            {% else %}
+                                                <span id='TTrBadage' class="badge badge-danger">No Cargado</span>
+                                            {% endif %}    
+                                        </label>
+                                    </div>
+                                    <!--debug-->
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" class="custom-control-input" id="customControlValidation12" name="optionsRadios" value="option12">
+                                        <label class="custom-control-label" for="customControlValidation12">Shapes Caminando&nbsp;
+                                            {% if statuses.6 > 0 %}
+                                                <span id='TTrBadage' class="badge badge-success">Cargado</span>
+                                            {% else %}
+                                                <span id='TTrBadage' class="badge badge-danger">No Cargado</span>
+                                            {% endif %}    
+                                        </label>
+                                    </div>
+                                    <!--debug-->
+                                </div>
+                            </fieldset>
                                 <fieldset class="form-group">
                                     <legend style="text-align: center;">Transportes</legend>
                                     <div class="form-check" >

@@ -107,7 +107,7 @@ var bar = new ProgressBar.Circle(container, {
       circle.path.setAttribute('stroke-width', state.width);  
       var value = Math.round(circle.value() * 100);
       if (value < 0) {
-        circle.setText('͡° ͜ʖ ͡°');
+        circle.setText('Iniciando');
       }
       else if (value === 0) {
         circle.setText('¡Listo!');
@@ -128,6 +128,7 @@ window.onload = checkCalculating();
 function checkCalculating(){
     if(isProcessing(currentProgress)){
         showProcessingGUI();
+        showAlert('cancelarCalculos');
         updateStatus('progressCalculation/');
     } else if(filesInCache(currentProgress)){
         showDownloadButton();
@@ -143,23 +144,29 @@ function checkLoading(){
         //updateStatusLoading('/');
     } else if(isProcessing(MTAuStatus)) {        
         showAlertText('alertLoading','Matriz de tiempos Auto');
+        showAlert('cancelarAuto');
         updateStatusLoading('progressMatrizAuto/');
     } else if(isProcessing(MTOmStatus)) {
         showAlertText('alertLoading','Matriz de tiempos Omnibus');
+        showAlert('cancelarOmnibus');
         updateStatusLoading('progressMatrizBus/');
     } else if(isProcessing(MTCaStatus)) {
         showAlertText('alertLoading','Matriz de tiempos Caminando');
+        showAlert('cancelarCamiando');
         updateStatusLoading('progressMatrizCaminando/');
     } else if(isProcessing(CDPrStatus)) {
         //updateStatusLoading('/');
     } else if(isProcessing(CDCeStatus)) {
         showAlertText('alertLoading','Conjunto de datos para Centros');
+        showAlert('cancelarCentro');
         updateStatusLoading('progressCentro/');
     } else if(isProcessing(CDPeStatus)) {
         showAlertText('alertLoading','Conjunto de datos para Individuos');
+        showAlert('cancelarAuto');
         updateStatusLoading('progressIndividuo/');
     } else if(isProcessing(ReStatus)) {
-        showAlertText('alertLoading','*');
+        showAlertText('alertLoading','Datos nuevos en el sistema');
+        showAlert('cancelarRecalculado');
         updateStatusLoading('progressIndividuoTiempoCentro/');
     } else {
         console.log('Nothing Loading');
