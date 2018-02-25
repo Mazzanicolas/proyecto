@@ -578,43 +578,37 @@ def saveTiemposBusToDB(self,lineas):
     id = 0
     tiempos = []
     bulkAmount = 10000
-    lineas,diagonales = lineas[:-1], lineas[-1]
-    for i in range(len(lineas)):
-        for j in range(len(lineas[i])):
-            if i == j:
-                t = float(diagonales[j])
-            else:
-                l = list(map(lambda x: float(x),lineas[i][j].split(';')))
-                t = l[0]*TIEMPO_ESPERA + l[1]*TIEMPO_VIAJE + l[2]*TIEMPO_CAMBIO_PARADA
-                if t < 0:
-                    t = TIEMPO_ARBITRARIAMENTE_ALTO
-            tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = i, sectorO_2_id = j, tiempo = t)
-            tiempos.append(tiempo)
-            id +=1
-            if(id % bulkAmount == 0):
-                if(self.is_aborted()):
-                    status  = Settings.objects.get(setting='statusMatrizBus')
-                    status.value  =  -1
-                    status.save()
-                    return
-                guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
-                tiempos = []
-                progressDone  = Settings.objects.get(setting='currentMatrizBus')
-                progressDone.value  = float(progressDone.value) + bulkAmount
-                progressDone.save()
-                print(id)
-    if(tiempos != list()):
-        if(self.is_aborted()):
+    for caso in lineas:
+        s1 = caso[0]
+        s2 = caso[1]
+        t = caso[2]
+        tiempo = SectorTiempoOmnibus(id = id, sectorO_1_id = s1, sectorO_2_id = s2, tiempo = float(t))
+        tiempos.append(tiempo)
+        id += 1
+        if id % bulkAmount == 0:
+            if self.is_aborted():
+                status = Settings.objects.get(settings='statusMatrizBus')
+                status.value = -1
+                status.save()
+                return
+            guardar = SectorTiempoOmnibus.object.bulk_create(tiempos)
+            tiempos = list()
+            progressDone = Settings.objects.get(settings='currentMatrizBus')
+            progressDone.value = float(progressDone.value) + bulkAmount
+            progressDone.save()
+            print(id)
+    if tiempos != list():
+        if self.is_aborted():
             status  = Settings.objects.get(setting='statusMatrizBus')
             status.value  =  -1
             status.save()
             return
         guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
-        progressDone  = Settings.objects.get(setting='currentMatrizBus')
-        progressDone.value  = float(progressDone.value) + bulkAmount
+        progressDone = Settings.objects.get(setting='currentMatrizBus')
+        progressDone.value = float(progressDone.value) + bulkAmount
         progressDone.save()
-    status  = Settings.objects.get(setting='statusMatrizBus')
-    status.value  = 1
+    status = Settings.objects.get(setting='statusMatrizBus')
+    status.value = 1
     status.save()
     print("Se cargo correctamente el archivo")
 
