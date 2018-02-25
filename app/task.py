@@ -13,6 +13,9 @@ import redis
 import csv
 import math
 import shapefile
+from billiard.exceptions import Terminated
+from celery.contrib.abortable import AbortableTask
+
 
 global TIEMPO_ARBITRARIAMENTE_ALTO
 TIEMPO_ARBITRARIAMENTE_ALTO = 70 * 60
@@ -490,71 +493,75 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
             resultLlega = "Si" if (BoolLlega) else "No"
             return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
-@shared_task
-def saveTiemposToDB(tipo):
-    if(tipo == 0):
-        tipoId = 'Caminando'
-        sep = ';'
-        print("soyCaminando")
-        SectorTiempoCaminando.objects.all().delete()
-    else:
-        tipoId = 'Auto'
-        print("soyAuto")
-        sep = ','
-        print(tipo)
-        SectorTiempoAuto.objects.all().delete()
-    id = -1
-    tiempos = []
-    init = time.time()
-    bulkAmount = 10000
-    baseDirectory = "./app/data/RawCsv/"
-    utils.createFolder(baseDirectory)
-    csvFile = open(baseDirectory+"tiempos"+tipoId+".csv", 'r')
-    lineas = csv.reader(csvFile)
-    progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
-    progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas)
-    csvFile.seek(0)
-    progressTotal.save()
-    for caso in lineas:
-        if(id == -1):
-            id +=1
-            continue
-        if(sep==';'):
-            caso = caso[0].split(sep)
-        sector1 = caso[0]
-        sector2 = caso[1]
-        t = float(caso[2])
-        dist = float(caso[3])
+@shared_task( bind=True, base=AbortableTask)
+def saveTiemposToDB(self,tipo):
+    try:
         if(tipo == 0):
-            tiempo = SectorTiempoCaminando(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
+            tipoId = 'Caminando'
+            sep = ';'
+            print("soyCaminando")
+            SectorTiempoCaminando.objects.all().delete()
         else:
-            tiempo = SectorTiempoAuto(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
-        id +=1
-        tiempos.append(tiempo)
-        if(id % bulkAmount == 0):
-            progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-            progressDone.value  = float(progressDone.value) + bulkAmount
-            progressDone.save()
-            print(id)
-            print(time.time() - init)
-            init = time.time()
+            tipoId = 'Auto'
+            print("soyAuto")
+            sep = ','
+            print(tipo)
+            SectorTiempoAuto.objects.all().delete()
+        id = -1
+        tiempos = []
+        init = time.time()
+        bulkAmount = 10000
+        baseDirectory = "./app/data/RawCsv/"
+        utils.createFolder(baseDirectory)
+        csvFile = open(baseDirectory+"tiempos"+tipoId+".csv", 'r')
+        lineas = csv.reader(csvFile)
+        progressTotal = Settings.objects.get(setting='totalMatriz'+tipoId)
+        progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas)
+        csvFile.seek(0)
+        progressTotal.save()
+        for caso in lineas:
+            print(self.is_aborted())
+            if(id == -1):
+                id +=1
+                continue
+            if(sep==';'):
+                caso = caso[0].split(sep)
+            sector1 = caso[0]
+            sector2 = caso[1]
+            t = float(caso[2])
+            dist = float(caso[3])
+            if(tipo == 0):
+                tiempo = SectorTiempoCaminando(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
+            else:
+                tiempo = SectorTiempoAuto(id = id , sector_1_id = sector1, sector_2_id = sector2, tiempo = float(caso[2]), distancia = float(caso[3]))
+            id +=1
+            tiempos.append(tiempo)
+            if(id % bulkAmount == 0):
+                progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
+                progressDone.value  = float(progressDone.value) + bulkAmount
+                progressDone.save()
+                print(id)
+                print(time.time() - init)
+                init = time.time()
+                if(tipo == 1):
+                    guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
+                else:
+                    guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
+                tiempos = []
+        if(tiempos):
             if(tipo == 1):
                 guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
             else:
                 guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
-            tiempos = []
-    if(tiempos):
-        if(tipo == 1):
-            guardar = SectorTiempoAuto.objects.bulk_create(tiempos)
-        else:
-            guardar = SectorTiempoCaminando.objects.bulk_create(tiempos)
-    progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
-    progressDone.value  = float(progressDone.value) + bulkAmount
-    progressDone.save()
-    status  = Settings.objects.get(setting='statusMatriz'+tipoId)
-    status.value  = 1
-    status.save()
-    print("Se cargo correctamente el archivo")
+        progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
+        progressDone.value  = float(progressDone.value) + bulkAmount
+        progressDone.save()
+        status  = Settings.objects.get(setting='statusMatriz'+tipoId)
+        status.value  = 1
+        status.save()
+        print("Se cargo correctamente el archivo")
+    except Terminated:
+        print("Task was terminated")
 @shared_task
 def saveTiemposBusToDB(lineas):
     SectorTiempoOmnibus.objects.all().delete()

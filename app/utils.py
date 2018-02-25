@@ -26,7 +26,10 @@ def createFolder(directory):
 def getOrCreateSettigs(id,value):
     currentSettingsQuery = Settings.objects.filter(setting=id)[:]
     if(currentSettingsQuery):
-        return currentSettingsQuery[0]
+        setting = currentSettingsQuery[0]
+        setting.value = value
+        setting.save()
+        return setting
     currentSettings = Settings(setting=id,value=value)
     currentSettings.save()
 

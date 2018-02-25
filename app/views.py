@@ -9,7 +9,6 @@ import time
 import csv
 from app.forms import EjecutarForm,SimularForm,EjecutarHelper,SimularHelper
 from celery import result
-from django.shortcuts import redirect
 from proyecto.celery import app
 from app.checkeo_errores import *
 from app.task import delegator,calcularTiemposMatrix

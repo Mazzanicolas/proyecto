@@ -58,6 +58,6 @@ def progressIndividuoTiempoCentro(request):
     return JsonResponse(data)
 
 def calculatePercetage(lhs,rhs):
-    if(int(rhs) <= 0 ):
+    if(float(rhs) <= 0 ):
         return 0
-    return int(lhs)/int(rhs)
+    return float(lhs)/float(rhs)

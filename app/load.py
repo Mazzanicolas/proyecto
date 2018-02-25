@@ -7,6 +7,7 @@ from app.task import *
 from django.http import HttpResponse, StreamingHttpResponse
 import time
 import shapefile
+from app.cancelar import *
 
 #Habria que sacar todos estos tiempos a settings, pero no es urgente
 global TIEMPO_ARBITRARIAMENTE_ALTO
@@ -24,6 +25,9 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
                                                                           # con los valores por defecto es 3 minutos.
 
 def cargarCentroPediatras(request):
+    taskId = Settings.objects.get(setting = "asyncKeyCentro").value
+    if(taskId):
+        revoke(taskId,terminate = True)
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
     res, lineas = checkCentroPediatras(request,dict_prestadores)
@@ -93,6 +97,9 @@ def cargarSectores():
         sector.save()
 
 def cargarIndividuoAnclas(requestf):
+    taskId = Settings.objects.get(setting = "asyncKeyIndividuo").value
+    if(taskId):
+        revoke(taskId,terminate = True)
     prestadores = [x.id for x in Prestador.objects.all()]
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
     dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
@@ -108,7 +115,8 @@ def cargarIndividuoAnclas(requestf):
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
-    asyncKey = saveIndividuosToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    asynkTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    asyncKey = asyncTask.id
     utils.getOrCreateSettigs('asyncKeyIndividuo',asyncKey)
     print("Generando matriz cartesiana Individuo-Centro-Dia-Hora")
     print("Matriz Carteasiana generada")
@@ -121,6 +129,9 @@ def cargarTiempos(tipo,request):
         tipoId = "Caminando"
     else:
         tipoId = "Auto"
+    taskId = Settings.objects.get(setting = "asyncKey"+tipoId).value
+    if(taskId):
+        revoke(taskId,terminate = True)
     csvfile = request.FILES['inputFile']
     baseDirectory  = "./app/data/RawCsv/"
     utils.createFolder(baseDirectory)
@@ -138,13 +149,17 @@ def cargarTiempos(tipo,request):
     progressDone.value  = 0.1
     progressDone.save()
     print("ENTRANDO")
-    asyncKey = saveTiemposToDB.apply_async(args=[tipo],queue = 'CalculationQueue')
+    asyncTask = saveTiemposToDB.apply_async(args=[tipo],queue = 'CalculationQueue')
+    asyncKey = asyncTask.id
     utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
 
 def cargarTiemposBus(request):
     res, lineas = checkTiemposBus(request)
     if not res:
         return lineas
+    taskId = Settings.objects.get(setting = "asyncKeyBus").value
+    if(taskId):
+        revoke(taskId,terminate = True)
     status  = Settings.objects.get(setting='statusMatrizBus')
     status.value  = 0
     status.save()
@@ -154,6 +169,7 @@ def cargarTiemposBus(request):
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
-    asyncKey = saveTiemposBusToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    asyncTask = saveTiemposBusToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    asyncKey = asyncTask.id
     utils.getOrCreateSettigs('asyncKeyBus',asyncKey)
 
