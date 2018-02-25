@@ -188,6 +188,7 @@ class UserFormView(View):
         return render(request, self.template_name,{'form':form,'helper':helper})  
     
     def post(self,request):
+        helper = UserRegistryHelper ()
         if not request.user.is_authenticated and not request.user.is_superuser:
             print("orazio el kaker 2")
             return HttpResponseForbidden()
@@ -200,7 +201,7 @@ class UserFormView(View):
             user.save()
 
             user = authenticate(username=username,password=password)
-
+                
             if user is not None:
                 if user.is_active:
                     login(request, user)
@@ -208,7 +209,7 @@ class UserFormView(View):
         if not request.user.is_authenticated and not request.user.is_superuser:
             print("orazio el kaker 3")
             return HttpResponseForbidden()
-        return render(request, self.template_name,{'form':form})
+        return render(request, self.template_name,{'form':form,'helper':helper})
 
 
 def secureUserCreation(request):
@@ -224,6 +225,7 @@ def secureUserCreation(request):
     
         
     if request.method == "POST":
+        helper = UserRegistryHelper()
         if not request.user.is_authenticated or not request.user.is_superuser:
             return HttpResponseForbidden()       
         helper = UserRegistryHelper()
@@ -239,11 +241,11 @@ def secureUserCreation(request):
 
             if user is not None:
                 if user.is_active:
-                    login(request, user)
+                    #login(request, user)
                     return redirect('index')
         if not request.user.is_authenticated or not request.user.is_superuser:
             return HttpResponseForbidden()
-        return render(request, 'app/registration_form.html',{'form':form})
+        return render(request, 'app/registration_form.html',{'form':form,'helper':helper})
     
 
 #( ͡° ͜ʖ ͡°)
