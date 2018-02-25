@@ -31,7 +31,6 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
 @shared_task()
 def delegator(get,sessionKey,cookies):
     session = SessionStore(session_key=sessionKey)
-    session[]
     tiempoInicio = time.time()
     getData      = get
     isResumen = False
@@ -75,7 +74,7 @@ def delegator(get,sessionKey,cookies):
             resultList = result.join()
             resultList = sum(sum(resultList,[]), [])
             saveResumenToCsv(resultList,sessionKey)
-    session['calculationStatus'] = 0
+    session['calculationStatus'] = 1
     session.save()
     #raise SystemExit()
 

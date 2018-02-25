@@ -101,7 +101,13 @@
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation0" name="optionsRadios" value="option7">
-                                            <label class="custom-control-label" for="customControlValidation0">Tipos de transporte&nbsp;<span id='TTrBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation0">Tipos de transporte&nbsp;
+                                                {% if statuses.6 > 0 %}
+                                                    <span id='TTrBadage' class="badge badge-success">Cargado</span>
+                                                {% else %}
+                                                    <span id='TTrBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}    
+                                            </label>
                                         </div>
                                         <!--debug-->
                                     </div>
@@ -125,11 +131,27 @@
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation2" name="optionsRadios" value="option6">
-                                            <label class="custom-control-label" for="customControlValidation2">Matriz tiempos Omnibus&nbsp;<span id='MTOmBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation2">Matriz tiempos Omnibus&nbsp;
+                                                {% if statuses.2 == 1 %}
+                                                    <span id='MTOmBadage' class="badge badge-success">Cargado</span>
+                                                {% elif statuses.2 == 0 %}
+                                                    <span id='MTOmBadage' class="badge badge-info">Cargando</span>
+                                                {% else %}
+                                                    <span id='MTOmBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}
+                                            </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation3" name="optionsRadios" value="option4">
-                                            <label class="custom-control-label" for="customControlValidation3">Matriz tiempos Caminando&nbsp;<span id='MTCaBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation3">Matriz tiempos Caminando&nbsp;
+                                                {% if statuses.1 == 1 %}
+                                                    <span id='MTCaBadage' class="badge badge-success">Cargado</span>
+                                                {% elif statuses.1 == 0 %}
+                                                    <span id='MTCaBadage' class="badge badge-info">Cargando</span>
+                                                {% else %}
+                                                    <span id='MTCaBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}
+                                            </label>
                                         </div>
                                     </div>                                
                                 </fieldset>
@@ -140,15 +162,37 @@
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation4" name="optionsRadios" value="option1">
-                                            <label class="custom-control-label" for="customControlValidation4">Conjunto de datos de Prestadores&nbsp;<span id='CDPrBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation4">Conjunto de datos de Prestadores&nbsp;
+                                                {% if statuses.7 > 0 %}
+                                                    <span id='CDPrBadage' class="badge badge-success">Cargado</span>
+                                                {% else %}
+                                                    <span id='CDPrBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}
+                                            </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation5" name="optionsRadios" value="option5">
-                                            <label class="custom-control-label" for="customControlValidation5">Conjunto de datos para Centros&nbsp;<span id='CDCeBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation5">Conjunto de datos para Centros&nbsp;
+                                                {% if statuses.4 == 1 %}
+                                                    <span id='CDCeBadage' class="badge badge-success">Cargado</span>
+                                                {% elif statuses.4 == 0 %}
+                                                    <span id='CDCeBadage' class="badge badge-info">Cargando</span>
+                                                {% else %}
+                                                    <span id='CDCeBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}
+                                            </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
                                             <input type="radio" class="custom-control-input" id="customControlValidation6" name="optionsRadios" value="option2">
-                                            <label class="custom-control-label" for="customControlValidation6">Conjunto de datos para Personas&nbsp;<span id='CDPeBadage' class="badge badge-danger"> ! </span></label>
+                                            <label class="custom-control-label" for="customControlValidation6">Conjunto de datos para Personas&nbsp;
+                                                {% if statuses.3 == 1 %}
+                                                    <span id='CDPeBadage' class="badge badge-success">Cargado</span>
+                                                {% elif statuses.3 == 0 %}
+                                                    <span id='CDPeBadage' class="badge badge-info">Cargando</span>
+                                                {% else %}
+                                                    <span id='CDPeBadage' class="badge badge-danger">No Cargado</span>
+                                                {% endif %}
+                                            </label>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -162,7 +206,16 @@
                             
                         </div>
                         <div class="modal-footer">
-                            <a class="btn btn-primary" href="CalculateTimeMatrix/" aria-expanded="false" style="margin-right:425px;">Recalcular Datos</a>
+                            <a class="btn btn-primary" href="CalculateTimeMatrix/" aria-expanded="false" >Procesar Datos</a>
+                                <label style="margin-right:340px;">&nbsp;
+                                    {% if statuses.5 == 1 %}
+                                        <h5><span id='CDCeBadage' class="badge badge-success">Procesado</span></h5>
+                                    {% elif statuses.5 == 0 %}
+                                        <span id='CDCeBadage' class="badge badge-info">Procesando</span>
+                                    {% else %}
+                                        <span id='CDCeBadage' class="badge badge-danger">Sin Procesar</span>
+                                    {% endif %}
+                                </label>
                             <button type="submit" class="btn btn-primary" value="Upload">Cargar Datos</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                         </div>
@@ -171,30 +224,6 @@
                 </div>
             </div>
             <!--Cargar-->
-                        <!--Recalcular-->
-            <div class="modal fade" id="recalcular_datos">
-                <div class="modal-dialog modal-lg" role="document">
-                    <form action=''  method="POST", enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Recaluclar</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                        <div class="modal-body">
-                            
-                        </div>
-                        <div class="modal-footer">
-                            <a class="btn btn-primary" href="CalculateTimeMatrix/" aria-expanded="false">Recalcular Temporal</a>
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <!--Recalcular-->
             <!--Configuracion-->
             <div class="modal fade" id="configuracion">
                 <div class="modal-dialog modal-lg" role="document">
@@ -397,12 +426,24 @@
             </div>
             <!--Descargar-->
             <!--^-Content-^-->
-        </div>
+        </div>        
     </body>
-
+    <!--v-Variables-v-->
+    <script> //Potato security
+        var TTrStatus  = '{{statuses.6}}';
+        var MTAuStatus = '{{statuses.0}}';
+        var MTOmStatus = '{{statuses.2}}';
+        var MTCaStatus = '{{statuses.1}}';
+        var CDPrStatus = '{{statuses.7}}';
+        var CDCeStatus = '{{statuses.4}}';
+        var CDPeStatus = '{{statuses.3}}';
+        var ReStatus   = '{{statuses.5}}';
+        var currentProgress = parseInt('{{statuses.8}}');
+    </script>
     {% load static %}
     <script src="{% static 'app/jquery/jquery-3.3.1.min.js' %}"></script>
     <script src="{% static 'app/bootstrap4/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'app/customJs/progressbar.js' %}"></script>
     <script src="{% static 'app/customJs/customjs.js' %}"></script>
+    
 </html>

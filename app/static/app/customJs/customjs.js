@@ -90,37 +90,7 @@ $(document).ready(function(){
     });
 });
 //Loading Bar
-/*var loadingBar = new ProgressBar.Circle(loadingbar, {
-    color: '#d6d7d8',
-    // This has to be the same size as the maximum width to
-    // prevent clipping
-    strokeWidth: 7,
-    trailWidth: 1,
-    easing: 'easeInOut',
-    duration: 2500,
-    text: {
-      autoStyleContainer: false
-    },
-    from: { color: '#4158d0', width: 2 },
-    to: { color: '#c850c0', width: 5 },
-    // Set default step function for all animate calls
-    step: function(state, circle) {
-      circle.path.setAttribute('stroke', state.color);
-      circle.path.setAttribute('stroke-width', state.width);
-  
-      var value = Math.round(circle.value() * 100);
-      if (value === 0) {
-        circle.setText('¡Listo!');
-      } else {
-        circle.setText(String(value)+' %');
-      }
-  
-    }
-  });
-  loadingBar.text.style.fontFamily = '"Raleway", Helvetica, sans-serif';
-  loadingBar.text.style.fontStyle = "italic"
-  loadingBar.text.style.fontSize = '3rem';
-*/
+
 var bar = new ProgressBar.Circle(container, {
     color: '#d6d7d8',
     // This has to be the same size as the maximum width to
@@ -153,6 +123,82 @@ var bar = new ProgressBar.Circle(container, {
   bar.text.style.fontSize = '3rem';
 
 /*Consultas XML*/
+
+window.onload = checkCurrentStatus();
+
+function checkCurrentStatus(){
+    if(isCalculando(currentProgress)){
+        console.log('Calculando ...');
+        showAlert('alertCalculando');
+        updateStatus();
+    } else {
+        console.log('Nothing');
+    }
+}
+
+function isCalculando(status){
+    if(status == 0){
+        return true;
+    }
+    return false;
+}
+
+function updateStatus(){
+    var progressLoop = setTimeout(function() { progressStatus('progressCalculation/',progressLoop); }, 5000);
+    //progressStatus('progressCalculation/',progressLoop);
+    showLoadingBar();
+}
+
+function progressStatus(url,progressLoop){
+    console.log("XML Checking Progress...");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("XMLP response 200 OK");
+            var systemStatusResponse = JSON.parse(this.responseText);          
+            processStatus = systemStatusResponse['progressStatus']
+            if(!(progressStatus>0)){bar.animate(processStatus);}
+            progressLoop = setTimeout(function() { progressStatus(url,progressLoop); }, 5000);
+            console.log(processStatus);
+            if(threadIsDone(processStatus)){
+                clearTimeout(progressLoop);
+                bar.animate(0);
+                showDownloadButton()
+                hideAlert('alertCalculando');
+                console.log("Thread closed")
+            }
+        }
+    };
+    xhttp.open("GET", url, true);
+    xhttp.send();
+}
+
+function threadIsDone(threadStatus){
+    if(threadStatus>0.999){
+        return true;
+    }
+    return false;
+}
+function showLoadingBar(){
+    document.getElementById('container').style.visibility = 'visible';
+}
+function hideLoadingBar(){
+    document.getElementById('container').style.visibility = 'hidden';
+}
+function showDownloadButton(){
+    document.getElementById('descargar').style.visibility = 'visible';
+    document.getElementById('alertCalculos').style.display = 'block';
+}
+function hiddeDownloadButton(){
+    document.getElementById('descargar').style.visibility = 'hidden';
+    document.getElementById('alertCalculos').style.display = 'none';
+}
+function showAlert(id){
+    document.getElementById(id).style.display = 'block';
+}
+function hideAlert(id){
+    document.getElementById(id).style.display = 'none';
+}
 /*
 window.onload = askMatrizAutoStatusCheck();
 
@@ -191,9 +237,63 @@ function getMatrizAutoStatus(progressLoopMatrizAuto) {
 function askMatrizAutoStatusCheck(){
     var progressLoopMatrizAuto = setTimeout(function() { getMatrizAutoStatus(progressLoopMatrizAuto); }, 100);
 }*/
-/*sys*/
-window.onload = daemonRequest();
+/*sys
 
+window.onload = checkSystemStatus();
+
+function checkSystemStatus(){
+    if(currentProgress==0){
+        console.log('ejecutando');
+        showAlert('alertCalculando');
+        daemonRequest(updateCalculating);
+    } else {
+        console.log('nothing');
+    }
+}
+
+function daemonRequest(currentProcess){
+    var progressLoop = setTimeout(function() { currentProcess(progressLoop); }, 5000);
+}
+
+function updateCalculating(progressLoop){
+    processStatus = progressStatus('progressCalculation/');
+    console.log('vv Funny meme vv');
+    console.log(processStatus);
+    if(threadIsDone(processStatus)){
+        clearTimeout(progressLoop);
+        console.log("Thread closed")
+    }
+    if(processStatus<0.01){
+        //bar.animate(0.01);
+    }else if(processStatus>0.99){
+        //bar.animate(0);
+        hideAlert('alertCalculando');
+        showDownloadButton();
+    } else {
+        //bar.animate(processStatus);        
+    }
+    showLoadingBar();
+    
+}
+
+function progressStatus(url){
+    console.log("XML Checking Progress...");
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("XMLP response 200 OK");
+            var systemStatusResponse = JSON.parse(this.responseText);            
+            processStatus = systemStatusResponse['progressStatus']
+            progressLoop = setTimeout(function() { updateCalculating(progressLoop); }, 10000);
+            bar.animate(progressLoop);
+            console.log(processStatus);
+            return processStatus
+        }
+    };
+    xhttp.open("GET", url, true);
+    xhttp.send();
+}
+/*
 function daemonRequest(){
     var progressLoop = setTimeout(function() { processStatusXML(progressLoop); }, 1000);
 }
@@ -234,7 +334,6 @@ function processStatusXML(progressLoop){
     xhttp.open("GET", "systemStatus/", true);
     xhttp.send();
 }
-
 function threadIsDone(threadStatus){
     if(threadStatus==0){
         return true;
@@ -359,8 +458,7 @@ function hideAlertMissingData(dataName){
     document.getElementById('alertDatosFaltantes').innerHTML = '<strong>Datos faltantes en el sistema:</strong>';
     document.getElementById('alertDatosFaltantes').style.display = 'none';
 }
-showAlertMissingData('dataName');
-/*sys*/
+sys*/
 /*window.onload = calculate();
 
 function ask2(progressLoop) {

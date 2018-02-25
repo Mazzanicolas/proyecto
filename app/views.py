@@ -161,10 +161,11 @@ def testing(request):
     simularForm = SimularForm()
     simularHelper = SimularHelper()
     username = request.user.username
-    statuses = {0:Settings.objects.get(setting = 'statusMatrizAuto'),                  1:Settings.objects.get(setting = 'statusMatrizCaminando'), 
-                2:Settings.objects.get(setting = 'statusMatrizBus'),                   3:Settings.objects.get(setting = 'statusMatrizIndividuo'),             
-                4:Settings.objects.get(setting = 'statusMatrizCentro'),                5:Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro'), 
-                6:request.session.get('calculationStatus', -1)
+    statuses = {0:int(Settings.objects.get(setting = 'statusMatrizAuto').value),                  1:int(Settings.objects.get(setting = 'statusMatrizCaminando').value), 
+                2:int(Settings.objects.get(setting = 'statusMatrizBus').value),                   3:int(Settings.objects.get(setting = 'statusMatrizIndividuo').value),             
+                4:int(Settings.objects.get(setting = 'statusMatrizCentro').value),                5:int(Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro').value), 
+                6:TipoTransporte.objects.count(),                                                 7:Prestador.objects.count(), 
+                8:int(request.session.get('calculationStatus', -1))
         }
     
     context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username, 'statuses':statuses }

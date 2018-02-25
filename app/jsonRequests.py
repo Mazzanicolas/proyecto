@@ -9,7 +9,10 @@ def progressCalculation(request):
     current = request.session.get('current',None)
     total   = request.session.get('total',None)
     status = calculatePercetage(current,total)
-    data = {'loadingDataId':0,'status':status}
+    data = {'progressStatus':status}
+    print("C"+str(current))
+    print("T"+str(total))
+    print("S"+str(status))
     return JsonResponse(data)
 
 def progressMatrizAuto(request):
