@@ -205,8 +205,10 @@ function progressStatus(url,progressLoop){
             console.log(processStatus);
             if(threadIsDone(processStatus)){
                 clearTimeout(progressLoop);
+                dissmisCancel();
                 console.log("Thread closed")
-                showDoneGUI();
+                showDoneGUI();                
+                document.location.href="/";
             }
         }
     };
@@ -226,8 +228,10 @@ function progressStatusLoading(url,progressLoop){
             console.log(processStatus);
             if(threadIsDone(processStatus)){
                 clearTimeout(progressLoop);
+                dissmisCancel();
                 hideAlert('alertLoading');
-                console.log("Thread closed")
+                console.log("Thread closed");
+                document.location.href="/";
             }
         }
     };
@@ -275,4 +279,14 @@ function showAlertText(id,text){
 }
 function hideAlert(id){
     document.getElementById(id).style.display = 'none';
+}
+function dissmisCancel(){
+    hideAlert('cancelarCalculos');
+    hideAlert('cancelarCaminando');
+    hideAlert('cancelarOmnibus');
+    hideAlert('cancelarIndividuo');
+    hideAlert('cancelarCentro');
+    hideAlert('cancelarRecalculado');
+    hideAlert('cancelarAuto');
+
 }
