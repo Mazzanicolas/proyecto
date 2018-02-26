@@ -1,8 +1,7 @@
 /* Init tooltips*/
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-})
-
+$("[tt='tooltip']").tooltip({
+    trigger : 'hover'
+})  
 /*Checkeo de errores, validacion*/
 
 $(document).ready(function(){
@@ -168,7 +167,7 @@ function checkLoading(){
         updateStatusLoading('progressCentro/');
     } else if(isProcessing(CDPeStatus)) {
         showAlertText('alertLoading','Conjunto de datos para Individuos');
-        showAlert('cancelarAuto');
+        showAlert('cancelarIndividuo');
         hiddeDownloadButton()
         updateStatusLoading('progressIndividuo/');
     } else if(isProcessing(ReStatus)) {

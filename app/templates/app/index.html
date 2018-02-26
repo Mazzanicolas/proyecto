@@ -21,26 +21,26 @@
                 <div class="collapse navbar-collapse">
                 <ul class="navbar-nav cl-effect-14-edited">
                     <li class="nav-item active">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#cargar_datos">Cargar</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#cargar_datos" tt="tooltip" data-placement="bottom" title="Cargar datos en el sistema">Cargar</a></li>
                     </li>
                     <!--li class="nav-item">
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#recalcular_datos">Recalcular</a></li>
                     </li-->
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#configuracion">Configuración</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#configuracion" tt="tooltip" data-placement="bottom" title="Cambiar la configuracion del sistema">Configuración</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#verDatos">Datos</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#verDatos" tt="tooltip" data-placement="bottom" title="Ver las tablas cargadas en la base de datos">Datos</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#simular">Simular</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#simular" tt="tooltip" data-placement="bottom" title="Alterar los datos de la base para simular una situación">Simular</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#ejecutar">Ejecutar</a></li>
+                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#ejecutar" tt="tooltip" data-placement="bottom" title="Usar los datos de la base para realizar calculos">Ejecutar</a></li>
                     </li>
                     {% if statuses.8 == 1 %}
                         <li class="nav-item">
-                            <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar">Descargar</a></li>
+                            <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#downlaod" id = "descargar" tt="tooltip" data-placement="bottom" title="Descargar los ultimos resultados calculados">Descargar</a></li>
                         </li>
                     {% else %}
                         <li class=  "nav-item">
@@ -49,25 +49,25 @@
                     {% endif %}
                     <!--DEBug-->
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarAuto/" style="display:none" id="cancelarAuto">Cancelar Cargado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarAuto/" style="display:none" id="cancelarAuto" tt="tooltip" data-placement="bottom" title="Cancelar el cargado de la matriz auto">Cancelar Cargado</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarCalculos/" style="display:none" id="cancelarCalculos">Cancelar Calculos</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarCalculos/" style="display:none" id="cancelarCalculos" tt="tooltip" data-placement="bottom" title="Cancelar los calculos">Cancelar Calculos</a></li>
                     </li>                    
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarCaminando/" style="display:none" id="cancelarCaminando">Cancelar Cargado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarCaminando/" style="display:none" id="cancelarCaminando" tt="tooltip" data-placement="bottom" title="Cancelar el cargado de la matriz caminando">Cancelar Cargado</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarBus/" style="display:none" id="cancelarOmnibus">Cancelar Cargado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarBus/" style="display:none" id="cancelarOmnibus" tt="tooltip" data-placement="bottom" title="Cancelar el cargado de la matriz de omnibus">Cancelar Cargado</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarIndividuo/" style="display:none" id="cancelarIndividuo">Cancelar Cargado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarIndividuo/" style="display:none" id="cancelarIndividuo" tt="tooltip" data-placement="bottom" title="Cancelar el cargado de los individuos">Cancelar Cargado</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarCentro/" style="display:none" id="cancelarCentro">Cancelar Cargado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarCentro/" style="display:none" id="cancelarCentro" tt="tooltip" data-placement="bottom" title="Cancelar el cargado de centros">Cancelar Cargado</a></li>
                     </li>
                     <li class="nav-item">
-                        <li><a class="nav-link navbar-brand" href="cancelarIndividuoTiempoCentro/" style="display:none" id="cancelarRecalculado">Cancelar Recalculado</a></li>
+                        <li><a class="nav-link navbar-brand" href="cancelarIndividuoTiempoCentro/" style="display:none" id="cancelarRecalculado" tt="tooltip" data-placement="bottom" title="Cancelar el recalculado de datos">Cancelar Recalculado</a></li>
                     </li>
                     <!--DEBug-->
                 </ul>
@@ -79,6 +79,7 @@
                         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
                             {% if request.user.is_superuser %}
                                 <a class="dropdown-item" href="register/">Crear Usuario</a>
+                                <a class="dropdown-item" href="">Administrar Usuarios</a>
                                 <div class="dropdown-divider"></div>
                             {% endif %}
                             <a class="dropdown-item" href="logout/">Cerrar sesión</a>
@@ -125,7 +126,7 @@
                                 <strong>Advertencia:</strong> Se remplazan los datos existentes en la base de datos.
                             </div>
                             <fieldset class="form-group">
-                                <legend style="text-align: center;">Shapes</legend>
+                                <legend style="text-align: center;" tt="tooltip" data-placement="bottom" title="Shapes relacionados con las matrices">Shapes</legend>
                                 <div class="form-check" >
                                     <!--debug-->
                                     <div class="custom-control custom-radio mb-3">
@@ -164,7 +165,7 @@
                                 </div>
                             </fieldset>
                                 <fieldset class="form-group">
-                                    <legend style="text-align: center;">Transportes</legend>
+                                    <legend style="text-align: center;" tt="tooltip" data-placement="bottom" title="Tipos de transporte a utilizar en el sistema">Transportes</legend>
                                     <div class="form-check" >
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
@@ -182,7 +183,7 @@
                                 </fieldset>
                                 <!--Debuggfield-->
                                 <fieldset class="form-group">
-                                    <legend style="text-align: center;">Matrices de Tiempo</legend>
+                                    <legend style="text-align: center;" tt="tooltip" data-placement="bottom" title="Matrices de tiempo a utilizar en el sistema">Matrices de Tiempo</legend>
                                     <div class="form-check">
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
@@ -225,7 +226,7 @@
                                 </fieldset>
                                 <!--Debuggfield-->
                                 <fieldset class="form-group">
-                                    <legend style="text-align: center;">Transportes</legend>
+                                    <legend style="text-align: center;" tt="tooltip" data-placement="bottom" title="Conjunto de datos a utilizar en el sistema">Datos</legend>
                                     <div class="form-check" >                                        
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
@@ -274,7 +275,7 @@
                             
                         </div>
                         <div class="modal-footer">
-                            <a class="btn btn-primary" href="CalculateTimeMatrix/" aria-expanded="false" >Procesar Datos</a>
+                            <a class="btn btn-primary" href="CalculateTimeMatrix/" aria-expanded="false"  tt="tooltip" data-placement="bottom" title="Antes de calcular si los datos fueron modificados se deben Procesar">Procesar Datos</a>
                                 <label style="margin-right:340px;">&nbsp;
                                     {% if statuses.5 == 1 %}
                                         <h5><span id='CDCeBadage' class="badge badge-success">Procesado</span></h5>
@@ -284,7 +285,7 @@
                                         <span id='CDCeBadage' class="badge badge-danger">Sin Procesar</span>
                                     {% endif %}
                                 </label>
-                            <button type="submit" class="btn btn-primary" value="Upload">Cargar Datos</button>
+                            <button type="submit" class="btn btn-primary" value="Upload" tt="tooltip" data-placement="bottom" title="Cargar los datos seleccionados en el sistema">Cargar Datos</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                         </div>
                         </div>
@@ -309,7 +310,7 @@
                         <form action=''  method="POST">
                             {% csrf_token %}
                             <div class="col-md-8 mb-3">
-                                <label for="validationServerUsername">Tiempo Maximo de Transporte</label>
+                                <label for="validationServerUsername" tt="tooltip" data-placement="bottom" title="Tiempo en el cual se considera que una persona llega">Tiempo Maximo de Transporte</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control is-valid" id="tiempoTransporteValidation" name = tiempoTransporte placeholder="{{tiempoMaximo}}" aria-describedby="inputGroupPrepend3" style="text-align:right;">
                                     <div class="input-group-prepend">
@@ -321,7 +322,7 @@
                                 </div>
                             </div>
                             <div class="col-md-8 mb-3">
-                                <label for="validationServerUsername">Tiempo de Consulta</label>
+                                <label for="validationServerUsername" tt="tooltip" data-placement="bottom" title="Tiempo que toma una consulta en el pediatra">Tiempo de Consulta</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control is-valid" id="tiempoConsultaValidation" name = tiempoConsulta placeholder="{{tiempoConsulta}}" aria-describedby="inputGroupPrepend3" style="text-align:right;">
                                     <div class="input-group-prepend">
@@ -333,7 +334,7 @@
                                 </div>
                             </div>
                             <div class="col-md-8 mb-3">
-                                <label for="validationServerUsername">Tiempo en el que se considera que una persona llega</label>
+                                <label for="validationServerUsername" tt="tooltip" data-placement="bottom" title="Tiempo luego de la hora en punto sobre el que se considera que una perona llega">Tiempo en el que se considera que una persona llega</label>
                                 <div class="input-group">
                                     <input type="text" class="form-control is-valid" id="tiempoLlegaValidation" name = tiempoLlega placeholder="{{tiempoLlega}}" aria-describedby="inputGroupPrepend3" style="text-align:right;">
                                     <div class="input-group-prepend">
@@ -367,7 +368,7 @@
                             </div>
                             <div class="modal-body">
                                 <label>Seleccione una tabla</label>                                
-                                    <select class="form-control" name="datosAVer">
+                                    <select class="form-control" name="datosAVer"  tt="tooltip" data-placement="top" title="Nombre de la tabla a ver">
                                         <option value = 1>Individuos</option>
                                         <option value = 2>Centros</option>
                                         <option value = 3>Anclas</option>
@@ -453,7 +454,7 @@
                                 Descargar Resultados (.csv)
                             </a>
                             <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#shapesOptionsContainer" aria-expanded="false" aria-controls="DescargarResultados">
-                                Descargar Shapes (.shp .dbf .shx)
+                                Descargar Shapes (.shp .dbf .shx) 
                             </button>
                         </p>
                         <div class="collapse" id="shapesOptionsContainer">
@@ -461,23 +462,23 @@
                                 <div class="card card-block">
                                     <ul  style=" margin-top: 20px;">
                                         <p style=" margin-left: 40px;">
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_llega"> Generar Shape Llega en base a las restricciones</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_resumen_llega"> Generar Shape Llega Resumido en base a las restricciones</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Centro) IDHogar IDCentro IDPrestador Transporte DiasLega Hora TiempoViaje CantidadPediatras"><input type="checkbox" name="generar_llega"> Generar Shape Llega en base a las restricciones</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Centro Optimo) IDHogar IDCentro CantidadLlega"><input type="checkbox" name="generar_resumen_llega"> Generar Shape Llega Resumido en base a las restricciones</label></li>
                                         </p>
                                         <p style=" margin-left: 40px;">
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogares">Generar Shape de Hogares</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_jardines">Generar Shape de Jardines</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_trabajos">Generar Shape de Trabajos</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Hogar) IDHogar"><input type="checkbox" name="generar_hogares">Generar Shape de Hogares</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Jardin) IDHogar HoraInicio HoraFin"><input type="checkbox" name="generar_jardines" tt="tooltip" data-placement="bottom" title="(Punto en el Jardin) IDHogar">Generar Shape de Jardines</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Trabajo) IDHogar HoraInicio HoraFin"><input type="checkbox" name="generar_trabajos" tt="tooltip" data-placement="bottom" title="(Punto en el Trabajo) IDHogar">Generar Shape de Trabajos</label></li>
                                         </p>
                                         <p style=" margin-left: 40px;">
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_autos">Generar Shape de Centros Optimos Auto</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_omnibus">Generar Shape de Centros Optimos Omnibus</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_caminando">Generar Shape de Centros Optimos Caminando</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Centro Optimo) IDHogar IDCentroOptimo TiempoAuto"><input type="checkbox" name="generar_autos">Generar Shape de Centros Optimos Auto</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Centro Optimo) IDHogar IDCentroOptimo TiempoOmnibus"><input type="checkbox" name="generar_omnibus">Generar Shape de Centros Optimos Omnibus</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Punto en el Centro Optimo) IDHogar IDCentroOptimo TiempoCaminando"><input type="checkbox" name="generar_caminando">Generar Shape de Centros Optimos Caminando</label></li>
                                         </p>
                                         <p style=" margin-left: 40px;">
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogar_autos">Generar Shape [Hogar - Centro Optimo Auto]</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogar_omnibus">Generar Shape [Hogar - Centro Optimo Omnibus]</label></li>
-                                            <li style="list-style:none;"><label class="form-check-label"><input type="checkbox" name="generar_hogar_caminando">Generar Shape [Hogar - Centro Optimo Caminando]</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Linea que conecta Hogar-CentroOptimo) IDHogar IDCentroOptimo TiempoTransporteAuto"><input type="checkbox" name="generar_hogar_autos">Generar Shape [Hogar - Centro Optimo Auto]</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Linea que conecta Hogar-CentroOptimo) IDHogar IDCentroOptimo TiempoTransporteOmnibus"><input type="checkbox" name="generar_hogar_omnibus">Generar Shape [Hogar - Centro Optimo Omnibus]</label></li>
+                                            <li style="list-style:none;"><label class="form-check-label" tt="tooltip" data-placement="left" title="(Linea que conecta Hogar-CentroOptimo) IDHogar IDCentroOptimo TiempoTransporteCaminando"><input type="checkbox" name="generar_hogar_caminando">Generar Shape [Hogar - Centro Optimo Caminando]</label></li>
                                         </p>
                                     </ul>
                                     <button class="btn btn-primary" href="descargarShape/" target="_blank"> Generar Shapes</button>
@@ -509,9 +510,9 @@
         var currentProgress = parseInt('{{statuses.8}}');
     </script>
     {% load static %}
+    <script src="{% static 'app/customJs/popper.js' %}"></script>
     <script src="{% static 'app/jquery/jquery-3.3.1.min.js' %}"></script>
     <script src="{% static 'app/bootstrap4/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'app/customJs/progressbar.js' %}"></script>
     <script src="{% static 'app/customJs/customjs.js' %}"></script>
-    
 </html>
