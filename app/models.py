@@ -118,6 +118,8 @@ class SectorAuto(models.Model):
     shapePosition = models.IntegerField()
     class Meta:
         ordering = ['shapeid']
+    def __str__(self):
+        return u'{0}'.format(self.shapeid)
 
 class SectorCaminando(models.Model):
     shapeid       = models.CharField(max_length = 50, primary_key=True)
@@ -126,7 +128,9 @@ class SectorCaminando(models.Model):
     shapePosition = models.IntegerField()
     class Meta:
         ordering = ['shapeid']
-
+    def __str__(self):
+        return u'{0}'.format(self.shapeid)
+        
 class SectorOmnibus(models.Model):
     shapeid       = models.CharField(max_length = 50, primary_key=True)
     x_centroide   = models.IntegerField()
@@ -134,7 +138,8 @@ class SectorOmnibus(models.Model):
     shapePosition = models.IntegerField()
     class Meta:
         ordering = ['shapeid']
-
+    def __str__(self):
+        return u'{0}'.format(self.shapeid)
 class SectorTiempoAuto(models.Model):
     sector_1  = models.ForeignKey(SectorAuto, models.CASCADE, blank=True, null=True, related_name='sector_1')
     sector_2  = models.ForeignKey(SectorAuto, models.CASCADE, blank=True, null=True, related_name='sector_2')
@@ -161,6 +166,7 @@ class SectorTiempoOmnibus(models.Model):
     class Meta:
         unique_together = (('sectorO_1', 'sectorO_2'),)
         ordering        = ['id']
+    
 class TipoTransporte(models.Model):
     id     = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=100)
