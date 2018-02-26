@@ -168,7 +168,7 @@ def testing(request):
                 2:int(Settings.objects.get(setting = 'statusMatrizBus').value),                   3:int(Settings.objects.get(setting = 'statusMatrizIndividuo').value),             
                 4:int(Settings.objects.get(setting = 'statusMatrizCentro').value),                5:int(Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro').value), 
                 6:TipoTransporte.objects.count(),                                                 7:Prestador.objects.count(),
-                10:int(Settings.objects.get(setting = 'shapeAutoStatus').value), 11:int(Settings.objects.get(setting = 'shapeBusStatus').value), 12:int(Settings.objects.get(setting = 'shapeCaminandoStatus').value), 
+                10:int(utils.getOrCreateSettigs('shapeAutoStatus',-1).value), 11:int(utils.getOrCreateSettigs('shapeBusStatus',-1).value), 12:int(utils.getOrCreateSettigs('shapeBusStatus',-1).value), 
                 8:int(request.session.get('calculationStatus', -1))
         }
     

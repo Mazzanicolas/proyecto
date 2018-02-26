@@ -26,6 +26,9 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
                                                                           # con los valores por defecto es 3 minutos.
 
 def cargarCentroPediatras(request):
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+    status.value  = 0
+    status.save()
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
     res, lineas = checkCentroPediatras(request,dict_prestadores)
@@ -46,6 +49,12 @@ def cargarCentroPediatras(request):
     utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
 
 def cargarMutualistas(request):
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+    status.value  = 0
+    status.save()
+    status  = Settings.objects.get(setting='statusMatrizCentro')
+    status.value  = 0
+    status.save()
     cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoTiempoCentro._meta.db_table))
     cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoCentro._meta.db_table))
     cursor.execute('TRUNCATE TABLE "{0}"'.format(Centro._meta.db_table))
