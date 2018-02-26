@@ -37,7 +37,6 @@ urlpatterns = [
     url(r'^login/$'                               ,login, {'template_name':'accounts/login.html','authentication_form':SuperLogin}, name='login'),
     url(r'^logout/$'                              ,logout, {'next_page':'login'}),
     url(r'CalculateTimeMatrix/$'                  ,views.calcularTiemposMatrixIndi,                            name='calculateTimeMatrix'),
-    url(r'^/$'                                     ,views.testing,                                              name='index'),
     url(r'^systemStatus/$'                        ,views.systemStatus,                                         name='systemStatus'),
     url(r'^ejecutarProgress/$'                    ,views.ejecutarProgress,                                     name='ejecutarProgress'),
 
@@ -58,6 +57,7 @@ urlpatterns = [
     url(r'^cancelarCentro/$'                      ,cancelar.cancelarCentro,                                    name='cancelarCentro'),
     url(r'^cancelarIndividuoTiempoCentro/$'       ,cancelar.cancelarIndividuoTiempoCentro,                     name='cancelarIndividuoTiempoCentro'),
 
-    
+    url(r'^$'                                    ,views.testing,                                              name='index'),
+
 
 ]

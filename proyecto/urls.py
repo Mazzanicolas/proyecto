@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^index/', include('app.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/profile/', redirectIndex),
+    url(r'^',  redirectIndex),
 ]
