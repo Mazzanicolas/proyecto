@@ -70,12 +70,11 @@ def checkTiemposBus(request):
     csvfile = request.FILES['inputFile']
     csvf = StringIO(csvfile.read().decode())
     lineas = []
-    lineas.extend(csv.reader(csvf, delimiter=','))
+    return True,lineas.extend(csv.reader(csvf, delimiter=','))
     for i in range(len(lineas)):
         linea = lineas[i]
         if len(linea) != 1063:
             errores.append("La cantidad de columnas en la linea {} es incorrecta".format(lineas.index(linea)))
-            print(len(linea))
             continue
         for j in range(len(lineas[i])):
             if i != j:

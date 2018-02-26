@@ -58,11 +58,6 @@ def progressMatrizAuto(request):
     data = {"progressStatus":done}
     return JsonResponse(data)
 
-
-def cancelarCentro(request):
-    asyncTask = result.AsyncResult(id = Setting.objects.get(key = 'AsyncKeyCentro'))
-    asyncTask.revoke(terminate = True)
-
 def initSettingsStatus():
     firstTime = list(Settings.objects.filter(setting='firstTime'))
     print(bool(Settings.objects.filter(setting='firstTime')))
@@ -142,6 +137,12 @@ def testing(request):
                 lineas = load.cargarTiemposBus(request)
             elif(radioMatrix == "option7"):
                 lineas = load.cargarTiposTransporte(request)
+            elif(radioMatrix == 'option10'):
+                lineas = loadAutoSabe(request,1)
+            elif(radioMatrix == 'option11'):
+                lineas = loadAutoSabe(request,2)
+            elif(radioMatrix == 'option12'):
+                lineas = loadAutoSabe(request,0)
             if lineas is not None:
                 pseudo_buffer = utils.Echo()
                 writer = csv.writer(pseudo_buffer)
@@ -174,6 +175,21 @@ def testing(request):
     response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
     return response
 
+def loadAutoSabe(request,tipo):
+    if(tipo == 0):
+        tipoNombre = "shapeCaminando"
+    if(tipo == 1):
+        tipoNombre = "shapeAuto"
+    if(tipo == 2):
+        tipoNombre = "shapeBus"
+    content = request.FILES['inputFile']
+    unzipped = zipfile.ZipFile(content)
+    print (unzipped.namelist())
+    for libitem in unzipped.namelist():
+        filename = libitem.split('.')
+        file = open("./app/data/shapes/"+tipoNombre+"."+filename[1],'wb')
+        file.write(unzipped.read(libitem))
+        file.close()
 class UserFormView(View):
     form_class = UserForm
     template_name = 'app/registration_form.html'
@@ -290,20 +306,6 @@ def cancelarConsulta(request):
     deleteConsultaResults(request)
     return redirect('index')
 
-def deleteConsultaResults(request):
-    request.session['isIndividual'] = 0
-    request.session['isResumen'] = 0
-    asyncKey = request.session.get('asyncKey',None)
-    if(asyncKey and not asyncKey == -404):
-        asyncResult = result.AsyncResult(asyncKey)
-        if(asyncResult):
-            print(asyncResult)
-            asyncResult.revoke(terminate = True)
-            asyncResult.forget()
-            request.session['asyncKey'] = -404
-    request.session['current'] = -1
-    request.session.save()
-
 def redirectSim(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -405,12 +407,11 @@ def guardarArchivo(nombre, archivo):
         return csv
 
 def generateCsvResults(request):
-    deleteConsultaResults(request)
     indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
-    print (dictParam,dictSettings)
     utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
-    asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)],queue = 'delegate')
-    request.session['asyncKey'] = asyncKey.id   
+    asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)], queue = 'delegate')
+    request.session['asyncKey'] = asyncKey.id
+    request.session['calculationStatus'] = 0 
     response = redirect('index')
     task_postrun.connect(shutdown_worker, sender=delegator)
     return response

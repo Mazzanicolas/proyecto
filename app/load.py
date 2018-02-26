@@ -45,6 +45,9 @@ def cargarCentroPediatras(request):
     utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
 
 def cargarMutualistas(request):
+    IndividuoTiempoCentro.objects.all().delete()
+    IndividuoCentro.objects.all().delete()
+    Centro.objects.all().delete()
     res, lineas = checkMutualistas(request)
     if not res:
         return lineas
@@ -57,6 +60,9 @@ def cargarMutualistas(request):
     print("Se cargo correctamente el archivo")
 
 def cargarTiposTransporte(request):
+    IndividuoTiempoCentro.objects.all().delete()
+    IndividuoCentro.objects.all().delete()
+    Individuo.objects.all().delete()
     res, lineas = checkTiposTransporte(request)
     if not res:
         return lineas
@@ -109,7 +115,7 @@ def cargarIndividuoAnclas(requestf):
     progressTotal.value = len(lineas) 
     progressDone.save()
     progressTotal.save()
-    asynkTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    asyncTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
     asyncKey = asyncTask.id
     utils.getOrCreateSettigs('asyncKeyIndividuo',asyncKey)
     print("Generando matriz cartesiana Individuo-Centro-Dia-Hora")
@@ -145,19 +151,23 @@ def cargarTiempos(tipo,request):
     utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
 
 def cargarTiemposBus(request):
-    res, lineas = checkTiemposBus(request)
-    if not res:
-        return lineas
+#    res, lineas = checkTiemposBus(request)
+#    if not res:
+#        return lineas
+    csvfile = request.FILES['inputFile']
+    baseDirectory  = "./app/data/RawCsv/"
+    utils.createFolder(baseDirectory)
+    newCsv = open(baseDirectory + "tiemposBus.csv", 'wb')
+    for chunk in csvfile.chunks():
+        newCsv.write(chunk)
+    newCsv.close()
     status  = Settings.objects.get(setting='statusMatrizBus')
     status.value  = 0
     status.save()
     progressDone  = Settings.objects.get(setting='currentMatrizBus')
-    progressTotal = Settings.objects.get(setting='totalMatrizBus')
     progressDone.value  = 0.1
-    progressTotal.value = len(lineas) 
     progressDone.save()
-    progressTotal.save()
-    asyncTask = saveTiemposBusToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+    asyncTask = saveTiemposBusToDB.apply_async(queue = 'CalculationQueue')
     asyncKey = asyncTask.id
     utils.getOrCreateSettigs('asyncKeyBus',asyncKey)
 
