@@ -27,7 +27,7 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
 
 def cargarCentroPediatras(request):
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-    status.value  = 0
+    status.value  = -1
     status.save()
     p = list(Prestador.objects.all()) # Traigo todos los prestadores
     dict_prestadores = {p[x].nombre:p[x].id for x in range(len(p))} # armo un diccionario que relaciona el nombre con la id
@@ -50,10 +50,10 @@ def cargarCentroPediatras(request):
 
 def cargarMutualistas(request):
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-    status.value  = 0
+    status.value  = -1
     status.save()
     status  = Settings.objects.get(setting='statusMatrizCentro')
-    status.value  = 0
+    status.value  = -1
     status.save()
     cursor = connection.cursor()
     cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
@@ -92,7 +92,7 @@ def cargarTiposTransporte(request):
 
 def cargarIndividuoAnclas(requestf):
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-    status.value  = 0
+    status.value  = -1
     status.save()
     prestadores = [x.id for x in Prestador.objects.all()]
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
@@ -117,7 +117,7 @@ def cargarIndividuoAnclas(requestf):
 
 def cargarTiempos(tipo,request):
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-    status.value  = 0
+    status.value  = -1
     status.save()
     #res, lineas = checkTiempos(tipo,request)
     #if not res:
@@ -149,7 +149,7 @@ def cargarTiempos(tipo,request):
 
 def cargarTiemposBus(request):
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-    status.value  = 0
+    status.value  = -1
     status.save()
 #    res, lineas = checkTiemposBus(request)
 #    if not res:
