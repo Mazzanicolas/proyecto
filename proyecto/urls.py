@@ -19,7 +19,6 @@ from app.views import redirectIndex
 
 urlpatterns = [
     url(r'^index/', include('app.urls')),
-    url(r'^', redirectIndex),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/profile/', redirectIndex),
 ]

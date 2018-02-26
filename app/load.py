@@ -8,6 +8,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 import time
 import shapefile
 from app.cancelar import *
+from django.db import connection
 
 #Habria que sacar todos estos tiempos a settings, pero no es urgente
 global TIEMPO_ARBITRARIAMENTE_ALTO
@@ -45,9 +46,9 @@ def cargarCentroPediatras(request):
     utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
 
 def cargarMutualistas(request):
-    IndividuoTiempoCentro.objects.all().delete()
-    IndividuoCentro.objects.all().delete()
-    Centro.objects.all().delete()
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(Centro._meta.db_table))
     res, lineas = checkMutualistas(request)
     if not res:
         return lineas
@@ -60,9 +61,11 @@ def cargarMutualistas(request):
     print("Se cargo correctamente el archivo")
 
 def cargarTiposTransporte(request):
-    IndividuoTiempoCentro.objects.all().delete()
-    IndividuoCentro.objects.all().delete()
-    Individuo.objects.all().delete()
+    cursor = connection.cursor()
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(AnclaTemporal._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}"'.format(Individuo._meta.db_table))
     res, lineas = checkTiposTransporte(request)
     if not res:
         return lineas
@@ -73,31 +76,6 @@ def cargarTiposTransporte(request):
         tipos.append(t)
     TipoTransporte.objects.bulk_create(tipos)
     print("Se cargo correctamente el archivo")
-
-def cargarSectores():
-    baseDirectory = "./app/data/shapes/"
-    utils.createFolder(baseDirectory)
-    sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
-    shapeAuto = sf.shapes()
-    recordsAuto = sf.records()
-    sf = shapefile.Reader(baseDirectory + "shapeCaminando.shp")
-    shapeCaminando = sf.shapes()
-    recordsCaminando = sf.records()
-    sf = shapefile.Reader(baseDirectory + "shapeBus.shp")
-    shapeBus = sf.shapes()
-    recordsBus = sf.records()
-    for i in range(len(shapeAuto)):
-        centroide = utils.centroid(shapeAuto[i])
-        sector = SectorAuto(shapeid = recordsAuto[i][0],x_centroide = centroide.x,y_centroide = centroide.y,shapePosition=i)
-        sector.save()
-    for i in range(len(shapeCaminando)):
-        centroide = utils.centroid(shapeCaminando[i])
-        sector = SectorCaminando(shapeid = recordsCaminando[i][0],x_centroide = centroide.x,y_centroide = centroide.y,shapePosition=i)
-        sector.save()
-    for i in range(len(shapeBus)):
-        centroide = utils.centroid(shapeBus[i])
-        sector = SectorOmnibus(shapeid = recordsBus[i][0],x_centroide = centroide.x,y_centroide = centroide.y,shapePosition=i)
-        sector.save()
 
 def cargarIndividuoAnclas(requestf):
     prestadores = [x.id for x in Prestador.objects.all()]

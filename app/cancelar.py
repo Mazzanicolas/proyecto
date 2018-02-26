@@ -72,7 +72,7 @@ def cancelarBus(request):
     #status = Settings.objects.get(setting = 'statusMatrizBus')
 
 def cancelarIndividuoTiempoCentro(request):
-    asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyIndividuosTiempoCentros').value)
+    asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyMatrizIndividuoTiempoCentro').value)
     if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
         asyncTask.abort()
     else:

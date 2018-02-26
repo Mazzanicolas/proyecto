@@ -48,6 +48,8 @@ urlpatterns = [
     url(r'^progressIndividuo/$'                   ,jsonRequests.progressIndividuo,                             name='progressMatrizIndividuo'),
     url(r'^progressCentro/$'                      ,jsonRequests.progressCentro,                                name='progressMatrizCentro'),
     url(r'^progressIndividuoTiempoCentro/$'       ,jsonRequests.progressIndividuoTiempoCentro,                 name='progressMatrizIndividuoTiempoCentro'),
+   
+    url(r'^cancelarCalculos/$'                    ,cancelar.deleteConsultaResults,                                  name='cancelarCalculos'),
 
     url(r'^cancelarAuto/$'                        ,cancelar.cancelarAuto,                                      name='cancelarAuto'),
     url(r'^cancelarCaminando/$'                   ,cancelar.cancelarCaminando,                                 name='cancelarCaminando'),

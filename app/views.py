@@ -11,7 +11,7 @@ from app.forms import EjecutarForm,SimularForm,EjecutarHelper,SimularHelper
 from celery import result
 from proyecto.celery import app
 from app.checkeo_errores import *
-from app.task import delegator,calcularTiemposMatrix
+from app.task import *
 import app.utils as utils
 import app.load as load
 from django.contrib.sessions.models import Session
@@ -85,14 +85,17 @@ def initSettingsStatus():
     utils.getOrCreateSettigs('currentMatrizIndividuoTiempoCentro',0)
     utils.getOrCreateSettigs('totalMatrizIndividuoTiempoCentro',0)
     utils.getOrCreateSettigs('statusMatrizIndividuoTiempoCentro',-1)
+    utils.getOrCreateSettigs('shapeAutoStatus',-1)
+    utils.getOrCreateSettigs('shapeCaminandoStatus',-1)
+    utils.getOrCreateSettigs('shapeBusStatus',-1)
+
+
 
 
 def testing(request):
     initSettingsStatus()
     if not request.user.is_authenticated:
         return redirect('login')
-    if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()) or not SectorOmnibus.objects.all() :
-        load.cargarSectores()
     if(not Settings.objects.filter(setting = "tiempoMaximo")):
         s = Settings(setting = "tiempoMaximo",value = "60")
         s.save()
@@ -138,11 +141,11 @@ def testing(request):
             elif(radioMatrix == "option7"):
                 lineas = load.cargarTiposTransporte(request)
             elif(radioMatrix == 'option10'):
-                lineas = loadAutoSabe(request,1)
+                lineas = loadShapes(request,1)
             elif(radioMatrix == 'option11'):
-                lineas = loadAutoSabe(request,2)
+                lineas = loadShapes(request,2)
             elif(radioMatrix == 'option12'):
-                lineas = loadAutoSabe(request,0)
+                lineas = loadShapes(request,0)
             if lineas is not None:
                 pseudo_buffer = utils.Echo()
                 writer = csv.writer(pseudo_buffer)
@@ -164,7 +167,8 @@ def testing(request):
     statuses = {0:int(Settings.objects.get(setting = 'statusMatrizAuto').value),                  1:int(Settings.objects.get(setting = 'statusMatrizCaminando').value), 
                 2:int(Settings.objects.get(setting = 'statusMatrizBus').value),                   3:int(Settings.objects.get(setting = 'statusMatrizIndividuo').value),             
                 4:int(Settings.objects.get(setting = 'statusMatrizCentro').value),                5:int(Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro').value), 
-                6:TipoTransporte.objects.count(),                                                 7:Prestador.objects.count(), 
+                6:TipoTransporte.objects.count(),                                                 7:Prestador.objects.count(),
+                10:int(Settings.objects.get(setting = 'shapeAutoStatus').value), 11:int(Settings.objects.get(setting = 'shapeBusStatus').value), 12:int(Settings.objects.get(setting = 'shapeCaminandoStatus').value), 
                 8:int(request.session.get('calculationStatus', -1))
         }
     
@@ -175,12 +179,15 @@ def testing(request):
     response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
     return response
 
-def loadAutoSabe(request,tipo):
+def loadShapes(request,tipo):
     if(tipo == 0):
         tipoNombre = "shapeCaminando"
+        utils.getOrCreateSettigs('shapeCaminandoStatus',0)
     if(tipo == 1):
+        utils.getOrCreateSettigs('shapeAutoStatus',0)
         tipoNombre = "shapeAuto"
     if(tipo == 2):
+        utils.getOrCreateSettigs('shapeBusStatus',0)
         tipoNombre = "shapeBus"
     content = request.FILES['inputFile']
     unzipped = zipfile.ZipFile(content)
@@ -190,6 +197,9 @@ def loadAutoSabe(request,tipo):
         file = open("./app/data/shapes/"+tipoNombre+"."+filename[1],'wb')
         file.write(unzipped.read(libitem))
         file.close()
+    asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'CalculationQueue')
+    asyncTask.get()
+
 class UserFormView(View):
     form_class = UserForm
     template_name = 'app/registration_form.html'

@@ -156,6 +156,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos
     finJar  = utils.horaMilToDateTime(jardin.hora_fin) if jardin else None
     horaDate    = utils.horaMilToDateTime(hora)
     tiReLle = timedelta(minutes = int(self.request.COOKIES.get('tiempoLlega')))
+    hasPed = pediatras > 0
     if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias) or tieneJardin and horaDate >= inicioJar and horaDate < finJar and dia in utils.getListOfDays(jardin.dias)):
         record.tiempoViaje = -1
         record.llegaGeografico = "No"
@@ -219,7 +220,7 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos
                     resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
                     horaLlegadaJardin = finTra + tiempos['tTrabajoJardin']
                     horaSalidaJardin = finJar if (horaLlegadaJardin <= finJar) else horaLlegadaJardin
-                    resultLlegaG = "Si" if (horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate, tiReLle) else "No"
+                    resultLlegaG = "Si" if (horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate + tiReLle) else "No"
                     if(resultLlegaG == "Si"):
                         resultLlegaG,resultTimpo = utils.vuelveHogar(horaSalidaJardin,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)                        
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed

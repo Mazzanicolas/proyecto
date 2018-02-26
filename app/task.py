@@ -15,6 +15,7 @@ import math
 import shapefile
 from billiard.exceptions import Terminated
 from celery.contrib.abortable import AbortableTask
+from django.db import connection
 
 
 global TIEMPO_ARBITRARIAMENTE_ALTO
@@ -38,6 +39,8 @@ def delegator(get,sessionKey,cookies,userId):
     getData      = get
     isResumen = False
     isIndividual = False
+    session['isIndividual'] = 0
+    session['isResumen'] = 0
     indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(get,cookies)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
@@ -74,7 +77,7 @@ def delegator(get,sessionKey,cookies,userId):
         addProgress(sessionKey,5)
         print("ENDOSINDIVIDUALCSV")
     if(isResumen):
-        job = suzuki.chunks(individuos,1).group()
+        job = calcularResumen.chunks(individuos,1).group()
         result = job.apply_async(queue = "CalculationQueue")
         with allow_join_result():
             resultList = result.join()
@@ -208,7 +211,7 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             my_lock.release()
     return result
 @shared_task
-def suzuki(individuos,simParam,sessionKey,dictTiemposSettings):
+def calcularResumen(individuos,simParam,sessionKey,dictTiemposSettings):
     dictTiemposSettings['tiempoMaximo'] = timedelta(minutes = int(dictTiemposSettings.get('tiempoMaximo')))
     dictTiemposSettings['tiempoConsulta'] = timedelta(minutes = int(dictTiemposSettings.get('tiempoConsulta')))
     dictTiemposSettings['tiempoLlega'] = timedelta(minutes = int(dictTiemposSettings.get('tiempoLlega')))
@@ -322,8 +325,11 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     jardin = individuo.jardin
     hasPed = pediatras >0
     horaDate = utils.horaMilToDateTime(hora)
-    if(tieneTrabajo and horaDate > inicioTra and horaDate < finTra and trabajo.dias in utils.getListOfDays(trabajo.dias)
-            or tieneJardin and horaDate > inicioJar and horaDate < finJar and jardin.dias in utils.getListOfDays(jardin.dias)):
+    if(centro == 1101):
+        print(trabajo.dias in utils.getListOfDays(trabajo.dias))
+        print(jardin.dias in utils.getListOfDays(jardin.dias))
+    if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias)
+            or tieneJardin and horaDate >= inicioJar and horaDate < finJar and dia in utils.getListOfDays(jardin.dias)):
         return -1,"No"
     if(tieneTrabajo and dia in utils.getListOfDays(trabajo.dias)):
         if(horaDate < inicioTra):
@@ -457,7 +463,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
                     resultTimpo = tiempos['tTrabajoJardin'] + tiempos['tJardinCentro']
                     horaLlegadaJardin = finTra + tiempos['tTrabajoJardin']
                     horaSalidaJardin = finJar if (horaLlegadaJardin <= finJar) else horaLlegadaJardin
-                    resultLlegaG = "Si" if (horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate, tiReLle) else "No"
+                    resultLlegaG = "Si" if (horaSalidaJardin + tiempos['tJardinCentro'] <= horaDate + tiReLle) else "No"
                     if(resultLlegaG == "Si"):
                         resultLlegaG,resultTimpo = utils.vuelveHogar(horaSalidaJardin,tiempos['tJardinHogar'],tiempos['tHogarCentro'],resultTimpo,horaDate,tiReLle,tiempoMaximo)                        
                     BoolLlega = resultLlegaG == "Si" and samePrest and hasPed
@@ -896,3 +902,54 @@ def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCe
         auxOptimo.centroOptimoCaminando = centro
         auxOptimo.tHogarCentroCaminando = tHogarCentroCaminando
     return auxOptimo
+
+@shared_task
+def cargarSectores(tipo):
+    if(tipo == 0):
+        cursor = connection.cursor()
+        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoCaminando._meta.db_table))
+        SectorTiempoCaminando.objects.all().delete()
+        SectorCaminando.objects.all().delete()
+    if(tipo == 1):
+        cursor = connection.cursor()
+        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoAuto._meta.db_table))
+        SectorTiempoAuto.objects.all().delete()
+        SectorAuto.objects.all().delete()
+    if(tipo == 2):
+        cursor = connection.cursor()
+        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoOmnibus._meta.db_table))
+        SectorTiempoOmnibus.objects.all().delete()
+        SectorOmnibus.objects.all().delete()
+    return loadSectores(tipo)
+
+def loadSectores(tipo):
+    baseDirectory = "./app/data/shapes/"
+    utils.createFolder(baseDirectory)
+    if(tipo == 0):
+        sf = shapefile.Reader(baseDirectory + "shapeCaminando.shp")
+        shapeCaminando = sf.shapes()
+        recordsCaminando = sf.records()
+        for i in range(len(shapeCaminando)):
+            centroide = utils.centroid(shapeCaminando[i])
+            sector = SectorCaminando(shapeid = recordsCaminando[i][0],x_centroide = centroide.x,y_centroide = centroide.y,shapePosition=i)
+            sector.save()
+        utils.getOrCreateSettigs('shapeCaminandoStatus',1)
+    if(tipo == 1):
+        sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
+        shapeAuto = sf.shapes()
+        recordsAuto = sf.records()
+        for i in range(len(shapeAuto)):
+            centroide = utils.centroid(shapeAuto[i])
+            sector = SectorAuto(shapeid = recordsAuto[i][0],x_centroide = centroide.x,y_centroide = centroide.y,shapePosition=i)
+            sector.save()
+        utils.getOrCreateSettigs('shapeAutoStatus',1)
+    if(tipo == 2):
+        utils.getOrCreateSettigs('shapeBusStatus',1)
+        sf = shapefile.Reader(baseDirectory + "shapeBus.shp")
+        shapeBus = sf.shapes()
+        recordsBus = sf.records()
+        for i in range(len(shapeBus)):
+            centroide = utils.centroid(shapeBus[i])
+            sector = SectorOmnibus(shapeid = recordsBus[i][0],x_centroide = centroide.x,y_centroide = centroide.y,shapePosition=i)
+            sector.save()
+    return True
