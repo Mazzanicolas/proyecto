@@ -639,8 +639,11 @@ def saveCentrosToDB(self,lineas,dict_prestadores):
     sf = shapefile.Reader(baseDirectory + "shapeBus.shp")
     shapeBus = sf.shapes()
     recordsBus = sf.records()
-    Pediatra.objects.all().delete()
-    Centro.objects.all().delete()
+    cursor = connection.cursor()
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(Centro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(Pediatra._meta.db_table))
     horas = [str(float(x)) for x in range(6,22)] # ["6.0".."21.0"]
     for caso in lineas:
         ## Centro
@@ -702,8 +705,12 @@ def saveIndividuosToDB(self, lineas):
     sf = shapefile.Reader(baseDirectory + 'shapeBus.shp')
     shapeBus = sf.shapes()
     recordsBus = sf.records()
-    AnclaTemporal.objects.all().delete()
-    Individuo.objects.all().delete()
+    cursor = connection.cursor()
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(Individuo._meta.db_table))    
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(AnclaTemporal._meta.db_table))
+
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
     dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
     idAncla = 0
@@ -907,17 +914,17 @@ def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCe
 def cargarSectores(tipo):
     if(tipo == 0):
         cursor = connection.cursor()
-        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoCaminando._meta.db_table))
+        cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(SectorTiempoCaminando._meta.db_table))
         SectorTiempoCaminando.objects.all().delete()
         SectorCaminando.objects.all().delete()
     if(tipo == 1):
         cursor = connection.cursor()
-        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoAuto._meta.db_table))
+        cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(SectorTiempoAuto._meta.db_table))
         SectorTiempoAuto.objects.all().delete()
         SectorAuto.objects.all().delete()
     if(tipo == 2):
         cursor = connection.cursor()
-        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoOmnibus._meta.db_table))
+        cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(SectorTiempoOmnibus._meta.db_table))
         SectorTiempoOmnibus.objects.all().delete()
         SectorOmnibus.objects.all().delete()
     return loadSectores(tipo)

@@ -55,9 +55,10 @@ def cargarMutualistas(request):
     status  = Settings.objects.get(setting='statusMatrizCentro')
     status.value  = 0
     status.save()
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoTiempoCentro._meta.db_table))
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoCentro._meta.db_table))
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(Centro._meta.db_table))
+    cursor = connection.cursor()
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(Centro._meta.db_table))
     res, lineas = checkMutualistas(request)
     if not res:
         return lineas
@@ -71,10 +72,13 @@ def cargarMutualistas(request):
 
 def cargarTiposTransporte(request):
     cursor = connection.cursor()
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoTiempoCentro._meta.db_table))
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(IndividuoCentro._meta.db_table))
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(AnclaTemporal._meta.db_table))
-    cursor.execute('TRUNCATE TABLE "{0}"'.format(Individuo._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(AnclaTemporal._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(Individuo._meta.db_table))
+    status  = Settings.objects.get(setting='statusMatrizIndividuo')
+    status.value  = -1
+    status.save()
     res, lineas = checkTiposTransporte(request)
     if not res:
         return lineas
@@ -87,6 +91,9 @@ def cargarTiposTransporte(request):
     print("Se cargo correctamente el archivo")
 
 def cargarIndividuoAnclas(requestf):
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+    status.value  = 0
+    status.save()
     prestadores = [x.id for x in Prestador.objects.all()]
     tipos_transporte = [x.nombre for x in TipoTransporte.objects.all()]
     dicc_transporte = {x.nombre:x for x in TipoTransporte.objects.all()}
@@ -109,6 +116,9 @@ def cargarIndividuoAnclas(requestf):
     print("Matriz Carteasiana generada")
 
 def cargarTiempos(tipo,request):
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+    status.value  = 0
+    status.save()
     #res, lineas = checkTiempos(tipo,request)
     #if not res:
     #    return lineas
@@ -138,6 +148,9 @@ def cargarTiempos(tipo,request):
     utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
 
 def cargarTiemposBus(request):
+    status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+    status.value  = 0
+    status.save()
 #    res, lineas = checkTiemposBus(request)
 #    if not res:
 #        return lineas

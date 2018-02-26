@@ -23,12 +23,13 @@ def createFolder(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def getOrCreateSettigs(id,value):
+def getOrCreateSettigs(id,value,isOnlyGet = False):
     currentSettingsQuery = Settings.objects.filter(setting=id)[:]
     if(currentSettingsQuery):
         setting = currentSettingsQuery[0]
-        setting.value = value
-        setting.save()
+        if(not isOnlyGet):
+            setting.value = value
+            setting.save()
         return setting
     currentSettings = Settings(setting=id,value=value)
     currentSettings.save()

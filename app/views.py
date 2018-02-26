@@ -164,11 +164,23 @@ def testing(request):
     simularForm = SimularForm()
     simularHelper = SimularHelper()
     username = request.user.username
+    try:
+        statusAuto = int(Settings.objects.get(setting = 'shapeAutoStatus').value)
+    except:
+        statusAuto = -1
+    try:
+        statusCaminando = int(Settings.objects.get(setting = 'shapeCaminandoStatus').value)
+    except:
+        statusCaminando = -1
+    try:
+        statusBus = int(Settings.objects.get(setting = 'shapeBusStatus').value)
+    except:
+        statusBus = -1
     statuses = {0:int(Settings.objects.get(setting = 'statusMatrizAuto').value),                  1:int(Settings.objects.get(setting = 'statusMatrizCaminando').value), 
                 2:int(Settings.objects.get(setting = 'statusMatrizBus').value),                   3:int(Settings.objects.get(setting = 'statusMatrizIndividuo').value),             
                 4:int(Settings.objects.get(setting = 'statusMatrizCentro').value),                5:int(Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro').value), 
                 6:TipoTransporte.objects.count(),                                                 7:Prestador.objects.count(),
-                10:int(utils.getOrCreateSettigs('shapeAutoStatus',-1).value), 11:int(utils.getOrCreateSettigs('shapeBusStatus',-1).value), 12:int(utils.getOrCreateSettigs('shapeBusStatus',-1).value), 
+                10:statusAuto, 11:statusCaminando, 12:statusBus, 
                 8:int(request.session.get('calculationStatus', -1))
         }
     
@@ -192,9 +204,11 @@ def loadShapes(request,tipo):
     content = request.FILES['inputFile']
     unzipped = zipfile.ZipFile(content)
     print (unzipped.namelist())
+    baseDirectory = "./app/data/shapes/"
+    utils.createFolder(baseDirectory)
     for libitem in unzipped.namelist():
         filename = libitem.split('.')
-        file = open("./app/data/shapes/"+tipoNombre+"."+filename[1],'wb')
+        file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
         file.write(unzipped.read(libitem))
         file.close()
     asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'CalculationQueue')
