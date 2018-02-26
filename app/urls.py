@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import include, url
 from . import views
 from . import tables
 from . import jsonRequests
@@ -6,9 +6,11 @@ from . import cancelar
 from app.forms import SuperLogin
 from django.contrib.auth.views import login,logout
 from django.views.generic import RedirectView
+from django.contrib import admin
 
 urlpatterns = [
     #url(r'^$', views.index, name='index'),
+    #url(r'^admin/', admin.site.urls),
     url(r'^consulta/$'                            ,tables.FilteredPersonListView.as_view(),                    name='consultaConFiltro'),
     url(r'^Simulacion/$'                          ,tables.SimPersonView.as_view(),                             name='Simulacion'),
     url(r'^redirectConsulta/$'                    ,views.redirectConsulta,                                     name='redirectConsulta'),
@@ -35,7 +37,7 @@ urlpatterns = [
     url(r'^login/$'                               ,login, {'template_name':'accounts/login.html','authentication_form':SuperLogin}, name='login'),
     url(r'^logout/$'                              ,logout, {'next_page':'login'}),
     url(r'CalculateTimeMatrix/$'                  ,views.calcularTiemposMatrixIndi,                            name='calculateTimeMatrix'),
-    url(r'^$'                                     ,views.testing,                                              name='index'),
+    url(r'^/$'                                     ,views.testing,                                              name='index'),
     url(r'^systemStatus/$'                        ,views.systemStatus,                                         name='systemStatus'),
     url(r'^ejecutarProgress/$'                    ,views.ejecutarProgress,                                     name='ejecutarProgress'),
 
@@ -54,7 +56,6 @@ urlpatterns = [
     url(r'^cancelarCentro/$'                      ,cancelar.cancelarCentro,                                    name='cancelarCentro'),
     url(r'^cancelarIndividuoTiempoCentro/$'       ,cancelar.cancelarIndividuoTiempoCentro,                     name='cancelarIndividuoTiempoCentro'),
 
-
-
+    
 
 ]

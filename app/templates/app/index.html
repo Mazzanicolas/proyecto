@@ -187,7 +187,7 @@
                                     <div class="form-check">
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
-                                            <input type="radio" class="custom-control-input" id="customControlValidation1" name="optionsRadios" value="option3">
+                                            <input type="radio" class="custom-control-input" id="customControlValidation1" name="optionsRadios" value="option3" disabled>
                                             <label class="custom-control-label" for="customControlValidation1">Matriz tiempos Auto&nbsp;
                                                 {% if statuses.0 == 1 %}
                                                     <span id='MTAuBadage' class="badge badge-success">Cargado</span>
@@ -199,7 +199,7 @@
                                             </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
-                                            <input type="radio" class="custom-control-input" id="customControlValidation2" name="optionsRadios" value="option6">
+                                            <input type="radio" class="custom-control-input" id="customControlValidation2" name="optionsRadios" value="option6" disabled>
                                             <label class="custom-control-label" for="customControlValidation2">Matriz tiempos Omnibus&nbsp;
                                                 {% if statuses.2 == 1 %}
                                                     <span id='MTOmBadage' class="badge badge-success">Cargado</span>
@@ -211,7 +211,7 @@
                                             </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
-                                            <input type="radio" class="custom-control-input" id="customControlValidation3" name="optionsRadios" value="option4">
+                                            <input type="radio" class="custom-control-input" id="customControlValidation3" name="optionsRadios" value="option4" disabled>
                                             <label class="custom-control-label" for="customControlValidation3">Matriz tiempos Caminando&nbsp;
                                                 {% if statuses.1 == 1 %}
                                                     <span id='MTCaBadage' class="badge badge-success">Cargado</span>
@@ -230,7 +230,7 @@
                                     <div class="form-check" >                                        
                                         <!--debug-->
                                         <div class="custom-control custom-radio mb-3">
-                                            <input type="radio" class="custom-control-input" id="customControlValidation4" name="optionsRadios" value="option1">
+                                            <input type="radio" class="custom-control-input" id="customControlValidation4" name="optionsRadios" value="option1" disabled>
                                             <label class="custom-control-label" for="customControlValidation4">Conjunto de datos de Prestadores&nbsp;
                                                 {% if statuses.7 > 0 %}
                                                     <span id='CDPrBadage' class="badge badge-success">Cargado</span>
@@ -240,7 +240,7 @@
                                             </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
-                                            <input type="radio" class="custom-control-input" id="customControlValidation5" name="optionsRadios" value="option5">
+                                            <input type="radio" class="custom-control-input" id="customControlValidation5" name="optionsRadios" value="option5" disabled>
                                             <label class="custom-control-label" for="customControlValidation5">Conjunto de datos para Centros&nbsp;
                                                 {% if statuses.4 == 1 %}
                                                     <span id='CDCeBadage' class="badge badge-success">Cargado</span>
@@ -252,7 +252,7 @@
                                             </label>
                                         </div>
                                         <div class="custom-control custom-radio mb-3">
-                                            <input type="radio" class="custom-control-input" id="customControlValidation6" name="optionsRadios" value="option2">
+                                            <input type="radio" class="custom-control-input" id="customControlValidation6" name="optionsRadios" value="option2" disabled>
                                             <label class="custom-control-label" for="customControlValidation6">Conjunto de datos para Personas&nbsp;
                                                 {% if statuses.3 == 1 %}
                                                     <span id='CDPeBadage' class="badge badge-success">Cargado</span>
@@ -275,7 +275,7 @@
                             
                         </div>
                         <div class="modal-footer">
-                            <a class="btn btn-primary" href="CalculateTimeMatrix/" aria-expanded="false"  tt="tooltip" data-placement="bottom" title="Antes de calcular si los datos fueron modificados se deben Procesar">Procesar Datos</a>
+                            <a class="btn btn-danger" href="CalculateTimeMatrix/" aria-expanded="false"  tt="tooltip" data-placement="bottom" title="Antes de calcular si los datos fueron modificados se deben Procesar" id="procesarButton">Procesar Datos</a>
                                 <label style="margin-right:340px;">&nbsp;
                                     {% if statuses.5 == 1 %}
                                         <h5><span id='CDCeBadage' class="badge badge-success">Procesado</span></h5>
@@ -499,14 +499,17 @@
     </body>
     <!--v-Variables-v-->
     <script> //Alta security
-        var TTrStatus  = '{{statuses.6}}';
-        var MTAuStatus = '{{statuses.0}}';
-        var MTOmStatus = '{{statuses.2}}';
-        var MTCaStatus = '{{statuses.1}}';
-        var CDPrStatus = '{{statuses.7}}';
-        var CDCeStatus = '{{statuses.4}}';
-        var CDPeStatus = '{{statuses.3}}';
-        var ReStatus   = '{{statuses.5}}';
+        var SHPAuStatus = '{{statuses.10}}';
+        var SHPOmStatus = '{{statuses.11}}';
+        var SHPCaStatus = '{{statuses.12}}';
+        var TTrStatus   = '{{statuses.6}}';
+        var MTAuStatus  = '{{statuses.0}}';
+        var MTOmStatus  = '{{statuses.2}}';
+        var MTCaStatus  = '{{statuses.1}}';
+        var CDPrStatus  = '{{statuses.7}}';
+        var CDCeStatus  = '{{statuses.4}}';
+        var CDPeStatus  = '{{statuses.3}}';
+        var ReStatus    = '{{statuses.5}}';
         var currentProgress = parseInt('{{statuses.8}}');
     </script>
     {% load static %}

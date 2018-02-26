@@ -90,6 +90,43 @@ $(document).ready(function(){
             document.getElementById("cbCSV1").disabled = false;
     });
 });
+/*Bloqueo de cargado*/
+window.onload = blockLoadingChain();
+
+function blockLoadingChain(){
+    //if(isLoaded(SHPAuStatus) && isLoaded(SHPOmStatus) && isLoaded(SHPOmStatus)){
+        if(isLoaded(TTrStatus)){
+            unlockInput('customControlValidation1');
+            if(isLoaded(MTAuStatus)){
+                unlockInput('customControlValidation2');
+                if(isLoaded(MTOmStatus)){
+                    unlockInput('customControlValidation3');
+                    if(isLoaded(MTCaStatus)){
+                        unlockInput('customControlValidation4');
+                        if(isLoaded(CDPrStatus)){
+                            unlockInput('customControlValidation5');
+                            if(isLoaded(CDCeStatus)){
+                                unlockInput('customControlValidation6');
+                                if(isLoaded(CDPeStatus)){
+                                    document.getElementById('procesarButton').className = 'btn btn-primary';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    //}
+}
+function unlockInput(id){
+    document.getElementById(id).disabled = false;
+}
+function isLoaded(status){
+    if(status==-1){
+        return false;
+    }
+    return true;
+}
 //Loading Bar
 
 var bar = new ProgressBar.Circle(container, {
