@@ -573,11 +573,19 @@ def saveTiemposToDB(self,tipo):
         print("Task was terminated")
 
 @shared_task( bind=True, base=AbortableTask)
-def saveTiemposBusToDB(self,lineas):
+def saveTiemposBusToDB(self):
     SectorTiempoOmnibus.objects.all().delete()
     id = 0
     tiempos = []
     bulkAmount = 10000
+    baseDirectory = "./app/data/RawCsv/"
+    utils.createFolder(baseDirectory)
+    csvFile = open(baseDirectory+"tiemposBus.csv", 'r')
+    lineas = csv.reader(csvFile)
+    progressTotal = Settings.objects.get(setting='totalMatrizBus')
+    progressTotal.value = sum(1 for row in lineas) - 1 #len(lineas)
+    csvFile.seek(0)
+    progressTotal.save()
     for caso in lineas:
         s1 = caso[0]
         s2 = caso[1]
@@ -591,9 +599,9 @@ def saveTiemposBusToDB(self,lineas):
                 status.value = -1
                 status.save()
                 return
-            guardar = SectorTiempoOmnibus.object.bulk_create(tiempos)
+            guardar = SectorTiempoOmnibus.objects.bulk_create(tiempos)
             tiempos = list()
-            progressDone = Settings.objects.get(settings='currentMatrizBus')
+            progressDone = Settings.objects.get(setting='currentMatrizBus')
             progressDone.value = float(progressDone.value) + bulkAmount
             progressDone.save()
             print(id)
@@ -673,6 +681,11 @@ def saveCentrosToDB(self,lineas,dict_prestadores):
     print("Se cargo correctamente el archivo")
 @shared_task( bind=True, base=AbortableTask)
 def saveIndividuosToDB(self, lineas):
+    if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  =  -1
+            status.save()
+            return
     baseDirectory = 'app/data/shapes/'
     sf = shapefile.Reader(baseDirectory + 'shapeAuto.shp')
     shapeAuto = sf.shapes()
@@ -698,11 +711,6 @@ def saveIndividuosToDB(self, lineas):
             anclaJardin.sector_auto      = utils.getSectorForPoint(anclaJardin, shapeAuto,recordsAuto, SectorAuto)
             anclaJardin.sector_caminando = utils.getSectorForPoint(anclaJardin,shapeCaminando,recordsCaminando, SectorCaminando)
             anclaJardin.sector_bus       = utils.getSectorForPoint(anclaJardin, shapeBus, recordsBus, SectorOmnibus)
-            if(self.is_aborted()):
-                status  = Settings.objects.get(setting='statusMatrizIndividuo')
-                status.value  =  -1
-                status.save()
-                return
             anclaJardin.save()
             idAncla +=1
             tieneJardin = True
@@ -714,11 +722,6 @@ def saveIndividuosToDB(self, lineas):
             anclaTrabajo.sector_auto      = utils.getSectorForPoint(anclaTrabajo, shapeAuto,recordsAuto, SectorAuto)
             anclaTrabajo.sector_caminando = utils.getSectorForPoint(anclaTrabajo,shapeCaminando,recordsCaminando, SectorCaminando)
             anclaTrabajo.sector_bus       = utils.getSectorForPoint(anclaTrabajo, shapeBus, recordsBus, SectorOmnibus)
-            if(self.is_aborted()):
-                status  = Settings.objects.get(setting='statusMatrizIndividuo')
-                status.value  =  -1
-                status.save()
-                return
             anclaTrabajo.save()
             idAncla +=1
             tieneTrabajo = True
@@ -734,11 +737,6 @@ def saveIndividuosToDB(self, lineas):
         #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
         individuo  = Individuo(id = int(caso[0]),tipo_transporte = dicc_transporte.get(caso[19]),prestador = Prestador.objects.get(id =int(caso[1])),
                     hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
-        if(self.is_aborted()):
-            status  = Settings.objects.get(setting='statusMatrizIndividuo')
-            status.value  =  -1
-            status.save()
-            return
         anclaHogar.save()
         individuo.save()
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
@@ -861,6 +859,11 @@ def newCalcTimes(self):
             )
             tiemposCentros.append(q)
             auxOptimo = setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroBus, tHogarCentroCaminando)
+        if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  =  -1
+            status.save()
+            return
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
         progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
