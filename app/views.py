@@ -533,7 +533,7 @@ def zipFile(zip_subdir, filenames):
     zf = zipfile.ZipFile(s, "w")
     for fpath in filenames:
         fdir, fname = os.path.split(fpath)
-        zip_path    = os.path.join(zip_subdir, getCleanFileName(fname))
+        zip_path    = os.path.join(zip_subdir, fname)
         zf.write(fpath, zip_path)
     zf.close()
     resp = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
