@@ -909,20 +909,28 @@ def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCe
 
 @shared_task
 def cargarSectores(tipo):
+    cursor = connection.cursor()
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoCentro._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(Individuo._meta.db_table))
+    cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(AnclaTemporal._meta.db_table))
     if(tipo == 0):
-        cursor = connection.cursor()
-        cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(SectorTiempoCaminando._meta.db_table))
-        SectorTiempoCaminando.objects.all().delete()
+        status  = Settings.objects.get(setting='statusMatrizCaminando')
+        status.value  = -1
+        status.save()
+        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoCaminando._meta.db_table))
         SectorCaminando.objects.all().delete()
     if(tipo == 1):
-        cursor = connection.cursor()
-        cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(SectorTiempoAuto._meta.db_table))
-        SectorTiempoAuto.objects.all().delete()
+        status  = Settings.objects.get(setting='statusMatrizAuto')
+        status.value  = -1
+        status.save()
+        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoAuto._meta.db_table))
         SectorAuto.objects.all().delete()
     if(tipo == 2):
-        cursor = connection.cursor()
-        cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(SectorTiempoOmnibus._meta.db_table))
-        SectorTiempoOmnibus.objects.all().delete()
+        status  = Settings.objects.get(setting='statusMatrizBus')
+        status.value  = -1
+        status.save()
+        cursor.execute('TRUNCATE TABLE "{0}"'.format(SectorTiempoOmnibus._meta.db_table))
         SectorOmnibus.objects.all().delete()
     return loadSectores(tipo)
 

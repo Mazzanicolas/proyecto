@@ -202,6 +202,15 @@ def loadShapes(request,tipo):
             if(tipo == 2):
                 utils.getOrCreateSettigs('shapeBusStatus',0)
                 tipoNombre = "shapeBus"
+            status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+            status.value  = -1
+            status.save()
+            status  = Settings.objects.get(setting='statusMatrizCentro')
+            status.value  = -1
+            status.save()
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  = -1
+            status.save()
             content = request.FILES['inputFile']
             unzipped = zipfile.ZipFile(content)
             print (unzipped.namelist())
