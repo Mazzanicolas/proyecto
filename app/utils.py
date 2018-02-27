@@ -395,32 +395,6 @@ def writeSettings(userId,dictSettings,simParams):
             text_file.write("Individuos: {} \n".format(', '.join(idList)))
         else:
           text_file.write("Individuos: Todos")
-def checkStatusesForTiemposMatrix():
-    have_lock   = False
-    my_lock     = redis.Redis().lock('IndividuosTiempos')
-    timAutLock  = getLock('Autos')
-    timCamLock  = getLock('Caminandos')
-    timBusLock  = getLock('Bus')
-    timCentLock = getLock('Centros')
-    timIndvLock = getLock('Individuos')
-    try:
-        have_lock   = my_lock.acquire(blocking=False)
-        if have_lock:
-            timAut  = timAutLock.acquire(blocking=False)
-            timCam  = timCamLock.acquire(blocking=False) 
-            timBus  = timBusLock.acquire(blocking=False) 
-            timCent = timCentLock.acquire(blocking=False) 
-            timIndv = timIndvLock.acquire(blocking=False)
-            if(timAut and timCam and timBus and timCent and timIndv):
-                status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')            
-                status.value  = 0
-                status.save()
-                return True
-        return False
-    finally:
-       haveLockList = [ [ timAut, timAutLock ] , [ timCam, timCamLock ] , [ timBus, timBusLock ] , [ timCent, timCentLock ] , [ timIndv, timIndvLock ] , [ have_lock, my_lock ] ] 
-       releaseAllLocks(haveLockList)
-
 def getLock(key):
     return redis.Redis().lock(key)
 def releaseLock(haveLock,lock):
@@ -474,3 +448,40 @@ def vuelveHogar(salidaDelAncla,tAnclaHogar,tHogarCentro,tAnclaCentro,hora,tiReLl
             return "Si",tAnclaCentro
         else:
             return "No",tAnclaCentro
+def nothingLoading():
+    stastusKeys = ["statusMatrizAuto",
+                    "statusMatrizBus",
+                    "statusMatrizCaminando",
+                    "statusMatrizCentro",
+                    "statusMatrizIndividuo",
+                    "statusMatrizIndividuoCentro",
+                    "statusMatrizIndividuoTiempoCentro",
+                    "statusPrestador",
+                    "shapeAutoStatus"
+                    "shapeBusStatus",
+                    "shapeCaminandoStatus"]
+    acumulator = True
+    for statusKey in stastusKeys:
+        acumulator = acumulator and Settings.objects.get(statusKey).value in ['-1','0']
+        if(not acumulator):
+            return False
+    return acumulator
+
+def allLoaded():
+    stastusKeys = ["statusMatrizAuto",
+                    "statusMatrizBus",
+                    "statusMatrizCaminando",
+                    "statusMatrizCentro",
+                    "statusMatrizIndividuo",
+                    "statusMatrizIndividuoCentro",
+                    "statusMatrizIndividuoTiempoCentro",
+                    "statusPrestador",
+                    "shapeAutoStatus"
+                    "shapeBusStatus",
+                    "shapeCaminandoStatus"]
+    acumulator = True
+    for statusKey in stastusKeys:
+        acumulator = acumulator and Settings.objects.get(statusKey).value == '1'
+        if(not acumulator):
+            return False
+    return acumulator

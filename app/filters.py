@@ -127,7 +127,7 @@ class SectorCaminandoFilter(django_filters.FilterSet):
 class SectorOmnibusFilter(django_filters.FilterSet):
     shapeid = django_filters.NumberFilter(label = 'Shape ID', name='shapeid')
     class Meta:
-        model = SectorAuto
+        model = SectorOmnibus
         fields = ['shapeid']
 
 class SectorTiempoAutoFilter(django_filters.FilterSet):
@@ -148,5 +148,5 @@ class SectorTiempoOmnibusFilter(django_filters.FilterSet):
     sectorO_1 = django_filters.NumberFilter(label = 'Sector 1', name='sectorO_1__shapeid')
     sectorO_2 = django_filters.NumberFilter(label = 'Sector 2', name='sectorO_2__shapeid')
     class Meta:
-        model = SectorTiempoAuto
+        model = SectorTiempoOmnibus
         fields = ['sectorO_1','sectorO_2']

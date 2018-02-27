@@ -549,7 +549,7 @@ class SectorCaminandoListView(LoginRequiredMixin,ExportMixin,SectorCaminandoTabl
 #################################################################
 class SectorOmnibusTable(tables.Table):
     class Meta:
-        model = SectorAuto
+        model = SectorOmnibus
         attrs = {"class": "paleblue"}
 
 class SectorOmnibusTableView(SingleTableView):
@@ -558,7 +558,7 @@ class SectorOmnibusTableView(SingleTableView):
     context_filter_name = 'filter'
 
     def get_queryset(self, **kwargs):
-        qs = SectorAuto.objects.all()
+        qs = SectorOmnibus.objects.all()
         self.filter = self.filter_class(self.request.GET, queryset=qs)
         self.filter.form.helper = self.formhelper_class()
         return self.filter.qs
@@ -657,8 +657,8 @@ class SectorTiempoCaminandoListView(LoginRequiredMixin,ExportMixin,SectorTiempoC
     formhelper_class = SecTieCamHelper
 #########################################################
 class SectorTiempoOmnibusTable(tables.Table):
-    sectorO_1 = tables.Column(accessor='sector_1.shapeid',verbose_name="Sector 1")
-    sectorO_2 = tables.Column(accessor='sector_2.shapeid',verbose_name="Sector 2")
+    sectorO_1 = tables.Column(accessor='sectorO_1.shapeid',verbose_name="Sector 1")
+    sectorO_2 = tables.Column(accessor='sectorO_1.shapeid',verbose_name="Sector 2")
     tiempo = tables.Column(verbose_name = 'Tiempo (Minutos)', empty_values = ())
     class Meta:
         model = SectorTiempoOmnibus
@@ -673,7 +673,7 @@ class SectorTiempoOmnibusTableView(SingleTableView):
     context_filter_name = 'filter'
 
     def get_queryset(self, **kwargs):
-        qs = SectorTiempoAuto.objects.all()
+        qs = SectorTiempoOmnibus.objects.all()
         self.filter = self.filter_class(self.request.GET, queryset=qs)
         self.filter.form.helper = self.formhelper_class()
         return self.filter.qs

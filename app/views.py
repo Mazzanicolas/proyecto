@@ -88,9 +88,7 @@ def initSettingsStatus():
     utils.getOrCreateSettigs('shapeAutoStatus',-1)
     utils.getOrCreateSettigs('shapeCaminandoStatus',-1)
     utils.getOrCreateSettigs('shapeBusStatus',-1)
-
-
-
+    utils.getOrCreateSettigs("statusPrestador", -1);
 
 def testing(request):
     initSettingsStatus()
@@ -190,29 +188,50 @@ def testing(request):
     response.set_cookie(key = 'tiempoConsulta',value = consT)
     response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
     return response
-
+ 
 def loadShapes(request,tipo):
-    if(tipo == 0):
-        tipoNombre = "shapeCaminando"
-        utils.getOrCreateSettigs('shapeCaminandoStatus',0)
-    if(tipo == 1):
-        utils.getOrCreateSettigs('shapeAutoStatus',0)
-        tipoNombre = "shapeAuto"
-    if(tipo == 2):
-        utils.getOrCreateSettigs('shapeBusStatus',0)
-        tipoNombre = "shapeBus"
-    content = request.FILES['inputFile']
-    unzipped = zipfile.ZipFile(content)
-    print (unzipped.namelist())
-    baseDirectory = "./app/data/shapes/"
-    utils.createFolder(baseDirectory)
-    for libitem in unzipped.namelist():
-        filename = libitem.split('.')
-        file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
-        file.write(unzipped.read(libitem))
-        file.close()
-    asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'CalculationQueue')
-    asyncTask.get()
+    my_lock = redis.Redis().lock("Cargar")
+    try:
+        have_lock = my_lock.acquire(blocking=False)
+        if have_lock:
+            if(not (Settings.objects.get('statusPrestador').value == '1'and Settings.objects.get('statusMatrizAuto').value == '1' and Settings.objects.get('statusMatrizBus').value == '1'and Settings.objects.get('statusMatrizCaminando').value == '1') or not utils.nothingLoading()):
+                return [["Faltan cargar matrizes o se estan cargando"]]
+            if(tipo == 0):
+                tipoNombre = "shapeCaminando"
+                utils.getOrCreateSettigs('shapeCaminandoStatus',0)
+            if(tipo == 1):
+                    utils.getOrCreateSettigs('shapeAutoStatus',0)
+                    tipoNombre = "shapeAuto"
+            if(tipo == 2):
+                utils.getOrCreateSettigs('shapeBusStatus',0)
+                tipoNombre = "shapeBus"
+            content = request.FILES['inputFile']
+            unzipped = zipfile.ZipFile(content)
+            print (unzipped.namelist())
+            baseDirectory = "./app/data/shapes/"
+            utils.createFolder(baseDirectory)
+            for libitem in unzipped.namelist():
+                filename = libitem.split('.')
+                file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
+                file.write(unzipped.read(libitem))
+                file.close()
+            asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'CalculationQueue')
+            asyncTask.get()
+        else:
+            print("Did not acquire lock.")
+    except:
+        if(tipo == 0):
+            tipoNombre = "shapeCaminando"
+            utils.getOrCreateSettigs('shapeCaminandoStatus',-1)
+        if(tipo == 1):
+            utils.getOrCreateSettigs('shapeAutoStatus',-1)
+            tipoNombre = "shapeAuto"
+        if(tipo == 2):
+            utils.getOrCreateSettigs('shapeBusStatus',-1)
+        return
+    finally:
+        if have_lock:
+            my_lock.release()   
 
 class UserFormView(View):
     form_class = UserForm
@@ -431,13 +450,30 @@ def guardarArchivo(nombre, archivo):
         return csv
 
 def generateCsvResults(request):
-    indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
-    utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
-    asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)], queue = 'delegate')
-    request.session['asyncKey'] = asyncKey.id
-    request.session['calculationStatus'] = 0 
-    response = redirect('index')
-    task_postrun.connect(shutdown_worker, sender=delegator)
+    my_lock = redis.Redis().lock("Cargar")
+    try:
+        have_lock = my_lock.acquire(blocking=False)
+        if have_lock:
+            if(not utils.allLoaded()):
+                return redirect('index')#[["Faltan cargar matrizes o se estan cargando"]]
+            indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
+            utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
+            asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)], queue = 'delegate')
+            request.session['asyncKey'] = asyncKey.id
+            request.session['calculationStatus'] = 0 
+            response = redirect('index')
+            task_postrun.connect(shutdown_worker, sender=delegator)
+            return response
+        else:
+            return redirect('index')
+            print("Did not acquire lock.")
+    except:
+        utils.getOrCreateSettigs("statusMatrizIndividuoTiempoCentro", -1);    
+        return redirect('index')
+    finally:
+        if have_lock:
+            my_lock.release()    
+    
     return response
 
 def downloadFile(request):
@@ -549,24 +585,39 @@ def shutdown_worker(**kwargs):
     raise SystemExit()
 
 def calcularTiemposMatrixIndi(request):
-    
+    my_lock = redis.Redis().lock("Cargar")
+    try:
+        have_lock = my_lock.acquire(blocking=False)
+        if have_lock:
+            if(not (Settings.objects.get('statusMatrizIndividuo').value == '1' and Settings.objects.get('statusMatrizCentro').value == '1'and Settings.objects.get('statusMatrizAuto').value == '1' and Settings.objects.get('statusMatrizBus').value == '1'and Settings.objects.get('statusMatrizCaminando').value == '1')):
+                return redirect('index')#[["Faltan cargar matrizes o se estan cargando"]]
+            progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
+            progressTotal = Settings.objects.get(setting='totalMatrizIndividuoTiempoCentro')
+            progressDone.value  = 0.1
+            progressTotal.value = Individuo.objects.count()*2
+            progressDone.save()
+            progressTotal.save()
+            IndividuoTiempoCentro.objects.all().delete()
+            IndividuoCentro.objects.all().delete()
+            IndividuoCentroOptimo.objects.all().delete()
+            progressStatus = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+            progressStatus.value = 0
+            progressStatus.save()
+            asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
+            utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
+            return redirect('index')
+        else:
+            return redirect('index')
+            print("Did not acquire lock.")
+    except:
+        utils.getOrCreateSettigs("statusMatrizIndividuoTiempoCentro", -1);    
+        return redirect('index')
+    finally:
+        if have_lock:
+            my_lock.release()    
    # if(not utils.checkStatusesForTiemposMatrix()):
     #    return redirect('index')
-    progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
-    progressTotal = Settings.objects.get(setting='totalMatrizIndividuoTiempoCentro')
-    progressDone.value  = 0.1
-    progressTotal.value = Individuo.objects.count()*2
-    progressDone.save()
-    progressTotal.save()
-    IndividuoTiempoCentro.objects.all().delete()
-    IndividuoCentro.objects.all().delete()
-    IndividuoCentroOptimo.objects.all().delete()
-    progressStatus = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-    progressStatus.value = 0
-    progressStatus.save()
-    asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
-    utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
-    return redirect('index')
+    
 
 
 def checkCompletedMatrixs():
