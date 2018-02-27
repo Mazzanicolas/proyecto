@@ -35,7 +35,7 @@ def systemStatus(request):
         status = calculatePercetage(current,total)
         data = {'loadingDataId':0,'status':status}
         return JsonResponse(data)
-    setting = Settings.objects.get('statusMatrizAuto')
+    setting = Settings.objects.get(setting = 'statusMatrizAuto')
     data = {'loadingDataId':404,'status':'0'}
     return JsonResponse(data)
 
@@ -53,14 +53,11 @@ def progressMatrizAuto(request):
     progressDone  = Settings.objects.get(setting='currentMatrizAuto')
     progressTotal = Settings.objects.get(setting='totalMatrizAuto')
     done = calculatePercetage(progressDone.value,progressTotal.value)
-    print(done)
-    print(progressDone.value)
     data = {"progressStatus":done}
     return JsonResponse(data)
 
 def initSettingsStatus():
     firstTime = list(Settings.objects.filter(setting='firstTime'))
-    print(bool(Settings.objects.filter(setting='firstTime')))
     if(firstTime):
         return
     utils.getOrCreateSettigs('firstTime',1)
@@ -178,7 +175,7 @@ def testing(request):
                 2:int(Settings.objects.get(setting = 'statusMatrizBus').value),                   3:int(Settings.objects.get(setting = 'statusMatrizIndividuo').value),             
                 4:int(Settings.objects.get(setting = 'statusMatrizCentro').value),                5:int(Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro').value), 
                 6:TipoTransporte.objects.count(),                                                 7:Prestador.objects.count(),
-                10:statusAuto, 11:statusCaminando, 12:statusBus, 
+                10:statusAuto, 12:statusCaminando, 11:statusBus, 
                 8:int(request.session.get('calculationStatus', -1))
         }
     
@@ -194,7 +191,7 @@ def loadShapes(request,tipo):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not (Settings.objects.get('statusPrestador').value == '1'and Settings.objects.get('statusMatrizAuto').value == '1' and Settings.objects.get('statusMatrizBus').value == '1'and Settings.objects.get('statusMatrizCaminando').value == '1') or not utils.nothingLoading()):
+            if(not utils.nothingLoading()):
                 return [["Faltan cargar matrizes o se estan cargando"]]
             if(tipo == 0):
                 tipoNombre = "shapeCaminando"
@@ -454,7 +451,7 @@ def generateCsvResults(request):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not utils.allLoaded()):
+            if(not utils.allLoaded() or request.session.get('calculationStatus', -1) == 0):
                 return redirect('index')#[["Faltan cargar matrizes o se estan cargando"]]
             indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
             utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
@@ -589,7 +586,7 @@ def calcularTiemposMatrixIndi(request):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not (Settings.objects.get('statusMatrizIndividuo').value == '1' and Settings.objects.get('statusMatrizCentro').value == '1'and Settings.objects.get('statusMatrizAuto').value == '1' and Settings.objects.get('statusMatrizBus').value == '1'and Settings.objects.get('statusMatrizCaminando').value == '1')):
+            if(not (Settings.objects.get(setting = 'statusMatrizIndividuo').value == '1' and Settings.objects.get(setting = 'statusMatrizCentro').value == '1'and Settings.objects.get(setting = 'statusMatrizAuto').value == '1' and Settings.objects.get(setting = 'statusMatrizBus').value == '1'and Settings.objects.get(setting = 'statusMatrizCaminando').value == '1')):
                 return redirect('index')#[["Faltan cargar matrizes o se estan cargando"]]
             progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
             progressTotal = Settings.objects.get(setting='totalMatrizIndividuoTiempoCentro')

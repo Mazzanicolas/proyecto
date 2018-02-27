@@ -30,7 +30,7 @@ def cargarCentroPediatras(request):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not (Settings.objects.get('statusPrestador').value == '1'and Settings.objects.get('statusMatrizAuto').value == '1' and Settings.objects.get('statusMatrizBus').value == '1'and Settings.objects.get('statusMatrizCaminando').value == '1')):
+            if(not (Settings.objects.get(setting = 'statusPrestador').value == '1'and Settings.objects.get(setting = 'statusMatrizAuto').value == '1' and Settings.objects.get(setting = 'statusMatrizBus').value == '1'and Settings.objects.get(setting = 'statusMatrizCaminando').value == '1')):
                 return [["Faltan cargar matrizes o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
@@ -130,7 +130,7 @@ def cargarTiposTransporte(request):
                 tipos.append(t)
             TipoTransporte.objects.bulk_create(tipos)
             print("Se cargo correctamente el archivo")
-            utils.getOrCreateSettigs("statusTipoTransporte", -1);    
+            utils.getOrCreateSettigs("statusTipoTransporte", 1);    
         else:
             print("Did not acquire lock.")
     except:
@@ -146,7 +146,7 @@ def cargarIndividuoAnclas(requestf):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not (Settings.objects.get('statusTipoTransporte').value == '1'and Settings.objects.get('statusMatrizAuto').value == '1' and Settings.objects.get('statusMatrizBus').value == '1'and Settings.objects.get('statusMatrizCaminando').value == '1') or not utils.nothingLoading()):
+            if(not (Settings.objects.get(setting = 'statusTipoTransporte').value == '1'and Settings.objects.get(setting = 'statusMatrizAuto').value == '1' and Settings.objects.get(setting = 'statusMatrizBus').value == '1'and Settings.objects.get(setting = 'statusMatrizCaminando').value == '1') or not utils.nothingLoading()):
                 return [["Faltan cargar matrizes o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
@@ -186,7 +186,7 @@ def cargarTiempos(tipo,request):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not (Settings.objects.get('shapeAutoStatus').value == '1' and Settings.objects.get('shapeCaminandoStatus').value == '1') or not utils.nothingLoading()):
+            if(not (Settings.objects.get(setting = 'shapeAutoStatus').value == '1' and Settings.objects.get(setting = 'shapeCaminandoStatus').value == '1') or not utils.nothingLoading()):
                 return [["Faltan cargar matrizes o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
@@ -220,7 +220,12 @@ def cargarTiempos(tipo,request):
             utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
         else:
             print("Did not acquire lock.")
-    except:
+    except Exception as e:
+        print(e)
+        if(tipo == 0):
+            tipoId = "Caminando"
+        else:
+            tipoId = "Auto"
         status  = Settings.objects.get(setting='statusMatriz'+tipoId)
         status.value  = -1
         status.save()
@@ -235,7 +240,7 @@ def cargarTiemposBus(request):
     try:
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
-            if(not (Settings.objects.get('shapeBusStatus').value == '1') or not utils.nothingLoading()):
+            if(not (Settings.objects.get(setting = 'shapeBusStatus').value == '1') or not utils.nothingLoading()):
                 return [["Faltan cargar matrizes o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1

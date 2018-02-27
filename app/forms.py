@@ -240,7 +240,7 @@ class SecTieOmnHelper(FormHelper):
             ),id="filters", css_class="collapse"
         )
     )
-choices = ((0,"Por defecto"),(1,"Si"),(None,"No"))
+choices = ((0,"Por defecto"),(1,"Si"),('',"No"))
 DIAS = (
     (0, 'L'),
     (1, 'M'),

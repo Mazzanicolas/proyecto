@@ -325,9 +325,6 @@ def calcTiempoDeViaje(individuo,centro,dia,hora,pediatras,tiempos, samePrest,tie
     jardin = individuo.jardin
     hasPed = pediatras >0
     horaDate = utils.horaMilToDateTime(hora)
-    if(centro == 1101):
-        print(trabajo.dias in utils.getListOfDays(trabajo.dias))
-        print(jardin.dias in utils.getListOfDays(jardin.dias))
     if(tieneTrabajo and horaDate >= inicioTra and horaDate < finTra and dia in utils.getListOfDays(trabajo.dias)
             or tieneJardin and horaDate >= inicioJar and horaDate < finJar and dia in utils.getListOfDays(jardin.dias)):
         return -1,"No"

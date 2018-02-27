@@ -315,6 +315,7 @@ def getIndivList_ParamDict_SettingsDict(get,cookies):
         indvList = Individuo.objects.all()
     if(getData.get("simular",'0') == '1' ):
         dictParam = generateParamDict(get)
+        indQuery = indvList
     else:
         if(getData.get('checkT')):
             transportList = TipoTransporte.objects.all().values_list('id', flat=True)            
@@ -332,9 +333,12 @@ def getIndivList_ParamDict_SettingsDict(get,cookies):
             jardin.append(False)
         if(trabajaReq == '0'):
             trabaja.append(False)
+        print(trabaja)
+        print(jardin)
         indQuery = indvList.filter(tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
+        print(len(indQuery))
         dictParam = None
-    return indvList,dictParam,dictSettings
+    return indQuery,dictParam,dictSettings
 def minsToMil(time):
     hours = time/60
     mins  = time%60
@@ -454,17 +458,19 @@ def nothingLoading():
                     "statusMatrizCaminando",
                     "statusMatrizCentro",
                     "statusMatrizIndividuo",
-                    "statusMatrizIndividuoCentro",
                     "statusMatrizIndividuoTiempoCentro",
                     "statusPrestador",
-                    "shapeAutoStatus"
+                    "shapeAutoStatus",
                     "shapeBusStatus",
                     "shapeCaminandoStatus"]
     acumulator = True
     for statusKey in stastusKeys:
-        acumulator = acumulator and Settings.objects.get(statusKey).value in ['-1','0']
-        if(not acumulator):
-            return False
+        try:
+            acumulator = acumulator and Settings.objects.get(setting = statusKey).value != '0'
+            if(not acumulator):
+                return False
+        except:
+            continue
     return acumulator
 
 def allLoaded():
@@ -473,15 +479,19 @@ def allLoaded():
                     "statusMatrizCaminando",
                     "statusMatrizCentro",
                     "statusMatrizIndividuo",
-                    "statusMatrizIndividuoCentro",
                     "statusMatrizIndividuoTiempoCentro",
                     "statusPrestador",
-                    "shapeAutoStatus"
+                    "shapeAutoStatus",
                     "shapeBusStatus",
                     "shapeCaminandoStatus"]
     acumulator = True
+    
     for statusKey in stastusKeys:
-        acumulator = acumulator and Settings.objects.get(statusKey).value == '1'
-        if(not acumulator):
+        try:
+            acumulator = acumulator and Settings.objects.get(setting = statusKey).value == '1'
+            if(not acumulator):
+                return False
+        except:
             return False
-    return acumulator
+    return True
+    
