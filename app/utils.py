@@ -18,6 +18,9 @@ def getPrestadoresNombres():
     return puto
 def getPrestaresNombresFiltrosSimular():
     return [(-1,"Por defecto"),(-2,"Ignorar")]+ [(x.id,x.nombre) for x in Prestador.objects.all()]
+def getTipoTransporteSimular():
+    return [(-1,"Por defecto")]+ [(x.id,x.nombre) for x in TipoTransporte.objects.all()]
+
 def createFolder(directory):
     #directory = './app/data/'+directory
     if not os.path.exists(directory):

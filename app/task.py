@@ -34,6 +34,7 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
 
 @shared_task()
 def delegator(get,sessionKey,cookies,userId):
+    timeInit = time.time()
     session = SessionStore(session_key=sessionKey)
     tiempoInicio = time.time()
     getData      = get
@@ -42,6 +43,7 @@ def delegator(get,sessionKey,cookies,userId):
     session['isIndividual'] = 0
     session['isResumen'] = 0
     indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(get,cookies)
+    print(len(indQuery),dictParam,dictTiemposSettings)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
@@ -86,6 +88,7 @@ def delegator(get,sessionKey,cookies,userId):
     session = SessionStore(session_key=sessionKey)
     session['calculationStatus'] = 1
     session.save()
+    print("Se realizo el calculo en: "+str(time.time()-timeInit))
 
 def saveResumenToCsv(result,userId,sessionKey):
     fieldNames = ['persona', 'cantidadTotalHoras','cantidadHorasLunes','cantidadHorasMartes','cantidadHorasMiercoles', 'cantidadHorasJueves',
@@ -498,6 +501,7 @@ def calcTiempoAndLlega(individuo,centro,dia,hora,pediatras,tiempos, samePrest,ti
             return resultTimpo.total_seconds() / 60,resultLlegaG,resultLlega
 @shared_task( bind=True, base=AbortableTask)
 def saveTiemposToDB(self,tipo):
+    timeInit = time.time()
     try:
         if(tipo == 0):
             tipoId = 'Caminando'
@@ -571,12 +575,13 @@ def saveTiemposToDB(self,tipo):
         status  = Settings.objects.get(setting='statusMatriz'+tipoId)
         status.value  = 1
         status.save()
-        print("Se cargo correctamente el archivo")
+        print("Se cargo la matriz en: "+str(time.time()-timeInit))
     except Terminated:
         print("Task was terminated")
 
 @shared_task( bind=True, base=AbortableTask)
 def saveTiemposBusToDB(self):
+    timeInit = time.time()
     SectorTiempoOmnibus.objects.all().delete()
     id = 0
     tiempos = []
@@ -621,10 +626,12 @@ def saveTiemposBusToDB(self):
     status = Settings.objects.get(setting='statusMatrizBus')
     status.value = 1
     status.save()
-    print("Se cargo correctamente el archivo")
+    print("Se cargo la matriz en: "+str(time.time()-timeInit))
+
 
 @shared_task( bind=True, base=AbortableTask)
 def saveCentrosToDB(self,lineas,dict_prestadores):
+    timeInit = time.time()
     baseDirectory = "./app/data/shapes/"
     utils.createFolder(baseDirectory)
     sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
@@ -684,9 +691,11 @@ def saveCentrosToDB(self,lineas,dict_prestadores):
     status  = Settings.objects.get(setting='statusMatrizCentro')
     status.value  = 1
     status.save()
-    print("Se cargo correctamente el archivo")
+    print("Se cargaron los centros en: "+str(time.time()-timeInit))
+
 @shared_task( bind=True, base=AbortableTask)
 def saveIndividuosToDB(self, lineas):
+    timeInit = time.time()
     if(self.is_aborted()):
             status  = Settings.objects.get(setting='statusMatrizIndividuo')
             status.value  =  -1
@@ -752,13 +761,15 @@ def saveIndividuosToDB(self, lineas):
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuo')
         progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
-    print("Se cargo correctamente el archivo")
     status  = Settings.objects.get(setting='statusMatrizIndividuo')
     status.value  = 1
     status.save()
+    print("Se cargaron los individuos en: "+str(time.time()-timeInit))
+
 
 @shared_task( bind=True, base=AbortableTask)
 def calcularTiemposMatrix(self):
+    timeInit = time.time()
     individuos = Individuo.objects.all()
     centros = Centro.objects.all()
     id = 0
@@ -780,9 +791,9 @@ def calcularTiemposMatrix(self):
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
         progressDone.value  = float(progressDone.value) + 1
         progressDone.save()
-    newCalcTimes(self)
+    newCalcTimes(self,timeInit)
 
-def newCalcTimes(self):
+def newCalcTimes(self,timeInit):
     individuos     = Individuo.objects.select_related().all()
     centros        = Centro.objects.select_related().all()
     #individuos = Individuo.objects.all()
@@ -883,6 +894,8 @@ def newCalcTimes(self):
     status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
     status.value  = 1
     status.save()
+    print("Se calcularon los tiempos en: "+str(time.time()-timeInit))
+
 
 def setOptimo(auxOptimo, centro, tHogarCentroAuto, tHogarCentroOmnibus, tHogarCentroCaminando):
     if(auxOptimo.centroOptimoAuto is None):

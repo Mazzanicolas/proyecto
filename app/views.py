@@ -187,6 +187,7 @@ def testing(request):
     return response
  
 def loadShapes(request,tipo):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -221,7 +222,7 @@ def loadShapes(request,tipo):
                 file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
                 file.write(unzipped.read(libitem))
                 file.close()
-            asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'CalculationQueue')
+            asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'delegator')
             asyncTask.get()
         else:
             print("Did not acquire lock.")
@@ -236,8 +237,9 @@ def loadShapes(request,tipo):
             utils.getOrCreateSettigs('shapeBusStatus',-1)
         return
     finally:
+        print("Shapes cargados en " +str(time.time() - timeInit))
         if have_lock:
-            my_lock.release()   
+            my_lock.release()
 
 class UserFormView(View):
     form_class = UserForm
@@ -609,7 +611,7 @@ def calcularTiemposMatrixIndi(request):
             progressStatus = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             progressStatus.value = 0
             progressStatus.save()
-            asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'CalculationQueue')
+            asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'delegator')
             utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
             return redirect('index')
         else:

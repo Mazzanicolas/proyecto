@@ -26,6 +26,7 @@ TIEMPO_CAMBIO_PARADA = 60 * (RADIO_CERCANO / 2) * (1 / newVELOCIDAD_CAMINANDO) #
                                                                           # con los valores por defecto es 3 minutos.
 
 def cargarCentroPediatras(request):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -50,7 +51,7 @@ def cargarCentroPediatras(request):
             progressTotal.value = len(lineas) 
             progressDone.save()
             progressTotal.save()
-            asyncTask = saveCentrosToDB.apply_async(args=[lineas,dict_prestadores],queue = 'CalculationQueue')
+            asyncTask = saveCentrosToDB.apply_async(args=[lineas,dict_prestadores],queue = 'delegator')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
         else:
@@ -59,12 +60,14 @@ def cargarCentroPediatras(request):
         utils.getOrCreateSettigs("statusMatrizCentro", -1);    
         return
     finally:
+        print("Se preparo el cargado de centros en "+str(time.time() - timeInit)+"s")        
         if have_lock:
             my_lock.release()    
 
 
 
 def cargarMutualistas(request):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -99,12 +102,14 @@ def cargarMutualistas(request):
         utils.getOrCreateSettigs("statusPrestador", -1);    
         return
     finally:
+        print("Se cargaron los prestadores en "+str(time.time() - timeInit)+"s")
         if have_lock:
             my_lock.release()    
 
     
 
 def cargarTiposTransporte(request):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -137,11 +142,13 @@ def cargarTiposTransporte(request):
         utils.getOrCreateSettigs("statusTipoTransporte", -1);    
         return
     finally:
+        print("Se cargo tipos de transporte en "+str(time.time() - timeInit)+"s")
         if have_lock:
             my_lock.release()    
     
 
 def cargarIndividuoAnclas(requestf):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -166,7 +173,7 @@ def cargarIndividuoAnclas(requestf):
             progressTotal.value = len(lineas) 
             progressDone.save()
             progressTotal.save()
-            asyncTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'CalculationQueue')
+            asyncTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'delegator')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyIndividuo',asyncKey)
             print("Generando matriz cartesiana Individuo-Centro-Dia-Hora")
@@ -177,11 +184,13 @@ def cargarIndividuoAnclas(requestf):
         utils.getOrCreateSettigs("statusMatrizIndividuo", -1);    
         return
     finally:
+        print("Se preparo el cargado de individuos "+str(time.time() - timeInit)+"s")
         if have_lock:
             my_lock.release()    
 
 
 def cargarTiempos(tipo,request):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -215,7 +224,7 @@ def cargarTiempos(tipo,request):
             progressDone.value  = 0.1
             progressDone.save()
             print("ENTRANDO")
-            asyncTask = saveTiemposToDB.apply_async(args=[tipo],queue = 'CalculationQueue')
+            asyncTask = saveTiemposToDB.apply_async(args=[tipo],queue = 'delegator')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
         else:
@@ -231,11 +240,13 @@ def cargarTiempos(tipo,request):
         status.save()
         return
     finally:
+        print("Se preparo el cargado la Matriz en "+str(time.time() - timeInit)+"s")
         if have_lock:
             my_lock.release()    
     
 
 def cargarTiemposBus(request):
+    timeInit = time.time()
     my_lock = redis.Redis().lock("Cargar")
     try:
         have_lock = my_lock.acquire(blocking=False)
@@ -261,7 +272,7 @@ def cargarTiemposBus(request):
             progressDone  = Settings.objects.get(setting='currentMatrizBus')
             progressDone.value  = 0.1
             progressDone.save()
-            asyncTask = saveTiemposBusToDB.apply_async(queue = 'CalculationQueue')
+            asyncTask = saveTiemposBusToDB.apply_async(queue = 'delegator')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyBus',asyncKey)
         else:
@@ -272,6 +283,7 @@ def cargarTiemposBus(request):
         status.save()
         return
     finally:
+        print("Se preparo el cargado la Matriz en"+str(time.time() - timeInit)+"s")
         if have_lock:
             my_lock.release()   
 

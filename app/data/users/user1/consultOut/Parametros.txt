@@ -1,8 +1,9 @@
+Parametros de Simulacion 
+Tipo de Transporte: Por Defecto 
+Prestador a Simular: Por Defecto 
+Se utiliza el ancla temporal Trabajo 
+Se utiliza el ancla temporal Jardin 
 Filtros utilizados 
-Tipo de Transporte utilizados: CAMINANDO, AUTO, OMNIBUS
-Trabaja: Si
-Tiene Jardin: Si
-Prestador: Por Defecto 
 Dias: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo 
 Desde Las: 0 
 Hasta Las: 23 

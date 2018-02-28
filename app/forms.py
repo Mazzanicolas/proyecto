@@ -5,7 +5,7 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, Div, HTM
 from crispy_forms.bootstrap import Tab, TabHolder,InlineCheckboxes,InlineRadios
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
-from .utils import getPrestadoresNombres,getPrestaresNombresFiltrosSimular
+from .utils import getPrestadoresNombres,getPrestaresNombresFiltrosSimular,getTipoTransporteSimular
 
 REDIRECT_FIELD_NAME = 'next'
 class UserForm(forms.ModelForm):
@@ -262,6 +262,8 @@ class EjecutarForm(forms.Form):
     idList = forms.CharField(label = '',required = False)
 class SimularForm(EjecutarForm):
     prestadorFiltro = forms.ChoiceField(choices = getPrestaresNombresFiltrosSimular,label = '')
+    tipoTransporte = forms.ChoiceField(choices = getTipoTransporteSimular,label = '')
+
 
 class EjecutarHelper(FormHelper):
     form_class = 'form-horizontal'
