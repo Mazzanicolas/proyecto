@@ -84,7 +84,7 @@ class CenHelper(FormHelper):
         Div(
             Div(
                 Div(
-                    Div('id_centro',InlineCheckboxes('prestador'),'sector_auto','sector_caminando'),
+                    Div('id_centro',InlineCheckboxes('prestador'),'sector_auto','sector_caminando','sector_bus'),
                     Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
                 ),css_class="card"
             ),id="filters", css_class="collapse"
@@ -99,7 +99,7 @@ class AncHelper(FormHelper):
         Div(
             Div(
                 Div(#Error prestador
-                    Div('id',InlineCheckboxes('prestador'),InlineCheckboxes('tipo'),'sector_auto','sector_caminando','hora_inicio','hora_fin'),
+                    Div('id',InlineCheckboxes('prestador'),InlineCheckboxes('tipo'),'sector_auto','sector_caminando','sector_bus', 'hora_inicio','hora_fin'),
                     Div(Submit('submit', 'Aplicar Filtros',css_class='btn btn-primary'),css_class='col-lg-offset-3 col-lg-9',)
                 ),css_class="card"
             ),id="filters", css_class="collapse"

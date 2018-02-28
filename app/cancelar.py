@@ -113,3 +113,8 @@ def deleteConsultaResults(request):
     request.session['current'] = -1
     request.session.save()
     return redirect('index')
+def resetSettings(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    Settings.objects.all().delete()
+    return redirect('index')

@@ -69,9 +69,10 @@ class CentroFilter(django_filters.FilterSet):
     )
     sector_auto = django_filters.CharFilter(label = "Sector Auto", name = 'sector_auto')
     sector_caminando = django_filters.CharFilter(label = "Sector Caminando", name = 'sector_caminando')
+    sector_bus = django_filters.CharFilter(label = "Sector Omnibus", name = 'sector_bus')
     class Meta:
         model = Individuo
-        fields = ['id_centro','prestador','sector_auto','sector_caminando']
+        fields = ['id_centro','prestador','sector_auto','sector_caminando','sector_bus']
 class AnclasFilter(django_filters.FilterSet):
     tipos = ( ('hogar', 'Hogar'),
               ('trabajo', 'Trabajo'),
@@ -80,11 +81,12 @@ class AnclasFilter(django_filters.FilterSet):
     tipo = django_filters.filters.MultipleChoiceFilter(label = 'Tipo del Ancla', name='tipo',choices = tipos)
     sector_auto = django_filters.CharFilter(label = "Sector Auto", name = 'sector_auto')
     sector_caminando = django_filters.CharFilter(label = "Sector Caminando", name = 'sector_caminando')
+    sector_bus = django_filters.CharFilter(label = "Sector Omnibus", name = 'sector_bus')
     hora_inicio = django_filters.NumberFilter(label = 'Hora inicio mayor o igual a', name='hora_inicio',lookup_expr='gte')
     hora_fin = django_filters.NumberFilter(label = 'Hora fin menor o igual a', name='hora_fin',lookup_expr='lte')
     class Meta:
         model = Individuo
-        fields = ['id','tipo','sector_auto','sector_caminando','hora_inicio','hora_fin']
+        fields = ['id','tipo','sector_auto','sector_caminando','sector_bus','hora_inicio','hora_fin']
 class IndividuoCentroFilter(django_filters.FilterSet):
     individuo = django_filters.NumberFilter(label = 'Filtrar por Individuo', name='individuo__id')
     centro = django_filters.NumberFilter(label = 'Filtrar por Centro', name = 'centro__id_centro')
