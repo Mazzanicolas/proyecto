@@ -3,6 +3,7 @@ from   app.models import Individuo, IndividuoCentroOptimo, Centro
 from   shapely    import geometry
 import app.utils as utils
 import csv
+from django.conf import settings
 
 def getIDCentroXYCoordDictionary(centros):
     xyCoordCentrosDictionary = dict()

@@ -53,6 +53,6 @@ urlpatterns = [
     url(r'^cancelarCentro/$'                      ,cancelar.cancelarCentro,                                    name='cancelarCentro'),
     url(r'^cancelarIndividuoTiempoCentro/$'       ,cancelar.cancelarIndividuoTiempoCentro,                     name='cancelarIndividuoTiempoCentro'),
 
-
+    url(r'^resetearSettings/$'                      ,cancelar.resetSettings,                                   name='resetearSettings'),
 
 ]

@@ -5,6 +5,7 @@ import glob
 import shapefile
 import redis
 from datetime import datetime, timedelta
+from django.conf import settings
 
 def numbersToDays(numberList):
     daysDict = {0:'Lunes',1:'Martes',2:'Miercoles',3:'Jueves',4:'Viernes',5:'Sabado',6:'Domingo'}

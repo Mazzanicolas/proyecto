@@ -270,10 +270,12 @@ def generateCsvResults(request):
             task_postrun.connect(shutdown_worker, sender=delegator)
             return response
         else:
+            print("Gun control wont solve the problem")
             return redirect('index')
             print("Did not acquire lock.")
     except:
-        utils.getOrCreateSettigs("statusMatrizIndividuoTiempoCentro", -1);    
+        request.session['calculationStatus'] = -1
+        print('#############RIP##########')
         return redirect('index')
     finally:
         if have_lock:

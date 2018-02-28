@@ -23,9 +23,6 @@
                     <li class="nav-item active">
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#cargar_datos" tt="tooltip" data-placement="bottom" title="Cargar datos en el sistema">Cargar</a></li>
                     </li>
-                    <!--li class="nav-item">
-                        <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#recalcular_datos">Recalcular</a></li>
-                    </li-->
                     <li class="nav-item">
                         <li><a href="#" class="nav-link navbar-brand" data-toggle="modal" data-target="#configuracion" tt="tooltip" data-placement="bottom" title="Cambiar la configuracion del sistema">Configuración</a></li>
                     </li>
@@ -82,6 +79,8 @@
                                 <a class="dropdown-item" href="/admin/">Administrar Usuarios</a>
                                 <div class="dropdown-divider"></div>
                             {% endif %}
+                            <a class="dropdown-item" data-toggle="modal" data-target="#resetear_settings">Resetear Settings</a>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="logout/">Cerrar sesión</a>
                             
                         </div>
@@ -106,6 +105,25 @@
             <div class="alert alert-danger" role="alert" id="alertDatosFaltantes" style="display:none;border-radius: 0 !important;text-align:center;">
                 <strong>Datos faltantes en el sistema:</strong>
             </div>
+            <div class="modal fade" id="resetear_settings">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Resetear Settings</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <p>¿Esta seguro que desea resetear sus settings?</p>
+                    </div>
+                    <div class="modal-footer">
+                      <a type="button"  href="resetearSettings/" class="btn btn-danger">Resetear settings</a>
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             <!--Alerts-->
             <!--v-Content-v-->
             <div id="container" style="visibility:hidden"></div>
@@ -408,7 +426,6 @@
                                 </div>
                             <form action='redirectSim/'  method="GET">
                                 {% crispy simularForm simularHelper %}
-                                <!--input type="checkbox" name="simular" value="1" style="display:none" checked-->
                             </form>
                         </div>
                     </div>
