@@ -222,7 +222,7 @@ def loadShapes(request,tipo):
                 file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
                 file.write(unzipped.read(libitem))
                 file.close()
-            asyncTask = cargarSectores.apply_async(args = [tipo],queue = 'delegator')
+            asyncTask = cargarSectores.apply_async(args = [tipo], queue = 'delegate')
             asyncTask.get()
         else:
             print("Did not acquire lock.")

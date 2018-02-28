@@ -51,7 +51,7 @@ def cargarCentroPediatras(request):
             progressTotal.value = len(lineas) 
             progressDone.save()
             progressTotal.save()
-            asyncTask = saveCentrosToDB.apply_async(args=[lineas,dict_prestadores],queue = 'delegator')
+            asyncTask = saveCentrosToDB.apply_async(args=[lineas,dict_prestadores],queue = 'delegate')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
         else:
@@ -173,7 +173,7 @@ def cargarIndividuoAnclas(requestf):
             progressTotal.value = len(lineas) 
             progressDone.save()
             progressTotal.save()
-            asyncTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'delegator')
+            asyncTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'delegate')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyIndividuo',asyncKey)
             print("Generando matriz cartesiana Individuo-Centro-Dia-Hora")
@@ -224,7 +224,7 @@ def cargarTiempos(tipo,request):
             progressDone.value  = 0.1
             progressDone.save()
             print("ENTRANDO")
-            asyncTask = saveTiemposToDB.apply_async(args=[tipo],queue = 'delegator')
+            asyncTask = saveTiemposToDB.apply_async(args=[tipo],queue = 'delegate')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
         else:
@@ -272,7 +272,7 @@ def cargarTiemposBus(request):
             progressDone  = Settings.objects.get(setting='currentMatrizBus')
             progressDone.value  = 0.1
             progressDone.save()
-            asyncTask = saveTiemposBusToDB.apply_async(queue = 'delegator')
+            asyncTask = saveTiemposBusToDB.apply_async(queue = 'delegate')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyBus',asyncKey)
         else:
