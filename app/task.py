@@ -690,11 +690,6 @@ def saveCentrosToDB(self,lineas,dict_prestadores):
 @shared_task( bind=True, base=AbortableTask)
 def saveIndividuosToDB(self, lineas):
     timeInit = time.time()
-    if(self.is_aborted()):
-            status  = Settings.objects.get(setting='statusMatrizIndividuo')
-            status.value  =  -1
-            status.save()
-            return
     baseDirectory = 'app/data/shapes/'
     sf = shapefile.Reader(baseDirectory + 'shapeAuto.shp')
     shapeAuto = sf.shapes()
@@ -748,6 +743,11 @@ def saveIndividuosToDB(self, lineas):
         idAncla +=1
         ## Individuo
         #Id, Tipo transporte, Prestador, Hogar, Trabajo, Jardin
+        if(self.is_aborted()):
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  =  -1
+            status.save()
+            return
         individuo  = Individuo(id = int(caso[0]),tipo_transporte = dicc_transporte.get(caso[19]),prestador = Prestador.objects.get(id =int(caso[1])),
                     hogar = anclaHogar,trabajo = anclaTrabajo, jardin = anclaJardin, tieneJardin = tieneJardin,tieneTrabajo = tieneTrabajo)
         anclaHogar.save()
@@ -878,6 +878,7 @@ def newCalcTimes(self,timeInit):
             status  = Settings.objects.get(setting='statusMatrizIndividuo')
             status.value  =  -1
             status.save()
+            print("Aborted")
             return
         progressDone  = Settings.objects.get(setting='currentMatrizIndividuoTiempoCentro')
         progressDone.value  = float(progressDone.value) + 1

@@ -403,9 +403,9 @@ def calcularTiemposMatrixIndi(request):
             progressStatus = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             progressStatus.value = 0
             progressStatus.save()
-            asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'delegator')
+            asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'delegate')
             utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
-            return JsonResponse({'Error':"Faltan cargar matrices o se estan cargando alguna"})
+            return redirect('index')
         else:
             return JsonResponse({'Error':"Faltan cargar matrices o se estan cargando alguna"})
     except:
