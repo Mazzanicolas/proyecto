@@ -658,7 +658,7 @@ class SectorTiempoCaminandoListView(LoginRequiredMixin,ExportMixin,SectorTiempoC
 #########################################################
 class SectorTiempoOmnibusTable(tables.Table):
     sectorO_1 = tables.Column(accessor='sectorO_1.shapeid',verbose_name="Sector 1")
-    sectorO_2 = tables.Column(accessor='sectorO_1.shapeid',verbose_name="Sector 2")
+    sectorO_2 = tables.Column(accessor='sectorO_2.shapeid',verbose_name="Sector 2")
     tiempo = tables.Column(verbose_name = 'Tiempo (Minutos)', empty_values = ())
     class Meta:
         model = SectorTiempoOmnibus
