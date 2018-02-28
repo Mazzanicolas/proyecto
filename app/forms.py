@@ -315,6 +315,7 @@ class SimularHelper(FormHelper):
     field_class = 'col-lg-8'
     form_method = 'GET'
     layout = Layout(
+            Div(HTML('<input type="checkbox" name="simular" id="simular" value="1" style="display:none" checked>'))
             Div(
                 Div(HTML('<h5>Transporte</h5>'), style="margin-left: 40px;"),
                 Div(InlineRadios('tipoTransporte', style="margin-left: 10px;text-transform:capitalize;"),style="margin-left: 30px;")
