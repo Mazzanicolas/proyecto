@@ -223,7 +223,7 @@ function isProcessing(status){
     return false;
 }
 function filesInCache(status){
-    if(status == 1){
+    if(status >= 1){
         return true;
     }
     return false;
