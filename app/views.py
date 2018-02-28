@@ -28,34 +28,6 @@ from  django.utils.decorators import classonlymethod
 from celery.signals import task_postrun
 from django.conf import settings
 
-def systemStatus(request):
-    current = request.session.get('current',None)
-    total   = request.session.get('total',None)
-    cp = utils.getOrCreateSettigs('currentProcess',-404)      
-    if(current and total and current >= 0 ):
-        status = calculatePercetage(current,total)
-        data = {'loadingDataId':0,'status':status}
-        return JsonResponse(data)
-    setting = Settings.objects.get(setting = 'statusMatrizAuto')
-    data = {'loadingDataId':404,'status':'0'}
-    return JsonResponse(data)
-
-def ejecutarProgress(request):
-    current = request.session.get('current',None)
-    total   = request.session.get('total',None)
-    if(current and total and current < total and current >= 0 ):
-        status = calculatePercetage(current,total)
-        data = {'loadingDataId':0,'status':status}
-        return JsonResponse(data)
-    data = {'loadingDataId':404,'status':'0'}
-    return JsonResponse(data)
-
-def progressMatrizAuto(request):
-    progressDone  = Settings.objects.get(setting='currentMatrizAuto')
-    progressTotal = Settings.objects.get(setting='totalMatrizAuto')
-    done = calculatePercetage(progressDone.value,progressTotal.value)
-    data = {"progressStatus":done}
-    return JsonResponse(data)
 
 def initSettingsStatus():
     firstTime = list(Settings.objects.filter(setting='firstTime'))
@@ -88,7 +60,7 @@ def initSettingsStatus():
     utils.getOrCreateSettigs('shapeBusStatus',-1)
     utils.getOrCreateSettigs("statusPrestador", -1);
 
-def testing(request):
+def index(request):
     initSettingsStatus()
     if not request.user.is_authenticated:
         return redirect('login')
@@ -137,11 +109,11 @@ def testing(request):
             elif(radioMatrix == "option7"):
                 lineas = load.cargarTiposTransporte(request)
             elif(radioMatrix == 'option10'):
-                lineas = loadShapes(request,1)
+                lineas = load.loadShapes(request,1)
             elif(radioMatrix == 'option11'):
-                lineas = loadShapes(request,2)
+                lineas = load.loadShapes(request,2)
             elif(radioMatrix == 'option12'):
-                lineas = loadShapes(request,0)
+                lineas = load.loadShapes(request,0)
             if lineas is not None:
                 pseudo_buffer = utils.Echo()
                 writer = csv.writer(pseudo_buffer)
@@ -188,97 +160,6 @@ def testing(request):
     print(settings.BASE_DIR)
     return response
  
-def loadShapes(request,tipo):
-    timeInit = time.time()
-    my_lock = redis.Redis().lock("Cargar")
-    try:
-        have_lock = my_lock.acquire(blocking=False)
-        if have_lock:
-            if(not utils.nothingLoading()):
-                return [["Faltan cargar matrizes o se estan cargando"]]
-            if(tipo == 0):
-                tipoNombre = "shapeCaminando"
-                utils.getOrCreateSettigs('shapeCaminandoStatus',0)
-            if(tipo == 1):
-                    utils.getOrCreateSettigs('shapeAutoStatus',0)
-                    tipoNombre = "shapeAuto"
-            if(tipo == 2):
-                utils.getOrCreateSettigs('shapeBusStatus',0)
-                tipoNombre = "shapeBus"
-            status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
-            status.value  = -1
-            status.save()
-            status  = Settings.objects.get(setting='statusMatrizCentro')
-            status.value  = -1
-            status.save()
-            status  = Settings.objects.get(setting='statusMatrizIndividuo')
-            status.value  = -1
-            status.save()
-            content = request.FILES['inputFile']
-            unzipped = zipfile.ZipFile(content)
-            print (unzipped.namelist())
-            
-            baseDirectory = settings.BASE_DIR+"/app/data/shapes/"
-            utils.createFolder(baseDirectory)
-            for libitem in unzipped.namelist():
-                filename = libitem.split('.')
-                file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
-                file.write(unzipped.read(libitem))
-                file.close()
-            asyncTask = cargarSectores.apply_async(args = [tipo], queue = 'delegate')
-            asyncTask.get()
-        else:
-            print("Did not acquire lock.")
-    except:
-        if(tipo == 0):
-            tipoNombre = "shapeCaminando"
-            utils.getOrCreateSettigs('shapeCaminandoStatus',-1)
-        if(tipo == 1):
-            utils.getOrCreateSettigs('shapeAutoStatus',-1)
-            tipoNombre = "shapeAuto"
-        if(tipo == 2):
-            utils.getOrCreateSettigs('shapeBusStatus',-1)
-        return
-    finally:
-        print("Shapes cargados en " +str(time.time() - timeInit))
-        if have_lock:
-            my_lock.release()
-
-class UserFormView(View):
-    form_class = UserForm
-    template_name = 'app/registration_form.html'
-    
-    def get(self, request):
-        if not request.user.is_authenticated and not request.user.is_superuser:
-            print("orazio el kaker")
-            return HttpResponseForbidden()
-        form =  self.form_class(None)
-        helper = UserRegistryHelper()
-        return render(request, self.template_name,{'form':form,'helper':helper})  
-    
-    def post(self,request): 
-        helper = UserRegistryHelper ()
-        if not request.user.is_authenticated and not request.user.is_superuser:
-            print("orazio el kaker 2")
-            return HttpResponseForbidden()
-        form =  self.form_class(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            username = form.cleaned_data['username']
-            password  = form.cleaned_data['password']
-            user.set_password(password)
-            user.save()
-
-            user = authenticate(username=username,password=password)
-                
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return redirect('index')
-        if not request.user.is_authenticated and not request.user.is_superuser:
-            print("orazio el kaker 3")
-            return HttpResponseForbidden()
-        return render(request, self.template_name,{'form':form,'helper':helper})
 
 
 def secureUserCreation(request):
@@ -317,7 +198,7 @@ def secureUserCreation(request):
         return render(request, 'app/registration_form.html',{'form':form,'helper':helper})
     
 
-#( ͡° ͜ʖ ͡°)
+
 def genShape(request):
     filenames    = generarShape(request, request.session.session_key)
     zip_subdir   = "Shapefiles"
@@ -346,20 +227,6 @@ def redirectConsulta(request):
     return response
 
 
-def progress(request):
-    print("PROGRESS")
-    done = request.session.get('current',-1)
-    total = request.session.get('total', 100)
-    data = {"Done":done,"Total":total}
-    return JsonResponse(data)
-
-def cancelarConsulta(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    print("CANCELAR CONSULTA")
-    deleteConsultaResults(request)
-    return redirect('index')
-
 def redirectSim(request):
     if not request.user.is_authenticated:
         return redirect('login')
@@ -379,79 +246,6 @@ def redirectSim(request):
     response.set_cookie(key='jardin', value=int(getReq.get('anclaJar','0')))
     return response
 
-def index(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    if(not SectorAuto.objects.all() or not SectorCaminando.objects.all()):
-        load.cargarSectores(shapeAuto,recordsAuto,shapeCaminando,recordsCaminando)
-    if(not Settings.objects.filter(setting = "tiempoMaximo")):
-        s = Settings(setting = "tiempoMaximo",value = "60")
-        s.save()
-    if(not Settings.objects.filter(setting = "tiempoConsulta")):
-        s = Settings(setting = "tiempoConsulta",value = "30")
-        s.save()
-    if (not Settings.objects.filter(setting = "tiempoLlega")):
-        s = Settings(setting = "tiempoLlega",value = "30")
-        s.save()
-    post = request.POST
-    cookies = request.COOKIES
-    if(cookies and 'tiempoMaximo' in cookies):
-        maxT = cookies.get("tiempoMaximo")
-    else:
-        maxT = Settings.objects.get(setting = "tiempoMaximo").value
-    if(cookies and 'tiempoConsulta' in cookies):
-        consT = cookies.get("tiempoConsulta")
-    else:
-        consT = Settings.objects.get(setting = "tiempoConsulta").value
-    if(cookies and "tiempoLlega" in cookies):
-        tiempoL = cookies.get("tiempoLlega")
-    else:
-        tiempoL = Settings.objects.get(setting = "tiempoLlega").value
-    if(post):
-        tiempoMax = post.get("tiempoTransporte",None)
-        tiempoCons = post.get("tiempoConsulta",None)
-        tiempoLlega = post.get("tiempoLlega",None)
-        radioCargado = post.get("optionsRadios",None)
-        radioMatrix =  radioCargado
-        if(radioCargado):
-            if(radioCargado == "option1"):
-                lineas = load.cargarMutualistas(request)
-            elif(radioCargado == "option2"):
-                lineas = load.cargarIndividuoAnclas(request)
-            elif(radioMatrix == "option3"):
-                lineas = load.cargarTiempos(1,request)
-            elif(radioMatrix == "option4"):
-                lineas = load.cargarTiempos(0,request)
-            elif(radioMatrix == "option5"):
-                lineas = load.cargarCentroPediatras(request)
-            elif(radioMatrix == "option6"): # omnibus
-                lineas = load.cargarTiemposBus(request)
-            elif(radioMatrix == "option7"):
-                lineas = load.cargarTiposTransporte(request)
-            if lineas is not None:
-                pseudo_buffer = utils.Echo()
-                writer = csv.writer(pseudo_buffer)
-                response = StreamingHttpResponse((writer.writerow(row) for row in lineas),
-                                                 content_type="text/csv")
-                response['Content-Disposition'] = 'attachment; filename="errores.csv"'
-                return response
-        if(tiempoMax):
-            maxT = tiempoMax
-        if(tiempoCons):
-            consT = tiempoCons
-        if(tiempoLlega):
-            tiempoL = tiempoLlega
-    ejecutarForm = EjecutarForm()
-    ejecutarHelper = EjecutarHelper()
-    simularForm = SimularForm()
-    simularHelper = SimularHelper()
-    username = request.user.username
-    context = {'tiempoMaximo': maxT, 'tiempoConsulta': consT,"tiempoLlega": tiempoL, 'simularForm' : simularForm,'simularHelper' : simularHelper,'ejecutarForm':ejecutarForm, 'ejecutarHelper':ejecutarHelper, 'username':username }
-    response = render(request, 'app/index2.html',context)
-    response.set_cookie(key = 'tiempoMaximo',  value = maxT)
-    response.set_cookie(key = 'tiempoConsulta',value = consT)
-    response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
-    return response
 
 def guardarArchivo(nombre, archivo):
     with default_storage.open('tmp/'+nombre, 'wb+') as destination:
@@ -466,7 +260,7 @@ def generateCsvResults(request):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if(not utils.allLoaded() or request.session.get('calculationStatus', -1) == 0):
-                return redirect('index')#[["Faltan cargar matrizes o se estan cargando"]]
+                return JsonResponse({'Error':"Faltan cargar matrices o se estan cargando alguna"})
             indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
             utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
             asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)], queue = 'delegate')
@@ -587,11 +381,6 @@ def zipFile(zip_subdir, filenames):
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
     return resp
 
-def plot(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-    return render(request,'app/plot.html')
-
 def shutdown_worker(**kwargs):
     raise SystemExit()
 
@@ -616,26 +405,12 @@ def calcularTiemposMatrixIndi(request):
             progressStatus.save()
             asyncKey = calcularTiemposMatrix.apply_async(args=[],queue = 'delegator')
             utils.getOrCreateSettigs('asyncKeyMatrizIndividuoTiempoCentro',asyncKey)
-            return redirect('index')
+            return JsonResponse({'Error':"Faltan cargar matrices o se estan cargando alguna"})
         else:
-            return redirect('index')
-            print("Did not acquire lock.")
+            return JsonResponse({'Error':"Faltan cargar matrices o se estan cargando alguna"})
     except:
         utils.getOrCreateSettigs("statusMatrizIndividuoTiempoCentro", -1);    
-        return redirect('index')
+        return JsonResponse({'Error':"Error 500"})
     finally:
         if have_lock:
-            my_lock.release()    
-   # if(not utils.checkStatusesForTiemposMatrix()):
-    #    return redirect('index')
-    
-
-
-def checkCompletedMatrixs():
-    timAutStatus = utils.getOrCreateSettigs('statusMatrizAuto',-1)
-    timCamStatus = utils.getOrCreateSettigs('statusMatrizCaminando',-1)
-    timBusStatus = utils.getOrCreateSettigs('statusMatrizBus',-1)
-    IndvStatus   = utils.getOrCreateSettigs('statusMatrizIndividuo',-1)
-    centStatus   = utils.getOrCreateSettigs('statusMatrizCentro',-1)
-    if( timAutStatus.value == timCamStatus.value == timBusStatus.value == IndvStatus.value == centStatus.value == '1'):
-        return True
+            my_lock.release()

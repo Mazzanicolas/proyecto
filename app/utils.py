@@ -151,22 +151,7 @@ def setParams(self,cookies):
         self.jardin = False
     self.tipoTrans = cookies.get('tipoTransporte','1')
     self.mutualista = cookies.get('mutualista','-1')
-def getTiempos(individuo,centro,tipoTrans):
-    tiempos = IndividuoCentro.objects.get(individuo = individuo,centro = centro)
-    if(tipoTrans == '-1'):
-        tipoTrans = individuo.tipo_transporte.id
-    tiemposDict = dict()
-    tipoTrans = int(tipoTrans)
-    tiemposDict['tHogarCentro'] = getTHogarCentro(tipoTrans,tiempos)
-    tiemposDict['tHogarTrabajo'] = getTHogarTrabajo(tipoTrans,tiempos)
-    tiemposDict['tHogarJardin'] = getTHogarJardin(tipoTrans,tiempos)
-    tiemposDict['tCentroHogar'] = getTCentroHogar(tipoTrans,tiempos)
-    tiemposDict['tCentroJardin'] = getTCentroJardin(tipoTrans,tiempos)
-    tiemposDict['tTrabajoJardin']= getTTrabajoJardin(tipoTrans,tiempos)
-    tiemposDict['tTrabajoHogar']= getTTrabajoHogar(tipoTrans,tiempos)
-    tiemposDict['tJardinTrabajo']= getTJardinTrabajo(tipoTrans,tiempos)
-    tiemposDict['tJardinCentro']= getTJardinCentro(tipoTrans,tiempos)
-    return tiemposDict
+
 def getDeltaTiempos(individuo,centro,tipoTrans):
     tiempos = IndividuoCentro.objects.get(individuo = individuo,centro = centro)
     if(tipoTrans == '-1'):
@@ -402,26 +387,7 @@ def writeSettings(userId,dictSettings,simParams):
             text_file.write("Individuos: {} \n".format(', '.join(idList)))
         else:
           text_file.write("Individuos: Todos")
-def getLock(key):
-    return redis.Redis().lock(key)
-def releaseLock(haveLock,lock):
-    if(haveLock):
-        lock.release()
-def releaseAllLocks(locksTupleList):
-    for tuple in locksTupleList:
-        releaseLock(tuple[0],tuple[1])
-def getSimpleLock(key):
-    have_lock = False
-    my_lock = redis.Redis().lock(key)
-    try:
-        have_lock = my_lock.acquire(blocking=False)
-        if have_lock:
-            return True
-        else:
-            return False
-    finally:    
-        if have_lock:
-            my_lock.release()
+
 
 def horaMilToDateTime(hora):
     if hora is None:

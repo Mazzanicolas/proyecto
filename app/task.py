@@ -107,13 +107,6 @@ def saveResumenToCsv(result,userId,sessionKey):
     addProgress(sessionKey,5)
     print("EndOFRESUMENCSV")
 
-#def saveCSVfromString(csvAsString,sessionKey):
-#    with open('./a(pp/files/consultOut/IndividualResult'+sessionKey+'.csv', 'w',newline="") as csvFile:
-#        writer = csv.writer(csvFile)
-#        for row in csvAsString:
-#            writer.writerow(row)
-#    addProgress(sessionKey,5)
-#    print("ENDOSINDIVIDUALCSV")
 
 def addProgress(sessionKey,amount):
     have_lock = False

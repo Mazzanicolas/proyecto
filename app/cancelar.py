@@ -6,6 +6,8 @@ from celery.contrib.abortable import AbortableAsyncResult
 
 
 def cancelarCentro(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyCentro').value)
     if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
         asyncTask.abort()
@@ -20,6 +22,8 @@ def cancelarCentro(request):
     #status = Settings.objects.get(setting = 'statusMatrizCentro')
 
 def cancelarIndividuo(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyIndividuo').value)
     if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
         asyncTask.abort()
@@ -34,7 +38,8 @@ def cancelarIndividuo(request):
     #status = Settings.objects.get(setting = 'statusMatrizIndividuo')
 
 def cancelarAuto(request):
-    
+    if not request.user.is_authenticated:
+        return redirect('login')
     asyncTask =  AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyAuto').value)
     if(asyncTask and (asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED')):
         asyncTask.abort()
@@ -45,6 +50,8 @@ def cancelarAuto(request):
     if(request):
         return redirect('index')
 def cancelarCaminando(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyCaminando').value)
     if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
         asyncTask.abort()
@@ -58,6 +65,8 @@ def cancelarCaminando(request):
     #status = Settings.objects.get(setting = 'statusMatrizCaminando')
 
 def cancelarBus(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyBus').value)
     if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
         asyncTask.abort()
@@ -72,6 +81,8 @@ def cancelarBus(request):
     #status = Settings.objects.get(setting = 'statusMatrizBus')
 
 def cancelarIndividuoTiempoCentro(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     asyncTask = AbortableAsyncResult(id = Settings.objects.get(setting = 'asyncKeyMatrizIndividuoTiempoCentro').value)
     if(asyncTask and asyncTask.state == 'PENDING' or asyncTask.state == 'STARTED'):
         asyncTask.abort()
@@ -86,6 +97,8 @@ def cancelarIndividuoTiempoCentro(request):
     #status = Settings.objects.get(setting = 'statusMatrizIndividuoTiempoCentro')
 
 def deleteConsultaResults(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
     request.session['isIndividual'] = 0
     request.session['isResumen'] = 0
     asyncKey = request.session.get('asyncKey',None)

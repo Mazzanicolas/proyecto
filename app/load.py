@@ -32,7 +32,7 @@ def cargarCentroPediatras(request):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if(not (Settings.objects.get(setting = 'statusPrestador').value == '1'and Settings.objects.get(setting = 'statusMatrizAuto').value == '1' and Settings.objects.get(setting = 'statusMatrizBus').value == '1'and Settings.objects.get(setting = 'statusMatrizCaminando').value == '1')):
-                return [["Faltan cargar matrizes o se estan cargando"]]
+                return [["Faltan cargar matrices o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
             status.save()
@@ -55,10 +55,11 @@ def cargarCentroPediatras(request):
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyCentro',asyncKey)
         else:
-            print("Did not acquire lock.")
+            return [["Faltan cargar matrices o se estan cargando"]]
     except:
         utils.getOrCreateSettigs("statusMatrizCentro", -1);    
-        return
+        return [["Faltan cargar matrices o se estan cargando"]]
+
     finally:
         print("Se preparo el cargado de centros en "+str(time.time() - timeInit)+"s")        
         if have_lock:
@@ -73,7 +74,7 @@ def cargarMutualistas(request):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if(not utils.nothingLoading()):
-                return [["Faltan cargar matrizes o se estan cargando"]]
+                return [["Faltan cargar matrices o se estan cargando"]]
             utils.getOrCreateSettigs("statusPrestador", 0);
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
@@ -97,10 +98,11 @@ def cargarMutualistas(request):
             utils.getOrCreateSettigs("statusPrestador", 1);
             print("Se cargo correctamente el archivo")
         else:
+            return [["Faltan cargar matrices o se estan cargando"]]
             print("Did not acquire lock.")
     except:
         utils.getOrCreateSettigs("statusPrestador", -1);    
-        return
+        return [["Faltan cargar matrices o se estan cargando"]]
     finally:
         print("Se cargaron los prestadores en "+str(time.time() - timeInit)+"s")
         if have_lock:
@@ -115,7 +117,7 @@ def cargarTiposTransporte(request):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if( not utils.nothingLoading()):
-                return [["Faltan cargar matrizes o se estan cargando"]]
+                return [["Faltan cargar matrices o se estan cargando"]]
             utils.getOrCreateSettigs("statusTipoTransporte", 0);    
             cursor = connection.cursor()
             cursor.execute('TRUNCATE TABLE "{0}" CASCADE'.format(IndividuoTiempoCentro._meta.db_table))
@@ -138,9 +140,10 @@ def cargarTiposTransporte(request):
             utils.getOrCreateSettigs("statusTipoTransporte", 1);    
         else:
             print("Did not acquire lock.")
+            return [["Faltan cargar matrices o se estan cargando"]]
     except:
         utils.getOrCreateSettigs("statusTipoTransporte", -1);    
-        return
+        return [["Faltan cargar matrices o se estan cargando"]]
     finally:
         print("Se cargo tipos de transporte en "+str(time.time() - timeInit)+"s")
         if have_lock:
@@ -154,7 +157,7 @@ def cargarIndividuoAnclas(requestf):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if(not (Settings.objects.get(setting = 'statusTipoTransporte').value == '1'and Settings.objects.get(setting = 'statusMatrizAuto').value == '1' and Settings.objects.get(setting = 'statusMatrizBus').value == '1'and Settings.objects.get(setting = 'statusMatrizCaminando').value == '1') or not utils.nothingLoading()):
-                return [["Faltan cargar matrizes o se estan cargando"]]
+                return [["Faltan cargar matrices o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
             status.save()
@@ -180,9 +183,10 @@ def cargarIndividuoAnclas(requestf):
             print("Matriz Carteasiana generada")
         else:
             print("Did not acquire lock.")
+            return [["Faltan cargar matrices o se estan cargando"]]
     except:
         utils.getOrCreateSettigs("statusMatrizIndividuo", -1);    
-        return
+        return [["Faltan cargar matrices o se estan cargando"]]
     finally:
         print("Se preparo el cargado de individuos "+str(time.time() - timeInit)+"s")
         if have_lock:
@@ -196,7 +200,7 @@ def cargarTiempos(tipo,request):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if(not (Settings.objects.get(setting = 'shapeAutoStatus').value == '1' and Settings.objects.get(setting = 'shapeCaminandoStatus').value == '1') or not utils.nothingLoading()):
-                return [["Faltan cargar matrizes o se estan cargando"]]
+                return [["Faltan cargar matrices o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
             status.save()
@@ -229,6 +233,7 @@ def cargarTiempos(tipo,request):
             utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
         else:
             print("Did not acquire lock.")
+            return [["Faltan cargar matrices o se estan cargando"]]
     except Exception as e:
         print(e)
         if(tipo == 0):
@@ -238,7 +243,7 @@ def cargarTiempos(tipo,request):
         status  = Settings.objects.get(setting='statusMatriz'+tipoId)
         status.value  = -1
         status.save()
-        return
+        return [["Faltan cargar matrices o se estan cargando"]]
     finally:
         print("Se preparo el cargado la Matriz en "+str(time.time() - timeInit)+"s")
         if have_lock:
@@ -252,7 +257,7 @@ def cargarTiemposBus(request):
         have_lock = my_lock.acquire(blocking=False)
         if have_lock:
             if(not (Settings.objects.get(setting = 'shapeBusStatus').value == '1') or not utils.nothingLoading()):
-                return [["Faltan cargar matrizes o se estan cargando"]]
+                return [["Faltan cargar matrices o se estan cargando"]]
             status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
             status.value  = -1
             status.save()
@@ -277,13 +282,69 @@ def cargarTiemposBus(request):
             utils.getOrCreateSettigs('asyncKeyBus',asyncKey)
         else:
             print("Did not acquire lock.")
+            return [["Faltan cargar matrices o se estan cargando"]]
     except:
         status  = Settings.objects.get(setting='statusMatrizBus')
         status.value  = -1
         status.save()
-        return
+        return [["Faltan cargar matrices o se estan cargando"]]
     finally:
         print("Se preparo el cargado la Matriz en"+str(time.time() - timeInit)+"s")
         if have_lock:
             my_lock.release()   
 
+def loadShapes(request,tipo):
+    timeInit = time.time()
+    my_lock = redis.Redis().lock("Cargar")
+    try:
+        have_lock = my_lock.acquire(blocking=False)
+        if have_lock:
+            if(not utils.nothingLoading()):
+                return [["Faltan cargar matrices o se estan cargando"]]
+            if(tipo == 0):
+                tipoNombre = "shapeCaminando"
+                utils.getOrCreateSettigs('shapeCaminandoStatus',0)
+            if(tipo == 1):
+                    utils.getOrCreateSettigs('shapeAutoStatus',0)
+                    tipoNombre = "shapeAuto"
+            if(tipo == 2):
+                utils.getOrCreateSettigs('shapeBusStatus',0)
+                tipoNombre = "shapeBus"
+            status  = Settings.objects.get(setting='statusMatrizIndividuoTiempoCentro')
+            status.value  = -1
+            status.save()
+            status  = Settings.objects.get(setting='statusMatrizCentro')
+            status.value  = -1
+            status.save()
+            status  = Settings.objects.get(setting='statusMatrizIndividuo')
+            status.value  = -1
+            status.save()
+            content = request.FILES['inputFile']
+            unzipped = zipfile.ZipFile(content)
+            print (unzipped.namelist())
+            
+            baseDirectory = settings.BASE_DIR+"/app/data/shapes/"
+            utils.createFolder(baseDirectory)
+            for libitem in unzipped.namelist():
+                filename = libitem.split('.')
+                file = open(baseDirectory+tipoNombre+"."+filename[1],'wb')
+                file.write(unzipped.read(libitem))
+                file.close()
+            asyncTask = cargarSectores.apply_async(args = [tipo], queue = 'delegate')
+            asyncTask.get()
+        else:
+            return [["Error 500"]]
+    except:
+        if(tipo == 0):
+            tipoNombre = "shapeCaminando"
+            utils.getOrCreateSettigs('shapeCaminandoStatus',-1)
+        if(tipo == 1):
+            utils.getOrCreateSettigs('shapeAutoStatus',-1)
+            tipoNombre = "shapeAuto"
+        if(tipo == 2):
+            utils.getOrCreateSettigs('shapeBusStatus',-1)
+        return [["Error 500"]]
+    finally:
+        print("Shapes cargados en " +str(time.time() - timeInit))
+        if have_lock:
+            my_lock.release()
