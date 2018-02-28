@@ -109,7 +109,7 @@ def generarShapeCentroOptimoAuto(fields, individuos, fileName, userId, pathToFil
         centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
         xCoordCentroAuto,yCoordCentroAuto = centroOptimo.centroOptimoAuto.x_coord, centroOptimo.centroOptimoAuto.y_coord
         shapeWriter.point(xCoordCentroAuto,yCoordCentroAuto)
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroAuto))
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, centroOptimo.tHogarCentroAuto)
     saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, userId, pathToFilesToDownlaod):
@@ -120,7 +120,7 @@ def generarShapeCentroOptimoOmnibus(fields, individuos, fileName, userId, pathTo
         centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
         xCoordCentroOmnibus,yCoordCentroOmnibus = centroOptimo.centroOptimoOmnibus.x_coord, centroOptimo.centroOptimoOmnibus.y_coord
         shapeWriter.point(xCoordCentroOmnibus,yCoordCentroOmnibus)
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroOmnibus))
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, centroOptimo.tHogarCentroOmnibus)
     saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeCentroOptimoCaminando(fields, individuos, fileName, userId, pathToFilesToDownlaod):
@@ -131,7 +131,7 @@ def generarShapeCentroOptimoCaminando(fields, individuos, fileName, userId, path
         centroOptimo = IndividuoCentroOptimo.objects.get(individuo = individuo)
         xCoordCentroCaminando,yCoordCentroCaminando = centroOptimo.centroOptimoCaminando.x_coord, centroOptimo.centroOptimoCaminando.y_coord
         shapeWriter.point(xCoordCentroCaminando,yCoordCentroCaminando)
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroCaminando))
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, centroOptimo.tHogarCentroCaminando)
     saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
 
 def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, userId, pathToFilesToDownlaod):
@@ -144,7 +144,7 @@ def generarShapeLineaHogarCentroAuto(fields, individuos, fileName, userId, pathT
         xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
         xCoordCentroAuto,yCoordCentroAuto = centroOptimo.centroOptimoAuto.x_coord, centroOptimo.centroOptimoAuto.y_coord
         lineParts.append([[xCoordHogar,yCoordHogar],[xCoordCentroAuto,yCoordCentroAuto]])
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroAuto))
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoAuto.id_centro, centroOptimo.tHogarCentroAuto)
         shapeWriter.line(parts=lineParts)
         lineParts=[]
     saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
@@ -159,7 +159,7 @@ def genrerarShapeLineaHogarCentroOmnibus(fields, individuos, fileName, userId, p
         xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
         xCoordCentroOmnibus,yCoordCentroOmnibus = centroOptimo.centroOptimoOmnibus.x_coord, centroOptimo.centroOptimoOmnibus.y_coord
         lineParts.append([[xCoordHogar,yCoordHogar],[xCoordCentroOmnibus,yCoordCentroOmnibus]])
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroOmnibus))
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoOmnibus.id_centro, centroOptimo.tHogarCentroOmnibus)
         shapeWriter.line(parts=lineParts)
         lineParts=[]
     saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
@@ -174,7 +174,7 @@ def generarShapeLineaHogarCentroCaminando(fields, individuos, fileName, userId, 
         xCoordHogar,yCoordHogar = individuo.hogar.x_coord, individuo.hogar.y_coord
         xCoordCentroCaminando,yCoordCentroCaminando = centroOptimo.centroOptimoCaminando.x_coord, centroOptimo.centroOptimoCaminando.y_coord
         lineParts.append([[xCoordHogar,yCoordHogar],[xCoordCentroCaminando,yCoordCentroCaminando]])
-        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, secondsToMinsRounded(centroOptimo.tHogarCentroCaminando))
+        shapeWriter.record(individuo.id, centroOptimo.centroOptimoCaminando.id_centro, centroOptimo.tHogarCentroCaminando)
         shapeWriter.line(parts=lineParts)
         lineParts=[]
     saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod)
@@ -183,9 +183,6 @@ def createShapeFields(shapeWriter,fields):
     for field in fields:
         shapeWriter.field(field)
     return shapeWriter
-
-def secondsToMinsRounded(timeInSeconds):
-    return round(timeInSeconds/60,2)
 
 def llegaToCsv(path):
     individuosLlega = []
