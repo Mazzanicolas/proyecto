@@ -26,6 +26,7 @@ from django.views.generic import View
 from .forms import UserForm
 from  django.utils.decorators import classonlymethod
 from celery.signals import task_postrun
+from django.conf import settings
 
 def systemStatus(request):
     current = request.session.get('current',None)
@@ -184,6 +185,7 @@ def testing(request):
     response.set_cookie(key = 'tiempoMaximo',  value = maxT)
     response.set_cookie(key = 'tiempoConsulta',value = consT)
     response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
+    print(settings.BASE_DIR)
     return response
  
 def loadShapes(request,tipo):
