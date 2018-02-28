@@ -9,6 +9,8 @@ import time
 import shapefile
 from app.cancelar import *
 from django.db import connection
+import redis
+import zipfile
 
 #Habria que sacar todos estos tiempos a settings, pero no es urgente
 global TIEMPO_ARBITRARIAMENTE_ALTO
