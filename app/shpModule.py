@@ -11,7 +11,7 @@ def getIDCentroXYCoordDictionary(centros):
     return xyCoordCentrosDictionary
 
 def saveShapeFiles(fileName, userId, shapeWriter, pathToFilesToDownlaod):
-    directory = './app/data/users/user'+userId+'/shpOut/'
+    directory = settings.BASE_DIR + '/app/data/users/user'+userId+'/shpOut/'
     utils.createFolder(directory)
     shapeWriter.save(directory+fileName)
     shapeWriter = shapefile.Writer(shapefile.POINT)
@@ -204,18 +204,18 @@ def llega(indivudoCentroDiaHora):
     return False
 
 def writeCsvFile(afile):
-    baseDirectory = './app/data/shpOut/'
+    baseDirectory = settings.BASE_DIR + '/app/data/shpOut/'
     utils.createFolder(baseDirectory)
-    path = './app/data/shpOut/Llega.csv'
+    path = settings.BASE_DIR + '/app/data/shpOut/Llega.csv'
     with open(path, 'w', newline='') as temporalFile:
         writer = csv.writer(temporalFile)
         writer.writerows(afile)
     return path
 
 def generarShape(request,userId,pathToSourceData):
-    baseDirectory = './app/data/users/user'+userId+'/shpOut/'
+    baseDirectory = settings.BASE_DIR + '/app/data/users/user'+userId+'/shpOut/'
     utils.createFolder(baseDirectory)
-    utils.cleanAllFolderFiles('./app/data/users/user'+userId+'/shpOut/')
+    utils.cleanAllFolderFiles(settings.BASE_DIR + '/app/data/users/user'+userId+'/shpOut/')
     values = request.GET
     xyCoordCentrosDictionary = getIDCentroXYCoordDictionary(Centro.objects.all())
     individuos = Individuo.objects.all()

@@ -217,7 +217,8 @@ def loadShapes(request,tipo):
             content = request.FILES['inputFile']
             unzipped = zipfile.ZipFile(content)
             print (unzipped.namelist())
-            baseDirectory = "./app/data/shapes/"
+            
+            baseDirectory = settings.BASE_DIR+"/app/data/shapes/"
             utils.createFolder(baseDirectory)
             for libitem in unzipped.namelist():
                 filename = libitem.split('.')
@@ -496,16 +497,16 @@ def downloadFile(request):
     s  = BytesIO()
     zf = zipfile.ZipFile(s, "w",zipfile.ZIP_DEFLATED)
     if(not request.session.get('isIndividual',0) == 0):
-        indvPath = './app/data/users/user'+userId+"/consultOut/"+'IndividualResult.csv'
+        indvPath = settings.BASE_DIR + '/app/data/users/user'+userId+"/consultOut/"+'IndividualResult.csv'
         fdir, fname = os.path.split(indvPath)
         zip_path    = os.path.join(zip_subdir, 'Resultado individual.csv')
         zf.write(indvPath, zip_path)
     if(not request.session.get('isResumen',0) == 0):
-        resumenPath = './app/data/users/user'+userId+"/consultOut/"+'ResumenResult.csv'
+        resumenPath = settings.BASE_DIR + '/app/data/users/user'+userId+"/consultOut/"+'ResumenResult.csv'
         fdir, fname = os.path.split(resumenPath)
         zip_path    = os.path.join(zip_subdir, 'Resumen.csv')
         zf.write(resumenPath, zip_path)
-    parameterPath = './app/data/users/user'+userId+"/consultOut/"+'Parametros.txt'
+    parameterPath = settings.BASE_DIR + '/app/data/users/user'+userId+"/consultOut/"+'Parametros.txt'
     fdir, fname = os.path.split(parameterPath)
     zip_path    = os.path.join(zip_subdir, 'Parametros.txt')
     zf.write(parameterPath, zip_path)
@@ -562,7 +563,7 @@ def downloadShapeFile(request):
     if not request.user.is_authenticated:
         return redirect('login')
     userId = str(request.user.id)
-    path = './app/data/users/user'+userId+'/consultOut/IndividualResult'
+    path = settings.BASE_DIR + '/app/data/users/user'+userId+'/consultOut/IndividualResult'
     filenames    = generarShape(request, userId, path)
     resp = zipFile("Shapefiles",filenames)
     return resp

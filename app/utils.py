@@ -347,7 +347,7 @@ def minsToMil(time):
     mins  = time%60
     return int(hours)*100+mins
 def writeSettings(userId,dictSettings,simParams):
-    baseDirectory = "./app/data/users/user"+userId+"/consultOut/"
+    baseDirectory = settings.BASE_DIR + "/app/data/users/user"+userId+"/consultOut/"
     createFolder(baseDirectory)
     with open(baseDirectory + "Parametros.txt", "w") as text_file:
         if(simParams):

@@ -208,7 +208,7 @@ def cargarTiempos(tipo,request):
             else:
                 tipoId = "Auto"
             csvfile = request.FILES['inputFile']
-            baseDirectory  = "./app/data/RawCsv/"
+            baseDirectory  = settings.BASE_DIR + "/app/data/RawCsv/"
             utils.createFolder(baseDirectory)
             newCsv = open(baseDirectory + "tiempos"+tipoId+".csv", 'wb')
             for chunk in csvfile.chunks():
@@ -260,7 +260,7 @@ def cargarTiemposBus(request):
         #    if not res:
         #        return lineas
             csvfile = request.FILES['inputFile']
-            baseDirectory  = "./app/data/RawCsv/"
+            baseDirectory  = settings.BASE_DIR + "/app/data/RawCsv/"
             utils.createFolder(baseDirectory)
             newCsv = open(baseDirectory + "tiemposBus.csv", 'wb')
             for chunk in csvfile.chunks():

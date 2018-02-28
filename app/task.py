@@ -16,7 +16,7 @@ import shapefile
 from billiard.exceptions import Terminated
 from celery.contrib.abortable import AbortableTask
 from django.db import connection
-
+from django.conf import  settings
 
 global TIEMPO_ARBITRARIAMENTE_ALTO
 TIEMPO_ARBITRARIAMENTE_ALTO = 70 * 60
@@ -61,7 +61,8 @@ def delegator(get,sessionKey,cookies,userId):
     session.save()
     if(isIndividual):
         header = ['individuo', 'prestadorIndividuo', 'centro','prestadorCentro','tipoTransporte','dia','hora','tiempoViaje','llegaGeografico','cantidadPediatras','llega']
-        baseDirectory = './app/data/users/user'+userId+'/consultOut/'
+        
+        baseDirectory = settings.BASE_DIR+'/app/data/users/user'+userId+'/consultOut/'
         utils.createFolder(baseDirectory)
         with open( baseDirectory + 'IndividualResult.csv', 'w',newline="") as csvFile:
             writer = csv.writer(csvFile)
@@ -96,7 +97,7 @@ def saveResumenToCsv(result,userId,sessionKey):
                 'cantidadConsultasJueves', 'cantidadConsultasViernes','cantidadConsultasSabado','cantidadTotalConsultas', 'cantidadCentrosLunes',
                 'cantidadCentrosMartes','cantidadCentrosMiercoles','cantidadCentrosJueves', 'cantidadCentrosViernes','cantidadCentrosSabado', 'cantidadTotalCentros',
                 'centroOptimo']
-    baseDirectory = './app/data/users/user'+userId+'/consultOut/'
+    baseDirectory = settings.BASE_DIR + '/app/data/users/user'+userId+'/consultOut/'
     utils.createFolder(baseDirectory)
     with open(baseDirectory + 'ResumenResult.csv', 'w',newline="") as csvFile:
         writer = csv.DictWriter(csvFile,delimiter = ',',fieldnames = fieldNames)
@@ -518,7 +519,7 @@ def saveTiemposToDB(self,tipo):
         tiempos = []
         init = time.time()
         bulkAmount = 10000
-        baseDirectory = "./app/data/RawCsv/"
+        baseDirectory = settings.BASE_DIR + "/app/data/RawCsv/"
         utils.createFolder(baseDirectory)
         csvFile = open(baseDirectory+"tiempos"+tipoId+".csv", 'r')
         lineas = csv.reader(csvFile)
@@ -586,7 +587,7 @@ def saveTiemposBusToDB(self):
     id = 0
     tiempos = []
     bulkAmount = 10000
-    baseDirectory = "./app/data/RawCsv/"
+    baseDirectory = settings.BASE_DIR + "/app/data/RawCsv/"
     utils.createFolder(baseDirectory)
     csvFile = open(baseDirectory+"tiemposBus.csv", 'r')
     lineas = csv.reader(csvFile)
@@ -632,7 +633,7 @@ def saveTiemposBusToDB(self):
 @shared_task( bind=True, base=AbortableTask)
 def saveCentrosToDB(self,lineas,dict_prestadores):
     timeInit = time.time()
-    baseDirectory = "./app/data/shapes/"
+    baseDirectory = settings.BASE_DIR + "/app/data/shapes/"
     utils.createFolder(baseDirectory)
     sf = shapefile.Reader(baseDirectory + "shapeAuto.shp")
     shapeAuto = sf.shapes()
@@ -948,7 +949,7 @@ def cargarSectores(tipo):
     return loadSectores(tipo)
 
 def loadSectores(tipo):
-    baseDirectory = "./app/data/shapes/"
+    baseDirectory = settings.BASE_DIR + "/app/data/shapes/"
     utils.createFolder(baseDirectory)
     if(tipo == 0):
         sf = shapefile.Reader(baseDirectory + "shapeCaminando.shp")
