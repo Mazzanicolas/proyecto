@@ -15,8 +15,8 @@ def cleanAllFolderFiles(path):
     for aFile in files:
         os.remove(aFile)
 def getPrestadoresNombres():
-    puto = [(x.id,x.nombre) for x in Prestador.objects.all()]
-    return puto
+    prests = [(x.id,x.nombre) for x in Prestador.objects.all()]
+    return prests
 def getPrestaresNombresFiltrosSimular():
     return [(-1,"Por defecto"),(-2,"Ignorar")]+ [(x.id,x.nombre) for x in Prestador.objects.all()]
 def getTipoTransporteSimular():
