@@ -143,7 +143,6 @@ class SimPersonView(ExportMixin,PagedFilteredTableView):
 #individuo,centro,dia,hora,pediatras,tiempos, samePrest,tieneTrabajo,tieneJardin,dictTiemposSettings,inicioJar,finJar,inicioTra,finTra
 def calcTiempoDeViaje(individuo,centro,dia,hora,tieneTrabajo,tieneJardin,tiempos,record,pediatras,samePrest,self):
     tiempoMaximo   = timedelta(minutes = int(self.request.COOKIES.get("tiempoMaximo")))  # Cambiar(Tomar de bd)
-    print(int(self.request.COOKIES.get("tiempoMaximo")))
     tiempoConsulta = timedelta(minutes = int(self.request.COOKIES.get("tiempoConsulta"))) #Cambiar(Tomar de bd)
     hogar   = individuo.hogar
     trabajo = individuo.trabajo

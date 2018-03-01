@@ -105,7 +105,6 @@ def deleteConsultaResults(request):
     if(asyncKey and not asyncKey == -404):
         asyncResult = result.AsyncResult(asyncKey)
         if(asyncResult):
-            print(asyncResult)
             asyncResult.revoke(terminate = True)
             asyncResult.forget()
             request.session['asyncKey'] = -404

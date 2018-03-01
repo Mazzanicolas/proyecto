@@ -1,9 +1,0 @@
-Filtros utilizados 
-Tipo de Transporte utilizados: CAMINANDO
-Trabaja: Si
-Tiene Jardin: Si
-Prestador:  
-Dias: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo 
-Desde Las: 6 
-Hasta Las: 7 
-Individuos: 1, 2, 3 

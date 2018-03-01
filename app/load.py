@@ -44,7 +44,6 @@ def cargarCentroPediatras(request):
             res, lineas = checkCentroPediatras(request,dict_prestadores)
             if not res:
                 return lineas
-            print(dict_prestadores)
             status  = Settings.objects.get(setting='statusMatrizCentro')
             status.value  = 0
             status.save()
@@ -182,8 +181,6 @@ def cargarIndividuoAnclas(requestf):
             asyncTask = saveIndividuosToDB.apply_async(args=[lineas],queue = 'delegate')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKeyIndividuo',asyncKey)
-            print("Generando matriz cartesiana Individuo-Centro-Dia-Hora")
-            print("Matriz Carteasiana generada")
         else:
             print("Did not acquire lock.")
             return [["Faltan cargar matrices o se estan cargando"]]
@@ -230,7 +227,6 @@ def cargarTiempos(tipo,request):
             progressDone  = Settings.objects.get(setting='currentMatriz'+tipoId)
             progressDone.value  = 0.1
             progressDone.save()
-            print("ENTRANDO")
             asyncTask = saveTiemposToDB.apply_async(args=[tipo],queue = 'delegate')
             asyncKey = asyncTask.id
             utils.getOrCreateSettigs('asyncKey'+tipoId,asyncKey)
@@ -238,7 +234,6 @@ def cargarTiempos(tipo,request):
             print("Did not acquire lock.")
             return [["Faltan cargar matrices o se estan cargando"]]
     except Exception as e:
-        print(e)
         if(tipo == 0):
             tipoId = "Caminando"
         else:
@@ -324,8 +319,6 @@ def loadShapes(request,tipo):
             status.save()
             content = request.FILES['inputFile']
             unzipped = zipfile.ZipFile(content)
-            print (unzipped.namelist())
-            
             baseDirectory = settings.BASE_DIR+"/app/data/shapes/"
             utils.createFolder(baseDirectory)
             for libitem in unzipped.namelist():

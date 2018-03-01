@@ -151,7 +151,7 @@ def setParams(self,cookies):
     if(not cookies.get('jardin','1') == '1'):
         self.jardin = False
     self.tipoTrans = cookies.get('tipoTransporte','1')
-    self.mutualista = cookies.get('mutualista','-1')
+    self.mutualista = cookies.get('prestadorFiltro','-1')
 
 def getDeltaTiempos(individuo,centro,tipoTrans):
     tiempos = IndividuoCentro.objects.get(individuo = individuo,centro = centro)
@@ -322,10 +322,7 @@ def getIndivList_ParamDict_SettingsDict(get,cookies):
             jardin.append(False)
         if(trabajaReq == '0'):
             trabaja.append(False)
-        print(trabaja)
-        print(jardin)
         indQuery = indvList.filter(tipo_transporte__id__in = transportList, tieneTrabajo__in = trabaja,tieneJardin__in = jardin)
-        print(len(indQuery))
         dictParam = None
     return indQuery,dictParam,dictSettings
 def minsToMil(time):

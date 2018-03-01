@@ -1,0 +1,10 @@
+Parametros de Simulacion 
+Tipo de Transporte: AUTO 
+Prestador a Simular: Ignorar 
+Se utiliza el ancla temporal Trabajo 
+Se utiliza el ancla temporal Jardin 
+Filtros utilizados 
+Dias: Lunes, Martes, Miercoles, Jueves, Viernes, Sabado, Domingo 
+Desde Las: 0 
+Hasta Las: 23 
+Individuos: Todos

@@ -157,7 +157,6 @@ def index(request):
     response.set_cookie(key = 'tiempoMaximo',  value = maxT)
     response.set_cookie(key = 'tiempoConsulta',value = consT)
     response.set_cookie(key = 'tiempoLlega',   value = tiempoL)
-    print(settings.BASE_DIR)
     return response
  
 
@@ -262,6 +261,7 @@ def generateCsvResults(request):
             if(not utils.allLoaded() or request.session.get('calculationStatus', -1) == 0):
                 return JsonResponse({'Error':"Faltan cargar matrices o se estan cargando alguna"})
             indvList,dictParam,dictSettings = utils.getIndivList_ParamDict_SettingsDict(request.GET, request.COOKIES)
+            print(dictParam)
             utils.writeSettings(str(request.user.id) ,dictSettings,dictParam)
             asyncKey = delegator.apply_async(args=[request.GET,request.session.session_key,request.COOKIES,str(request.user.id)], queue = 'delegate')
             request.session['asyncKey'] = asyncKey.id
@@ -270,12 +270,11 @@ def generateCsvResults(request):
             task_postrun.connect(shutdown_worker, sender=delegator)
             return response
         else:
-            print("Gun control wont solve the problem")
             return redirect('index')
             print("Did not acquire lock.")
     except:
         request.session['calculationStatus'] = -1
-        print('#############RIP##########')
+        print("Crash")
         return redirect('index')
     finally:
         if have_lock:
@@ -351,8 +350,6 @@ def redirectTable(request):
     elif(verDatos == '12'):
         response = redirect('sectorTiempoOmnibusTable')
         return response
-
-    print(request.GET)
     return
 
 def downloadShapeFile(request):

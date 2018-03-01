@@ -43,18 +43,15 @@ def delegator(get,sessionKey,cookies,userId):
     session['isIndividual'] = 0
     session['isResumen'] = 0
     indQuery,dictParam,dictTiemposSettings = utils.getIndivList_ParamDict_SettingsDict(get,cookies)
-    print(len(indQuery),dictParam,dictTiemposSettings)
     numberPerGroup = math.ceil(len(indQuery)/8)
     numberPerGroup = min(3,numberPerGroup)
     individuos = [[indQuery[i:i + numberPerGroup],dictParam,sessionKey,dictTiemposSettings] for i in range(0, len(indQuery), numberPerGroup)]
     session['current'] = 0.01
     session['calculationStatus'] = 0
     if(getData.get('generarIndividual',0)== '1'):
-        print("Soy un Individual")
         session['isIndividual'] = 1
         isIndividual = True
     if(getData.get('generarResumen',0) == '1'):
-        print("Soy un resumen")
         session['isResumen'] = 1
         isResumen = True
     session['total'] = len(individuos)*2 + 10 if (isIndividual and isResumen) else len(individuos) + 5
@@ -78,7 +75,7 @@ def delegator(get,sessionKey,cookies,userId):
                         writer.writerow(row)
                 #saveCSVfromString(resultList,sessionKey)
         addProgress(sessionKey,5)
-        print("ENDOSINDIVIDUALCSV")
+        print("Saved individual csv")
     if(isResumen):
         job = calcularResumen.chunks(individuos,1).group()
         result = job.apply_async(queue = "CalculationQueue")
@@ -105,7 +102,7 @@ def saveResumenToCsv(result,userId,sessionKey):
         for row in result:
             writer.writerow(row)
     addProgress(sessionKey,5)
-    print("EndOFRESUMENCSV")
+    print("Saved resumen csv")
 
 
 def addProgress(sessionKey,amount):
@@ -115,8 +112,6 @@ def addProgress(sessionKey,amount):
         have_lock = my_lock.acquire(blocking=True)
         if have_lock:
             session = SessionStore(session_key=sessionKey)
-            print("Got lock.")
-            print(session['current'])
             session['current'] = session['current'] + amount if(session.get('current',None)) else amount
             session.save()
         else:
@@ -145,7 +140,6 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
             prestadorIdList = [int(x) for x in dictTiemposSettings['centroPrest']]
             listaCentros = Centro.objects.filter(prestador__id__in = prestadorIdList)
     for individuo in individuos:
-        print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
         if(simParam):
             tipoTrans = TipoTransporte.objects.get(id = int(simParam.get('tipoTransporte',1))) if(simParam.get('tipoTransporte',1) != '-1') else individuo.tipo_transporte
@@ -191,14 +185,13 @@ def calculateIndividual(individuos,simParam,sessionKey,dictTiemposSettings):
                             pediatras = tiempo.cantidad_pediatras,tiempos = tiemposViaje,samePrest = samePrest, tieneTrabajo = tieneTrabajo,
                             tieneJardin = tieneJardin,dictTiemposSettings=dictTiemposSettings,inicioJar = inicioJar,finJar = finJar ,inicioTra = inicioTra ,finTra = finTra)
                 result.append([individuo.id,prestadorObject.nombre,centroId,centro.prestador.nombre,tipoTrans.nombre,daysList[tiempo.dia],tiempo.hora,tiempoViaje,llegaG,tiempo.cantidad_pediatras,llega])
-        print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
+        #print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
     have_lock = False
     my_lock = redis.Redis().lock(sessionKey)
     try:
         have_lock = my_lock.acquire(blocking=True)
         if have_lock:
             s = SessionStore(session_key=sessionKey)
-            print("Got lock.")
             s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
             s.save()
         else:
@@ -226,13 +219,12 @@ def calcularResumen(individuos,simParam,sessionKey,dictTiemposSettings):
             prestadorIdList = [int(x) for x in dictTiemposSettings['centroPrest']]
             listaCentros = Centro.objects.filter(prestador__id__in = prestadorIdList)
     for individuo in individuos:
-        print("Individuo: "+str(individuo.id))
         tiempoIni = time.time()
         if(simParam):
-            tipoTrans = simParam.get('tipoTrans',"1") if(simParam.get('tipoTrans',"1") != "-1") else individuo.tipo_transporte.id
+            tipoTrans = int(simParam.get('tipoTrans',"1")) if(simParam.get('tipoTrans',"1") != "-1") else individuo.tipo_transporte.id
             tieneTrabajo = individuo.tieneTrabajo and (simParam.get('trabaja',"0") == "1")
             tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',"0") == "1")
-            prestadorId = simParam.get('mutualista',"1") if(simParam.get('mutualista',"1") != "-1") else individuo.prestador.id
+            prestadorId = int(simParam.get('mutualista',"1")) if(simParam.get('mutualista',"1") != "-1") else individuo.prestador.id
         else:
             tipoTrans = individuo.tipo_transporte.id
             tieneTrabajo = individuo.tieneTrabajo
@@ -289,14 +281,12 @@ def calcularResumen(individuos,simParam,sessionKey,dictTiemposSettings):
                     'cantidadCentrosMiercoles':len(dictCentrosPorDia[2]),'cantidadCentrosJueves':len(dictCentrosPorDia[3]), 'cantidadCentrosViernes':len(dictCentrosPorDia[4]),
                     'cantidadCentrosSabado':len(dictCentrosPorDia[5]), 'cantidadTotalCentros':totalCentros, 'centroOptimo':centroOptimo}
         resultList.append(leResumen)
-        print("Tiempo en el individuo: "+str(time.time()-tiempoIni))
     have_lock = False
     my_lock = redis.Redis().lock(sessionKey)
     try:
         have_lock = my_lock.acquire(blocking=True)
         if have_lock:
             s = SessionStore(session_key=sessionKey)
-            print("Got lock.")
             s['current'] = s['current'] + 1 if(s.get('current',None)) else 1
             s.save()
         else:
@@ -499,14 +489,9 @@ def saveTiemposToDB(self,tipo):
     try:
         if(tipo == 0):
             tipoId = 'Caminando'
-            sep = ';'
-            print("soyCaminando")
             SectorTiempoCaminando.objects.all().delete()
         else:
             tipoId = 'Auto'
-            print("soyAuto")
-            sep = ','
-            print(tipo)
             SectorTiempoAuto.objects.all().delete()
         id = -1
         tiempos = []
@@ -524,8 +509,8 @@ def saveTiemposToDB(self,tipo):
             if(id == -1):
                 id +=1
                 continue
-            if(sep==';'):
-                caso = caso[0].split(sep)
+            if(len(caso) <= 1):
+                caso = caso[0].split(';')
             sector1 = caso[0]
             sector2 = caso[1]
             t = float(caso[2])
@@ -546,7 +531,6 @@ def saveTiemposToDB(self,tipo):
                 progressDone.value  = float(progressDone.value) + bulkAmount
                 progressDone.save()
                 print(id)
-                print(time.time() - init)
                 init = time.time()
                 if(tipo == 1):
                     guardar = SectorTiempoAuto.objects.bulk_create(tiempos)

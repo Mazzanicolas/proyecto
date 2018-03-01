@@ -65,7 +65,6 @@ def getDictionaryCantidadLlega(path):
         for individuo in aFile:
             if(llega(individuo)):
                 dictionaryOfIdOccurences[str(individuo[0])+'_'+str(individuo[2])] = dictionaryOfIdOccurences.get(str(individuo[0])+'_'+str(individuo[2]), 0)+1
-    print(dictionaryOfIdOccurences)
     return dictionaryOfIdOccurences
 
 
@@ -192,7 +191,6 @@ def llegaToCsv(path):
         for indivudoCentroDiaHora in aFile:
             if(llega(indivudoCentroDiaHora)):
                 individuosLlega.append(indivudoCentroDiaHora)
-        print(len(individuosLlega))
     temporalFilePath = writeCsvFile(individuosLlega)
     return temporalFilePath
 
