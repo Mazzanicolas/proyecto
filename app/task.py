@@ -221,7 +221,7 @@ def calcularResumen(individuos,simParam,sessionKey,dictTiemposSettings):
     for individuo in individuos:
         tiempoIni = time.time()
         if(simParam):
-            tipoTrans = int(simParam.get('tipoTrans',"1")) if(simParam.get('tipoTrans',"1") != "-1") else individuo.tipo_transporte.id
+            tipoTrans = int(simParam.get('tipoTransporte',"1")) if(simParam.get('tipoTransporte',"1") != "-1") else individuo.tipo_transporte.id
             tieneTrabajo = individuo.tieneTrabajo and (simParam.get('trabaja',"0") == "1")
             tieneJardin =  individuo.tieneJardin and (simParam.get('jardin',"0") == "1")
             prestadorId = int(simParam.get('mutualista',"1")) if(simParam.get('mutualista',"1") != "-1") else individuo.prestador.id
